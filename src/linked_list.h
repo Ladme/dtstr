@@ -28,9 +28,9 @@ typedef struct llist {
 llist_t *llist_new(void);
 
 
-/*! @brief Destroys the linked_list structure properly deallocating memory.
+/*! @brief Destroys the linked list structure properly deallocating memory.
  *
- * @param vector        vector to destroy
+ * @param list        linked list to destroy
  */
 void llist_destroy(llist_t *list);
 

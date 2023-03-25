@@ -1,3 +1,5 @@
+// Released under MIT License.
+// Copyright (c) 2023 Ladislav Bartos
 
 #include <assert.h>
 #include <stdio.h>

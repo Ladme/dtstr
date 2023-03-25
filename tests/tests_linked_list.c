@@ -1,9 +1,11 @@
+// Released under MIT License.
+// Copyright (c) 2023 Ladislav Bartos
 
 #include <assert.h>
 #include <stdio.h>
 #include "../src/linked_list.h"
 
-static void print_sizet_list(const llist_t *list, const size_t len)
+inline static void print_sizet_list(const llist_t *list, const size_t len)
 {
     for (size_t i = 0; i < len; ++i) {
         printf("%ld ", *((size_t *) llist_get(list, i)));
@@ -84,6 +86,32 @@ static int test_llist_push_last(void)
 
     assert(llist_push_last(NULL, (void *) &data[0], sizeof(size_t)) == 99);
 
+    printf("OK\n");
+    return 0;
+}
+
+static int test_llist_push_first_last(void)
+{
+    printf("%-40s", "test_llist_push_first/last (mixed) ");
+
+    llist_t *list = llist_new();
+
+    size_t data[5] = {10, 36, 74, 8, 6};
+
+    for (size_t i = 0; i < 5; ++i) {
+        if (i % 2) assert(llist_push_first(list, (void *) &data[i], sizeof(size_t)) == 0);
+        else assert(llist_push_last(list, (void *) &data[i], sizeof(size_t)) == 0);
+    }
+
+    //print_sizet_list(list, 5);
+
+    assert(*((size_t *) list->head->data) == data[3] );
+    assert(*((size_t *) list->head->next->data) == data[1] );
+    assert(*((size_t *) list->head->next->next->data) == data[0] );
+    assert(*((size_t *) list->head->next->next->next->data) == data[2] );
+    assert(*((size_t *) list->head->next->next->next->next->data) == data[4] );
+
+    llist_destroy(list);
     printf("OK\n");
     return 0;
 }
@@ -543,6 +571,7 @@ int main(void)
     test_llist_new();
     test_llist_push_first();
     test_llist_push_last();
+    test_llist_push_first_last();
     test_llist_get();
 
     test_llist_insert_after_node();
