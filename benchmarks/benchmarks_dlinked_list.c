@@ -92,6 +92,8 @@ static void benchmark_dllist_get(size_t repeats)
     double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
 
     printf("> %12lu repeats: %f s\n\n", repeats, time_elapsed);
+
+    dllist_destroy(list);
 }
 
 
