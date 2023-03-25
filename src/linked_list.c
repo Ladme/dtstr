@@ -1,3 +1,5 @@
+// Released under MIT License.
+// Copyright (c) 2023 Ladislav Bartos
 
 #include "linked_list.h"
 
