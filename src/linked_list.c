@@ -11,7 +11,7 @@
  *
  * @return Pointer to the node_t structure, if successful. Else NULL.
  */
-static node_t *node_new(const void *data, const unsigned datasize)
+static node_t *node_new(const void *data, const size_t datasize)
 {
     node_t *node = calloc(1, sizeof(node_t));
 

@@ -192,4 +192,4 @@ int dllist_remove_node(dllist_t *list, dnode_t *node);
  */
 int dllist_remove(dllist_t *list, const size_t index);
 
-#endif /* LINKED_LIST_H */
+#endif /* DLINKED_LIST_H */

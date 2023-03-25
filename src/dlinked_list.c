@@ -11,7 +11,7 @@
  *
  * @return Pointer to the dnode_t structure, if successful. Else NULL.
  */
-static dnode_t *dnode_new(const void *data, const unsigned datasize)
+static dnode_t *dnode_new(const void *data, const size_t datasize)
 {
     dnode_t *node = calloc(1, sizeof(dnode_t));
 

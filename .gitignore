@@ -57,7 +57,9 @@ dkms.conf
 tests/tests_vector
 tests/tests_linked_list
 tests/tests_dlinked_list
+tests/tests_clinked_list
 
 benchmarks/benchmarks_vector
 benchmarks/benchmarks_linked_list
 benchmarks/benchmarks_dlinked_list
+benchmarks/benchmarks_clinked_list
