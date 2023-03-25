@@ -3,7 +3,17 @@
 #include <stdio.h>
 #include "../src/vector.h"
 
-int test_vec_new(void) 
+static int test_vec_destroy_null(void)
+{
+    printf("%-40s", "test_vec_destroy (null) ");
+
+    vec_destroy(NULL);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_new(void) 
 {
     printf("%-40s", "test_vec_new ");
 
@@ -19,7 +29,7 @@ int test_vec_new(void)
     return 0;
 }
 
-int test_vec_get(void)
+static int test_vec_get(void)
 {
     printf("%-40s", "test_vec_get ");
 
@@ -47,7 +57,7 @@ int test_vec_get(void)
     return 0;
 }
 
-int test_vec_get_invalid(void)
+static int test_vec_get_invalid(void)
 {
     printf("%-40s", "test_vec_get (invalid vector) ");
 
@@ -58,7 +68,7 @@ int test_vec_get_invalid(void)
     return 0;
 }
 
-int test_vec_push(void)
+static int test_vec_push(void)
 {
     printf("%-40s", "test_vec_push ");
 
@@ -84,19 +94,19 @@ int test_vec_push(void)
     return 0;
 }
 
-int test_vec_push_invalid(void)
+static int test_vec_push_invalid(void)
 {
     printf("%-40s", "test_vec_push (invalid vector) ");
 
     char test1[] = "test1";
 
-    assert(vec_push(NULL, test1) == 1);
+    assert(vec_push(NULL, test1) == 99);
 
     printf("OK\n");
     return 0;
 }
 
-int test_vec_pop(void)
+static int test_vec_pop(void)
 {
     printf("%-40s", "test_vec_pop ");
 
@@ -130,7 +140,7 @@ int test_vec_pop(void)
     return 0;
 }
 
-int test_vec_pop_invalid(void)
+static int test_vec_pop_invalid(void)
 {
     printf("%-40s", "test_vec_pop (invalid vector) ");
 
@@ -145,7 +155,7 @@ int test_vec_pop_invalid(void)
     return 0;
 }
 
-int test_vec_pop_and_push(void)
+static int test_vec_pop_and_push(void)
 {
     printf("%-40s", "test_vec_pop_and_push ");
 
@@ -191,7 +201,7 @@ int test_vec_pop_and_push(void)
     return 0;
 }
 
-int test_vec_remove(void)
+static int test_vec_remove(void)
 {
     printf("%-40s", "test_vec_remove ");
 
@@ -259,7 +269,7 @@ int test_vec_remove(void)
     return 0;
 }
 
-int test_vec_remove_all(void)
+static int test_vec_remove_all(void)
 {
     printf("%-40s", "test_vec_remove (all) ");
 
@@ -294,6 +304,7 @@ int test_vec_remove_all(void)
 
 int main(void) 
 {
+    test_vec_destroy_null();
     test_vec_new();
     test_vec_get();
     test_vec_get_invalid();

@@ -4,7 +4,7 @@
 #include "vector.h"
 
 /* *************************************************************************** */
-/*                 STATIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
+/*                 PRIVATE FUNCTIONS ASSOCIATED WITH VEC_T                     */
 /* *************************************************************************** */
 
 /*! @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
@@ -26,12 +26,11 @@ static int vec_shrink(vec_t *vector)
 }
 
 /* *************************************************************************** */
-/*                 GLOBAL FUNCTIONS ASSOCIATED WITH VEC_T                      */
+/*                 PUBLIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
 /* *************************************************************************** */
 
 vec_t *vec_new(void) 
 {
-
     vec_t *vector = calloc(1, sizeof(vec_t));
     if (vector == NULL) return NULL;
 
@@ -45,13 +44,14 @@ vec_t *vec_new(void)
 
 void vec_destroy(vec_t *vector)
 {
+    if (vector == NULL) return;
+
     free(vector->items);
     free(vector);
 }
 
 void *vec_get(const vec_t *const vector, const size_t index) 
 {
-
     if (vector == NULL) return NULL;
 
     if (index < 0 || index >= vector->len) return NULL;
@@ -62,12 +62,12 @@ void *vec_get(const vec_t *const vector, const size_t index)
 
 int vec_push(vec_t *vector, void *const item) 
 {
-    if (vector == NULL) return 1;
+    if (vector == NULL) return 99;
 
     if (vector->len >= vector->capacity) {
         vector->capacity *= 2;
         void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
-        if (new_items == NULL) return 2;
+        if (new_items == NULL) return 1;
 
         vector->items = new_items;
         memset(vector->items + vector->len, 0, sizeof(void *) * vector->capacity / 2);

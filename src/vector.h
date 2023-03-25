@@ -19,6 +19,9 @@ typedef struct vector {
 
 /*! @brief Creates new vec_t structure and allocates memory for it.
  *
+ * @paragraph Memory deallocation
+ * Destroy vec_t structure using vec_destroy function.
+ * 
  * @return Pointer to the created vec_t, if successful. NULL if not successful.
  */
 vec_t *vec_new(void);
@@ -46,10 +49,7 @@ void *vec_get(const vec_t *const vector, const size_t index);
  * @param vector        vector to use
  * @param item          item to add
  * 
- * @return 
- * Zero if successful. 
- * One if the vector is invalid (NULL).
- * Two if memory for the items field could not be reallocated.
+ * @return 0 if successful. 1 if memory for the items field could not be reallocated. 99 if the vector does not exist.
  */
 int vec_push(vec_t *vector, void *const item);
 
@@ -58,9 +58,7 @@ int vec_push(vec_t *vector, void *const item);
  * 
  * @param vector        vector to use
  * 
- * @return 
- * The last item from the vector, if successful.
- * NULL if the vector is NULL or if there are no items.
+ * @return The last item from the vector, if successful. NULL if the vector is NULL or if there are no items.
  */
 void *vec_pop(vec_t *vector);
 
@@ -70,9 +68,7 @@ void *vec_pop(vec_t *vector);
  * @param vector        vector to use
  * @param index         index of item to be removed
  * 
- * @return 
- * The element that was removed from the vector, if successful.
- * NULL if the vector is NULL or if the index does not correspond to any item in the vector.
+ * @return The element that was removed from the vector, if successful. NULL if the vector is NULL or if the index does not correspond to any item in the vector.
  */
 void *vec_remove(vec_t *vector, const size_t index);
 
