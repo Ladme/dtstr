@@ -91,4 +91,105 @@ int dllist_push_last(dllist_t *list, const void *data, const size_t datasize);
  */
 void *dllist_get(const dllist_t *list, const size_t index);
 
+
+/*! @brief Adds node after the provided node.
+ *
+ * @paragraph Note on data copying
+ * Data provided using the 'data' pointer is copied to the target node.
+ * You can therefore freely deallocate the original data.
+ * 
+ * @paragraph Previous can be NULL
+ * If 'previous' is NULL, node will be added to the head of doubly linked list.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ * 
+ * @param list      linked list to which the node should be added
+ * @param data      data to include in the node
+ * @param datasize  size of the data to include
+ * @param previous  pointer to dnode_t structure which should be positioned right before the newly added node in the modified doubly linked list
+ * 
+ * @return Zero if successful. Else non-zero.
+ */
+int dllist_insert_after_node(dllist_t *list, const void *data, const size_t datasize, dnode_t *previous);
+
+
+/*! @brief Adds node before the provided node.
+ *
+ * @paragraph Note on data copying
+ * Data provided using the 'data' pointer is copied to the target node.
+ * You can therefore freely deallocate the original data.
+ * 
+ * @paragraph Next can be NULL
+ * If 'next' is NULL, node will be added to the tail of doubly linked list.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ * 
+ * @param list      linked list to which the node should be added
+ * @param data      data to include in the node
+ * @param datasize  size of the data to include
+ * @param next      pointer to dnode_t structure which should be positioned right after the newly added node in the modified doubly linked list
+ * 
+ * @return Zero if successful. Else non-zero.
+ */
+int dllist_insert_before_node(dllist_t *list, const void *data, const size_t datasize, dnode_t *next);
+
+
+/*! @brief Adds node before another node with a specified index.
+ *
+ * @paragraph Note on data copying
+ * Data provided using the 'data' pointer is copied to the target node.
+ * You can therefore freely deallocate the original data.
+ * 
+ * @paragraph Note on indexing
+ * Note that if the index is out of bounds, this function fails with a return code of 2.
+ * If the index is 0, the node is added to the start of the list (same behavior as dllist_push_first)
+ * If the index is equal to the length of the list, the node is added to the end of the list (same behavior as dllist_push_last).
+ * 
+ * @paragraph Index of the added node
+ * The added node will have the same index as the one that is provided.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n); If you want O(1), use dllist_insert_before_node.
+ * 
+ * @param list      doubly linked list to which the node should be added
+ * @param data      data to include in the node
+ * @param datasize  size of the data to include
+ * @param index     index of the new node
+ * 
+ * @return 0 if successful. 1 if new node could not be created. 2 if the index is out of bounds. 99 if the doubly linked list does not exist.
+ */
+int dllist_insert(dllist_t *list, const void *data, const size_t datasize, const size_t index);
+
+
+/*! @brief Removes the node that is being pointed at with pointer 'node'
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ * 
+ * @param list      linked list from which the node should be removed
+ * @param pointer   pointer to node that should be removed
+ * 
+ * @return 0 if the node was successfully removed. 1 if the node does not exist. 99 if the doubly linked list does not exist.
+ */
+int dllist_remove_node(dllist_t *list, dnode_t *node);
+
+
+/*! @brief Removes a node located at the provided index.
+ *
+ * @paragraph Note on indexing
+ * Note that the index must correspond to an existing node in the doubly linked list, 
+ * otherwise this function fails with a return code of 1.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n); If you want O(1), use dllist_remove_node.
+ * 
+ * @param list      linked list from which the node should be removed
+ * @param index     index of the node to remove
+ * 
+ * @return 0 if the node was successfully removed, else non-zero.
+ */
+int dllist_remove(dllist_t *list, const size_t index);
+
 #endif /* LINKED_LIST_H */

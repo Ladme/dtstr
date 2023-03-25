@@ -89,7 +89,7 @@ int llist_push_last(llist_t *list, const void *data, const size_t datasize);
 void *llist_get(const llist_t *list, const size_t index);
 
 
-/*! @brief Adds node after another node pointer to which is provided.
+/*! @brief Adds node after the provided node.
  *
  * @paragraph Note on data copying
  * Data provided using the 'data' pointer is copied to the target node.
@@ -164,6 +164,12 @@ int llist_insert_after(llist_t *list, const void *data, const size_t datasize, c
  * @return 0 if successful. 1 if new node could not be created. 2 if the index is out of bounds. 99 if the linked list does not exist.
  */
 int llist_insert_before(llist_t *list, const void *data, const size_t datasize, const size_t index);
+
+
+/*! @brief Adds node to the linked list at specified index. Identical to llist_insert_before. */
+inline int llist_insert(llist_t *list, const void *data, const size_t datasize, const size_t index) {
+    return llist_insert_before(list, data, datasize, index);
+}
 
 
 /*! @brief Calculates the length of the linked list, i.e. number of nodes.

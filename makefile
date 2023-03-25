@@ -15,23 +15,27 @@ tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c
 	make tests_linked_list
 	make tests_dlinked_list
 
-tests_vector: tests/tests_vector.c src/vector.o
+tests_vector: tests/tests_vector.c src/vector.o libdtstr.a
 	gcc tests/tests_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_vector
 
-tests_linked_list: tests/tests_linked_list.c src/linked_list.o
+tests_linked_list: tests/tests_linked_list.c src/linked_list.o libdtstr.a
 	gcc tests/tests_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_linked_list
 
-tests_dlinked_list: tests/tests_dlinked_list.c src/dlinked_list.o
+tests_dlinked_list: tests/tests_dlinked_list.c src/dlinked_list.o libdtstr.a
 	gcc tests/tests_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_dlinked_list
 
-benchmarks: benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c libdtstr.a
+benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c libdtstr.a
+	make benchmarks_vector
 	make benchmarks_linked_list
 	make benchmarks_dlinked_list
+	
+benchmarks_vector: benchmarks/benchmarks_vector.c src/vector.o libdtstr.a
+	gcc benchmarks/benchmarks_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_vector
 
-benchmarks_linked_list: benchmarks/benchmarks_linked_list.c src/linked_list.o
+benchmarks_linked_list: benchmarks/benchmarks_linked_list.c src/linked_list.o libdtstr.a
 	gcc benchmarks/benchmarks_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_linked_list
 
-benchmarks_dlinked_list: benchmarks/benchmarks_dlinked_list.c src/dlinked_list.o
+benchmarks_dlinked_list: benchmarks/benchmarks_dlinked_list.c src/dlinked_list.o libdtstr.a
 	gcc benchmarks/benchmarks_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_dlinked_list
 
 clean: 

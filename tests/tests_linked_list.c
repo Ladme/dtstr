@@ -235,7 +235,6 @@ static int test_llist_insert_after_node(void)
 
     printf("OK\n");
     return 0;
-
 }
 
 static int test_llist_insert_after(void)
@@ -359,7 +358,7 @@ static int test_llist_insert_before(void)
 
     //print_sizet_list(list, 6);
 
-    assert(llist_insert_before(list, (void *) &inserted_data[1], sizeof(size_t), 0) == 0);
+    assert(llist_insert(list, (void *) &inserted_data[1], sizeof(size_t), 0) == 0);
 
     assert(*((size_t *) llist_get(list, 0)) == inserted_data[1] );
     assert(*((size_t *) llist_get(list, 1)) == data[4] );
@@ -385,7 +384,7 @@ static int test_llist_insert_before(void)
     //print_sizet_list(list, 8);
 
     assert(llist_insert_before(list, (void *) &inserted_data[4], sizeof(size_t), 9) != 0);
-    assert(llist_insert_before(list, (void *) &inserted_data[4], sizeof(size_t), 1847) != 0);
+    assert(llist_insert(list, (void *) &inserted_data[4], sizeof(size_t), 1847) != 0);
     assert(llist_insert_before(list, (void *) &inserted_data[4], sizeof(size_t), -1) != 0);
     assert(llist_insert_before(list, (void *) &inserted_data[4], sizeof(size_t), -53) != 0);
 
@@ -402,7 +401,7 @@ static int test_llist_insert_before(void)
 
     // using insert_before on an empty list
     llist_t *empty_list = llist_new();
-    assert(llist_insert_before(empty_list, (void *) &inserted_data[4], sizeof(size_t), 0) == 0);
+    assert(llist_insert(empty_list, (void *) &inserted_data[4], sizeof(size_t), 0) == 0);
 
     assert(*((size_t *) llist_get(empty_list, 0)) == inserted_data[4] );
 
@@ -485,6 +484,15 @@ static int test_llist_remove_after_node(void)
     //print_sizet_list(list, 2);
     assert(*((size_t *) llist_get(list, 0)) == data[3] );
     assert(*((size_t *) llist_get(list, 1)) == data[1] );
+
+    // remove the last two items
+    assert(llist_remove_after_node(list, NULL) == 0);
+    assert(llist_len(list) == 1);
+    assert(*((size_t *) llist_get(list, 0)) == data[1] );
+
+    assert(llist_remove_after_node(list, NULL) == 0);
+    assert(llist_len(list) == 0);
+    assert(!list->head);
 
     assert(llist_remove_after_node(NULL, list->head) == 99);
 

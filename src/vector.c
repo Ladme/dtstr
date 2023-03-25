@@ -8,7 +8,7 @@
 /* *************************************************************************** */
 
 /*! @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
-static int vec_check_shrink(vec_t *vector)
+static inline int vec_check_shrink(vec_t *vector)
 {
     return (vector->len <= vector->capacity / 4) && (vector->capacity > VEC_INITIAL_CAPACITY);
 }
@@ -21,6 +21,19 @@ static int vec_shrink(vec_t *vector)
     if (new_items == NULL) return 1;
 
     vector->items = new_items;
+
+    return 0;
+}
+
+/*! @brief Reallocates memory for vector. Returns 0, if successful. Else return non-zero. */
+static int vec_reallocate(vec_t **vector)
+{
+    (*vector)->capacity *= 2;
+    void **new_items = realloc((*vector)->items, (*vector)->capacity * sizeof(void *));
+    if (new_items == NULL) return 1;
+
+    (*vector)->items = new_items;
+    memset((*vector)->items + (*vector)->len, 0, sizeof(void *) * (*vector)->capacity / 2);
 
     return 0;
 }
@@ -46,6 +59,10 @@ void vec_destroy(vec_t *vector)
 {
     if (vector == NULL) return;
 
+    for (size_t i = 0; i < vector->len; ++i) {
+        free(vector->items[i]);
+    }
+
     free(vector->items);
     free(vector);
 }
@@ -60,25 +77,37 @@ void *vec_get(const vec_t *const vector, const size_t index)
 }
 
 
-int vec_push(vec_t *vector, void *const item) 
+int vec_push(vec_t *vector, void *const item, const size_t itemsize) 
 {
     if (vector == NULL) return 99;
 
-    if (vector->len >= vector->capacity) {
-        vector->capacity *= 2;
-        void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
-        if (new_items == NULL) return 1;
-
-        vector->items = new_items;
-        memset(vector->items + vector->len, 0, sizeof(void *) * vector->capacity / 2);
-    }
-
-    vector->items[vector->len] = item;
+    if (vector->len >= vector->capacity) if (vec_reallocate(&vector) == 1) return 1;
+    
+    vector->items[vector->len] = malloc(itemsize);
+    memcpy(vector->items[vector->len], item, itemsize);
     vector->len++;
 
     return 0;
 }
 
+int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const size_t index)
+{
+    if (vector == NULL) return 99;
+    if (index < 0 || index > vector->len) return 2;
+    if (index == vector->len) return vec_push(vector, item, itemsize);
+
+    if (vector->len >= vector->capacity) if (vec_reallocate(&vector) == 1) return 1;
+
+    // move all items located at index or further
+    memcpy(vector->items + index + 1, vector->items + index, sizeof(void *) * (vector->len - index));
+    // insert new item at target index
+    vector->items[index] = malloc(itemsize);
+    memcpy(vector->items[index], item, itemsize);
+    vector->len++;
+
+    return 0;
+
+}
 
 void *vec_pop(vec_t *vector)
 {
@@ -101,13 +130,12 @@ void *vec_remove(vec_t *vector, const size_t index)
 {
     if (vector == NULL) return NULL;
     if (index < 0 || index >= vector->len) return NULL;
+    if (index == vector->len) return vec_pop(vector);
 
     void *item = vector->items[index];
 
-    for (size_t i = index + 1; i < vector->len; ++i) {
-        vector->items[i - 1] = vector->items[i];
-    }
-
+    // move all items located after index
+    memcpy(vector->items + index, vector->items + index + 1, sizeof(void *) * (vector->len - index));
     vector->items[vector->len - 1] = NULL;
     vector->len--;
 

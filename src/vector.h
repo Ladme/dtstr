@@ -36,6 +36,13 @@ void vec_destroy(vec_t *vector);
 
 /*! @brief Returns the pointer stored at target index of the vector.
  *
+ * @paragraph Note on deallocation
+ * Note that this function returns POINTER to the target item.
+ * This pointer is no longer valid once the parent vector is destroyed.
+ *
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ *  
  * @param vector        vector to use
  * @param index         index of the item to get
  * 
@@ -46,15 +53,52 @@ void *vec_get(const vec_t *const vector, const size_t index);
 
 /*! @brief Adds a new item to the end of the vector.
  * 
+ * @paragraph Note on item copying
+ * Data provided using the 'item' pointer is copied to new memory location.
+ * You can therefore freely deallocate the original item.
+ *
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ * 
  * @param vector        vector to use
  * @param item          item to add
+ * @param itemsize      size of the item to add
  * 
  * @return 0 if successful. 1 if memory for the items field could not be reallocated. 99 if the vector does not exist.
  */
-int vec_push(vec_t *vector, void *const item);
+int vec_push(vec_t *vector, void *const item, const size_t itemsize);
+
+
+/*! @brief Adds a new item at target index of the vector.
+ * 
+ * @paragraph Note on item copying
+ * Data provided using the 'item' pointer is copied to new memory location.
+ * You can therefore freely deallocate the original item.
+ *
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n)
+ * 
+ * @param vector        vector to use
+ * @param item          item to add
+ * @param itemsize      size of the item to add
+ * @param index         position to which the new item should be added
+ * 
+ * @return 
+ * 0 if successful. 
+ * 1 if memory for the items field could not be reallocated. 
+ * 2 if index is out of bounds.
+ * 99 if the vector does not exist.
+ */
+int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const size_t index);
 
 
 /*! @brief Removes the last item from the vector and returns it.
+ * 
+ * @paragraph Note on memory deallocation
+ * The caller is responsible for deallocating memory for the popped item.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
  * 
  * @param vector        vector to use
  * 
@@ -64,6 +108,12 @@ void *vec_pop(vec_t *vector);
 
 
 /*! @brief Removes the element located at target index.
+ * 
+ * @paragraph Note on memory deallocation
+ * The caller is responsible for deallocating memory for the removed item.
+ *
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n)
  * 
  * @param vector        vector to use
  * @param index         index of item to be removed

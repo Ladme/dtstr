@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include "../src/dlinked_list.h"
 
-inline static void print_sizet_list(const dllist_t *list, const size_t len)
+inline static void print_sizet_list(const dllist_t *list)
 {
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < list->len; ++i) {
         printf("%ld ", *((size_t *) dllist_get(list, i)));
     }
     printf("\n");
@@ -163,6 +163,364 @@ static int test_dllist_get(void)
     return 0;
 }
 
+static int test_dllist_insert_after_node(void)
+{
+    printf("%-40s", "test_dllist_insert_after_node ");
+
+    size_t data[5] = {1, 2, 3, 4, 5};
+
+    // invalid list
+    assert(dllist_insert_after_node(NULL, &data[0], sizeof(size_t), NULL) == 99);
+
+    dllist_t *list = dllist_new();
+
+    // empty list
+    assert(dllist_insert_after_node(list, &data[0], sizeof(size_t), NULL) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[0] );
+    assert(list->head);
+    assert(list->tail);
+    assert(list->head == list->tail);
+    assert(list->len == 1);
+
+    // end of the list
+    assert(dllist_insert_after_node(list, &data[1], sizeof(size_t), list->head) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[1] );
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+    assert(list->len == 2);
+
+    // start of the list
+    assert(dllist_insert_after_node(list, &data[2], sizeof(size_t), NULL) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[2] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[1] );
+    assert(list->head == list->tail->previous->previous);
+    assert(list->tail = list->head->next->next);
+    assert(list->len == 3);
+
+    // middle of the list
+    assert(dllist_insert_after_node(list, &data[3], sizeof(size_t), list->head->next) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[2] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[1] );
+    assert(list->head == list->tail->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next);
+    assert(list->len == 4);
+
+    // middle of the list #2
+    assert(dllist_insert_after_node(list, &data[4], sizeof(size_t), list->tail->previous->previous) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[2] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[4] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 4)) == data[1] );
+    assert(list->head == list->tail->previous->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next->next);
+    assert(list->len == 5);
+
+    //print_sizet_list(list);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_dllist_insert_before_node(void)
+{
+    printf("%-40s", "test_dllist_insert_before_node ");
+
+    size_t data[5] = {1, 2, 3, 4, 5};
+
+    // invalid list
+    assert(dllist_insert_before_node(NULL, &data[0], sizeof(size_t), NULL) == 99);
+
+    dllist_t *list = dllist_new();
+
+    // empty list
+    assert(dllist_insert_before_node(list, &data[0], sizeof(size_t), NULL) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[0] );
+    assert(list->head);
+    assert(list->tail);
+    assert(list->head == list->tail);
+    assert(list->len == 1);
+
+    // start of the list
+    assert(dllist_insert_before_node(list, &data[1], sizeof(size_t), list->head) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+    assert(list->len == 2);
+
+    //print_sizet_list(list);
+
+    // end of the list
+    assert(dllist_insert_before_node(list, &data[2], sizeof(size_t), NULL) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[2] );
+    assert(list->head == list->tail->previous->previous);
+    assert(list->tail = list->head->next->next);
+    assert(list->len == 3);
+
+    // middle of the list
+    assert(dllist_insert_before_node(list, &data[3], sizeof(size_t), list->head->next) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[2] );
+    assert(list->head == list->tail->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next);
+    assert(list->len == 4);
+
+    // middle of the list #2
+    assert(dllist_insert_before_node(list, &data[4], sizeof(size_t), list->tail->previous->previous) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[4] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 4)) == data[2] );
+    assert(list->head == list->tail->previous->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next->next);
+    assert(list->len == 5);
+
+    //print_sizet_list(list);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dllist_insert(void)
+{
+    printf("%-40s", "test_dllist_insert ");
+
+    size_t data[5] = {1, 2, 3, 4, 5};
+
+    // invalid list
+    assert(dllist_insert(NULL, &data[0], sizeof(size_t), 0) == 99);
+
+    dllist_t *list = dllist_new();
+
+    // empty list fails
+    assert(dllist_insert(list, &data[0], sizeof(size_t), 1) == 2);
+    assert(dllist_insert(list, &data[0], sizeof(size_t), 6) == 2);
+    assert(dllist_insert(list, &data[0], sizeof(size_t), -1) == 2);
+    assert(dllist_insert(list, &data[0], sizeof(size_t), -381) == 2);
+    assert(!list->head);
+    assert(!list->tail);
+    assert(list->len == 0);
+
+    // empty list
+    assert(dllist_insert(list, &data[0], sizeof(size_t), 0) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[0] );
+    assert(list->head);
+    assert(list->tail);
+    assert(list->head == list->tail);
+    assert(list->len == 1);
+
+    // start of the list
+    assert(dllist_insert(list, &data[1], sizeof(size_t), 0) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+    assert(list->len == 2);
+
+    //print_sizet_list(list);
+
+    // end of the list
+    assert(dllist_insert(list, &data[2], sizeof(size_t), 2) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[2] );
+    assert(list->head == list->tail->previous->previous);
+    assert(list->tail = list->head->next->next);
+    assert(list->len == 3);
+
+    // middle of the list
+    assert(dllist_insert(list, &data[3], sizeof(size_t), 1) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[2] );
+    assert(list->head == list->tail->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next);
+    assert(list->len == 4);
+
+    // second to last
+    assert(dllist_insert(list, &data[4], sizeof(size_t), 3) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == data[1] );
+    assert(*((size_t *) dllist_get(list, 1)) == data[3] );
+    assert(*((size_t *) dllist_get(list, 2)) == data[0] );
+    assert(*((size_t *) dllist_get(list, 3)) == data[4] );
+    assert(*((size_t *) dllist_get(list, 4)) == data[2] );
+    assert(list->head == list->tail->previous->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next->next);
+    assert(list->len == 5);
+
+    //print_sizet_list(list);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_dllist_remove_node(void)
+{
+    printf("%-40s", "test_dllist_remove_node ");
+
+    // non-existent list
+    assert(dllist_remove_node(NULL, NULL) == 99);
+
+    dllist_t *list = dllist_new();
+
+    // empty list
+    assert(dllist_remove_node(list, NULL) == 1);
+
+    size_t data[] = {1, 2, 3, 4, 5};
+
+    for (size_t i = 0; i < 5; ++i) {
+        dllist_push_last(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    // remove item from the middle
+    assert(dllist_remove_node(list, list->head->next->next) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 1 );
+    assert(*((size_t *) dllist_get(list, 1)) == 2 );
+    assert(*((size_t *) dllist_get(list, 2)) == 4 );
+    assert(*((size_t *) dllist_get(list, 3)) == 5 );
+    assert(list->len == 4);
+    assert(list->head == list->tail->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next);
+
+    // remove item from the start
+    assert(dllist_remove_node(list, list->head) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(*((size_t *) dllist_get(list, 2)) == 5 );
+    assert(list->len == 3);
+    assert(list->head == list->tail->previous->previous);
+    assert(list->tail = list->head->next->next);
+
+    // remove item from the end
+    assert(dllist_remove_node(list, list->tail) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(list->len == 2);
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+
+    // NULL pointer for node (nothing should change)
+    assert(dllist_remove_node(list, NULL) == 1);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(list->len == 2);
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+
+    // remove the remaining two items
+    assert(dllist_remove_node(list, list->head) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 4 );
+    assert(list->len == 1);
+    assert(list->head == list->tail);
+    
+    assert(dllist_remove_node(list, list->tail) == 0);
+    assert(list->len == 0);
+    assert(!list->head);
+    assert(!list->tail);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dllist_remove(void)
+{
+    printf("%-40s", "test_dllist_remove ");
+
+    // non-existent list
+    assert(dllist_remove(NULL, 0) == 99);
+
+    dllist_t *list = dllist_new();
+
+    // empty list
+    assert(dllist_remove(list, 0) == 1);
+    assert(dllist_remove(list, 1) == 1);
+    assert(dllist_remove(list, 42) == 1);
+    assert(dllist_remove(list, -1) == 1);
+    assert(dllist_remove(list, -17) == 1);
+
+    size_t data[] = {1, 2, 3, 4, 5};
+
+    for (size_t i = 0; i < 5; ++i) {
+        dllist_push_last(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    // remove item from the middle
+    assert(dllist_remove(list, 2) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 1 );
+    assert(*((size_t *) dllist_get(list, 1)) == 2 );
+    assert(*((size_t *) dllist_get(list, 2)) == 4 );
+    assert(*((size_t *) dllist_get(list, 3)) == 5 );
+    assert(list->len == 4);
+    assert(list->head == list->tail->previous->previous->previous);
+    assert(list->tail = list->head->next->next->next);
+
+    // remove item from the start
+    assert(dllist_remove(list, 0) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(*((size_t *) dllist_get(list, 2)) == 5 );
+    assert(list->len == 3);
+    assert(list->head == list->tail->previous->previous);
+    assert(list->tail = list->head->next->next);
+
+    // remove item from the end
+    assert(dllist_remove(list, 2) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(list->len == 2);
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+
+    // index out of bounds (nothing should change)
+    assert(dllist_remove(list, 2) == 1);
+    assert(dllist_remove(list, 42) == 1);
+    assert(dllist_remove(list, -1) == 1);
+    assert(dllist_remove(list, -17) == 1);
+    assert(*((size_t *) dllist_get(list, 0)) == 2 );
+    assert(*((size_t *) dllist_get(list, 1)) == 4 );
+    assert(list->len == 2);
+    assert(list->head == list->tail->previous);
+    assert(list->tail = list->head->next);
+
+    // remove the remaining two items
+    assert(dllist_remove(list, 0) == 0);
+    assert(*((size_t *) dllist_get(list, 0)) == 4 );
+    assert(list->len == 1);
+    assert(list->head == list->tail);
+    
+    assert(dllist_remove(list, 0) == 0);
+    assert(list->len == 0);
+    assert(!list->head);
+    assert(!list->tail);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
     test_dllist_destroy_null();
@@ -172,6 +530,13 @@ int main(void)
     test_dllist_push_last();
     test_dllist_push_first_last();
     test_dllist_get();
+
+    test_dllist_insert_after_node();
+    test_dllist_insert_before_node();
+    test_dllist_insert();
+
+    test_dllist_remove_node();
+    test_dllist_remove();
 
     return 0;
 }
