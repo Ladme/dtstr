@@ -41,6 +41,9 @@ void llist_destroy(llist_t *list);
  * Data provided using the 'data' pointer is copied to the target node.
  * You can therefore freely deallocate the original data.
  * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
+ * 
  * @param list      linked list to which the node should be added
  * @param data      data to include in the node
  * @param datasize  size of the data to include
@@ -55,6 +58,9 @@ int llist_push_first(llist_t *list, const void *data, const size_t datasize);
  * @paragraph Note on data copying
  * Data provided using the 'data' pointer is copied to the target node.
  * You can therefore freely deallocate the original data.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n)
  * 
  * @param list      linked list to which the node should be added
  * @param data      data to include in the node
@@ -71,6 +77,9 @@ int llist_push_last(llist_t *list, const void *data, const size_t datasize);
  * Only non-negative indices can be used in this function. 
  * This function returns NULL, if the index used is invalid.
  *
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n)
+ * 
  * @param list      linked list to search in
  * @param index     index of the node to get
  * 
@@ -88,6 +97,9 @@ void *llist_get(const llist_t *list, const size_t index);
  * 
  * @paragraph Previous can be NULL
  * If 'previous' is NULL, node will be added to the beginning of the linked list (as the first element).
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
  * 
  * @param list      linked list to which the node should be added
  * @param data      data to include in the node
@@ -114,6 +126,9 @@ int llist_insert_after_node(llist_t *list, const void *data, const size_t datasi
  * @paragraph Index of the added node
  * The added node will have an index one larger than the provided one.
  * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n); If you want O(1), use llist_insert_after_node.
+ * 
  * @param list      linked list to which the node should be added
  * @param data      data to include in the node
  * @param datasize  size of the data to include
@@ -138,6 +153,9 @@ int llist_insert_after(llist_t *list, const void *data, const size_t datasize, c
  * @paragraph Index of the added node
  * The added node will have the same index as the one that is provided.
  * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n); If you want O(1), use llist_insert_after_node.
+ * 
  * @param list      linked list to which the node should be added
  * @param data      data to include in the node
  * @param datasize  size of the data to include
@@ -150,6 +168,9 @@ int llist_insert_before(llist_t *list, const void *data, const size_t datasize, 
 
 /*! @brief Calculates the length of the linked list, i.e. number of nodes.
  * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n)
+ *
  * @param list      linked list which length should be calculated
  * 
  * @return The length of the linked list. 0 if the linked list does not exist.
@@ -161,6 +182,9 @@ size_t llist_len(const llist_t *list);
  *
  * @paragraph Previous can be NULL
  * If 'previous' is NULL, node from the beginning of the linked list will be removed.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Constant, O(1)
  * 
  * @param list      linked list from which the node should be removed
  * @param previous  pointer to node that directly precedes the node that should be removed
@@ -175,6 +199,9 @@ int llist_remove_after_node(llist_t *list, node_t *previous);
  * @paragraph Note on indexing
  * Note that the index must correspond to an existing node in the linked list, 
  * otherwise this function fails with a return code of 1.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n); If you want O(1), use llist_remove_after_node.
  * 
  * @param list      linked list from which the node should be removed
  * @param index     index of the node to remove
