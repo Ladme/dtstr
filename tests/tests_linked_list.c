@@ -708,6 +708,58 @@ static int test_llist_filter_mut_complex(void)
     return 0;
 }
 
+static int test_comparison_function(void *data, void *target)
+{
+    return *((size_t *) data) == *((size_t *) target);
+}
+
+static int test_llist_find(void)
+{
+    printf("%-40s", "test_llist_find ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent list
+    assert(llist_find(NULL, test_comparison_function, (void *) &search[0]) == NULL);
+
+    llist_t *list = llist_new();
+
+    // search in an empty list
+    assert(llist_find(list, test_comparison_function, (void *) &search[0]) == NULL);
+
+    size_t data[] = {1, 3, 6, 4, 5, 5, 0, 2, 3, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        llist_push_first(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    node_t *found = NULL;
+    // find item at the beginning of list
+    found = llist_find(list, test_comparison_function, (void *) &search[0]);
+    assert(found == list->head);
+    assert(*((size_t *) found->data) == search[0]);
+    // find item at the end of list
+    found = llist_find(list, test_comparison_function, (void *) &search[1]);
+    assert(found == list->head->next->next->next->next->next->next->next->next->next);
+    assert(*((size_t *) found->data) == search[1]);
+    // find first of many items
+    found = llist_find(list, test_comparison_function, (void *) &search[2]);
+    assert(found == list->head->next->next->next->next);
+    assert(*((size_t *) found->data) == search[2]);
+
+    found = llist_find(list, test_comparison_function, (void *) &search[3]);
+    assert(found == list->head->next);
+    assert(*((size_t *) found->data) == search[3]);
+
+    // search for non-existent item
+    assert(llist_find(list, test_comparison_function, (void *) &search[4]) == NULL);
+
+    llist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 int main(void) 
 {
     test_llist_destroy_null();
@@ -731,6 +783,8 @@ int main(void)
     srand(time(NULL));
     test_llist_filter_mut_large();
     test_llist_filter_mut_complex();
+
+    test_llist_find();
 
     return 0;
 }

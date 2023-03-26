@@ -235,3 +235,16 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *))
 
     return removed;
 }
+
+node_t *llist_find(const llist_t *list, int (*compare_function)(void *, void *), void *target)
+{
+    if (list == NULL) return NULL;
+
+    node_t *node = list->head;
+    while (node != NULL) {
+        if (compare_function(node->data, target)) return node;
+        node = node->next;
+    }
+
+    return NULL;
+}

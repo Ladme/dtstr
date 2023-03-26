@@ -175,7 +175,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 /*! @brief Searches for item in vector and returns its index.
  
  * @paragraph Comparison function
- * 'comparison_function' is a pointer to function that returns integer and accept two void pointers.
+ * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
  * One void pointer corresponds to pointer to data at particular index. The other void pointer is pointer to
  * data which is being searched for in the vector.
  * 
@@ -194,7 +194,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
  * @paragraph Asymptotic Complexity
  * Linear, O(n).
  * 
- * @param vector            input vector for filtering
+ * @param vector            vector to search in
  * @param compare_function  function pointer defining how the items should be compared
  * @param target            pointer to data that is searched in the vector
  * 

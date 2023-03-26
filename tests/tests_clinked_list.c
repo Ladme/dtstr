@@ -701,6 +701,58 @@ static int test_cllist_filter_mut(void)
     return 0;
 }
 
+static int test_comparison_function(void *data, void *target)
+{
+    return *((size_t *) data) == *((size_t *) target);
+}
+
+static int test_cllist_find(void)
+{
+    printf("%-40s", "test_cllist_find ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent list
+    assert(cllist_find(NULL, test_comparison_function, (void *) &search[0]) == NULL);
+
+    cllist_t *list = cllist_new();
+
+    // search in an empty list
+    assert(cllist_find(list, test_comparison_function, (void *) &search[0]) == NULL);
+
+    size_t data[] = {1, 3, 6, 4, 5, 5, 0, 2, 3, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        cllist_push_first(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    cnode_t *found = NULL;
+    // find item at the beginning of list
+    found = cllist_find(list, test_comparison_function, (void *) &search[0]);
+    assert(found == list->head);
+    assert(*((size_t *) found->data) == search[0]);
+    // find item at the end of list
+    found = cllist_find(list, test_comparison_function, (void *) &search[1]);
+    assert(found == list->head->previous);
+    assert(*((size_t *) found->data) == search[1]);
+    // find first of many items
+    found = cllist_find(list, test_comparison_function, (void *) &search[2]);
+    assert(found == list->head->next->next->next->next);
+    assert(*((size_t *) found->data) == search[2]);
+
+    found = cllist_find(list, test_comparison_function, (void *) &search[3]);
+    assert(found == list->head->next);
+    assert(*((size_t *) found->data) == search[3]);
+
+    // search for non-existent item
+    assert(cllist_find(list, test_comparison_function, (void *) &search[4]) == NULL);
+
+    cllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 int main(void) 
 {
     test_cllist_destroy_null();
@@ -720,6 +772,8 @@ int main(void)
     test_cllist_remove();
 
     test_cllist_filter_mut();
+
+    test_cllist_find();
 
     return 0;
 }

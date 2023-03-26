@@ -247,3 +247,17 @@ size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *))
 
     return removed;
 }
+
+
+cnode_t *cllist_find(const cllist_t *list, int (*compare_function)(void *, void *), void *target)
+{
+    if (list == NULL) return NULL;
+
+    cnode_t *node = list->head;
+    for (size_t i = 0; i < list->len; ++i) {
+        if (compare_function(node->data, target)) return node;
+        node = node->next;
+    }
+    
+    return NULL;
+}

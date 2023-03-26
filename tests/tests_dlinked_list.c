@@ -571,6 +571,58 @@ static int test_dllist_filter_mut(void)
     return 0;
 }
 
+static int test_comparison_function(void *data, void *target)
+{
+    return *((size_t *) data) == *((size_t *) target);
+}
+
+static int test_dllist_find(void)
+{
+    printf("%-40s", "test_dllist_find ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent list
+    assert(dllist_find(NULL, test_comparison_function, (void *) &search[0]) == NULL);
+
+    dllist_t *list = dllist_new();
+
+    // search in an empty list
+    assert(dllist_find(list, test_comparison_function, (void *) &search[0]) == NULL);
+
+    size_t data[] = {1, 3, 6, 4, 5, 5, 0, 2, 3, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        dllist_push_first(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    dnode_t *found = NULL;
+    // find item at the beginning of list
+    found = dllist_find(list, test_comparison_function, (void *) &search[0]);
+    assert(found == list->head);
+    assert(*((size_t *) found->data) == search[0]);
+    // find item at the end of list
+    found = dllist_find(list, test_comparison_function, (void *) &search[1]);
+    assert(found == list->tail);
+    assert(*((size_t *) found->data) == search[1]);
+    // find first of many items
+    found = dllist_find(list, test_comparison_function, (void *) &search[2]);
+    assert(found == list->head->next->next->next->next);
+    assert(*((size_t *) found->data) == search[2]);
+
+    found = dllist_find(list, test_comparison_function, (void *) &search[3]);
+    assert(found == list->head->next);
+    assert(*((size_t *) found->data) == search[3]);
+
+    // search for non-existent item
+    assert(dllist_find(list, test_comparison_function, (void *) &search[4]) == NULL);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 int main(void) 
 {
@@ -590,6 +642,8 @@ int main(void)
     test_dllist_remove();
 
     test_dllist_filter_mut();
+
+    test_dllist_find();
 
     return 0;
 }
