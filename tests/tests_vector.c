@@ -729,6 +729,49 @@ static int test_vec_filter_complex(void)
 }
 
 
+static int test_comparison_function(void *data, void *target)
+{
+    return *((size_t *) data) == *((size_t *) target);
+}
+
+
+static int test_vec_find(void)
+{
+    printf("%-40s", "test_vec_find ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent vector
+    assert(vec_find(NULL, test_comparison_function, (void *) &search[0]) == -99);
+
+    vec_t *vector = vec_new();
+
+    // search in an empty vector
+    assert(vec_find(vector, test_comparison_function, (void *) &search[0]) == -1);
+
+    size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
+
+    for (size_t i = 0; i < 10; ++i) {
+        vec_push(vector, (void *) &data[i], sizeof(size_t));
+    }
+
+    // find item at the beginning of vector
+    assert(vec_find(vector, test_comparison_function, (void *) &search[0]) == 0);
+    // find item at the end of vector
+    assert(vec_find(vector, test_comparison_function, (void *) &search[1]) == 9);
+    // find first of many items
+    assert(vec_find(vector, test_comparison_function, (void *) &search[2]) == 4);
+    assert(vec_find(vector, test_comparison_function, (void *) &search[3]) == 1);
+    // search for non-existent item
+    assert(vec_find(vector, test_comparison_function, (void *) &search[4]) == -1);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 
 int main(void) 
 {
@@ -760,6 +803,8 @@ int main(void)
 
     test_vec_filter();
     test_vec_filter_complex();
+
+    test_vec_find();
 
     return 0;
 }

@@ -171,4 +171,36 @@ size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *));
  */
 vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const size_t itemsize);
 
+
+/*! @brief Searches for item in vector and returns its index.
+ 
+ * @paragraph Comparison function
+ * 'comparison_function' is a pointer to function that returns integer and accept two void pointers.
+ * One void pointer corresponds to pointer to data at particular index. The other void pointer is pointer to
+ * data which is being searched for in the vector.
+ * 
+ * The comparison function should return >0 (true), if the two compared items match each other.
+ * The comparison function should return 0 (false), if the two compared items DO NOT match each other.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, -99 is returned.
+ * 
+ * @paragraph No item found
+ * If no corresponding item has been found, -1 is returned.
+ * 
+ * @paragraph Multiple identical items in vector
+ * The function always returns the index of the first matching item in the vector.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n).
+ * 
+ * @param vector            input vector for filtering
+ * @param compare_function  function pointer defining how the items should be compared
+ * @param target            pointer to data that is searched in the vector
+ * 
+ * @return Index of the first matching item. Negative value, if unsuccessful.
+ */
+long vec_find(const vec_t *vector, int (*compare_function)(void *, void *), void *target);
+
+
 #endif /* VECTOR_H */
