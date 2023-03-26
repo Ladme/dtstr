@@ -158,6 +158,60 @@ static void benchmark_vec_remove(size_t items)
 }
 
 
+static int filter_function(void *data)
+{
+    return *((size_t *) data) % 2;
+}
+
+static void benchmark_vec_filter_mut()
+{
+    printf("%s\n", "benchmark_vec_filter_mut [O(n^2)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 10000;
+        vec_t *vector = vec_fill(prefilled);
+
+        clock_t start = clock();
+
+        size_t removed = vec_filter_mut(vector, filter_function);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, filtered out %12lu items: %f s\n", prefilled, removed, time_elapsed);
+
+        vec_destroy(vector);
+    }
+    printf("\n");
+}
+
+static void benchmark_vec_filter()
+{
+    printf("%s\n", "benchmark_vec_filter [O(n)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 1000000;
+        vec_t *vector = vec_fill(prefilled);
+
+        clock_t start = clock();
+
+        vec_t *filtered = vec_filter(vector, filter_function, sizeof(size_t));
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, filtered in %12lu items: %f s\n", prefilled, filtered->len, time_elapsed);
+
+        vec_destroy(vector);
+        vec_destroy(filtered);
+    }
+
+    printf("\n");
+}
+
+
 int main(void)
 {
     benchmark_vec_push(100000);
@@ -165,6 +219,8 @@ int main(void)
     benchmark_vec_insert(10000);
     benchmark_vec_pop(100000);
     benchmark_vec_remove(10000);
+    benchmark_vec_filter_mut();
+    benchmark_vec_filter();
 
     return 0;
 

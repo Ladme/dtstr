@@ -145,3 +145,40 @@ void *vec_remove(vec_t *vector, const size_t index)
 
     return item;
 }
+
+
+size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *))
+{
+    size_t removed = 0;
+    if (vector == NULL) return 0;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+
+        if (!filter_function(vec_get(vector, i))) {
+            free(vec_remove(vector, i));
+            --i;
+            ++removed;
+        }
+
+    }
+
+    return removed;
+}
+
+
+vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const size_t itemsize)
+{
+    if (vector == NULL) return NULL;
+    vec_t *filtered = vec_new();
+
+    for (size_t i = 0; i < vector->len; ++i) {
+
+        void *item = vec_get(vector, i);
+
+        if (filter_function(item)) {
+            vec_push(filtered, item, itemsize);
+        }
+    }
+
+    return filtered;
+}

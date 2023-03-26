@@ -90,43 +90,19 @@ void cllist_destroy(cllist_t *list)
     free(list);
 }
 
-int cllist_push_first(cllist_t *list, const void *data, const size_t datasize)
+int cllist_insert_before_node(cllist_t *list, const void *data, const size_t datasize, cnode_t *next)
 {
     if (list == NULL) return 99;
-
+    if (next == NULL) next = list->head;
+    
     cnode_t *node = cnode_new(data, datasize);
     if (node == NULL) return 1;
 
-    if (list->head != NULL) {
-        node->previous = list->head->previous;
-        node->next = list->head;
-        list->head->previous->next = node;
-        list->head->previous = node;  
-    } else {
-        node->next = node;
-        node->previous = node;
-    }
-
-    list->head = node;
-
-    ++(list->len);
-
-    return 0;
-}
-
-int cllist_push_last(cllist_t *list, const void *data, const size_t datasize)
-{
-    // the same function as cllist_push_first, but we do not set list->head to the new node unless list->head is NULL
-    if (list == NULL) return 99;
-
-    cnode_t *node = cnode_new(data, datasize);
-    if (node == NULL) return 1;
-
-    if (list->head != NULL) {
-        node->previous = list->head->previous;
-        node->next = list->head;
-        list->head->previous->next = node;
-        list->head->previous = node;  
+    if (next != NULL) {
+        node->previous = next->previous;
+        node->next = next;
+        next->previous->next = node;
+        next->previous = node;  
     } else {
         node->next = node;
         node->previous = node;
@@ -136,6 +112,48 @@ int cllist_push_last(cllist_t *list, const void *data, const size_t datasize)
     ++(list->len);
 
     return 0;
+}
+
+int cllist_insert_after_node(cllist_t *list, const void *data, const size_t datasize, cnode_t *previous)
+{
+    if (list == NULL) return 99;
+    if (previous == NULL && list->head == NULL) return cllist_insert_before_node(list, data, datasize, NULL);
+    if (previous == NULL && list->head != NULL) return cllist_insert_before_node(list, data, datasize, list->head->next);
+
+    return cllist_insert_before_node(list, data, datasize, previous->next);
+}
+
+
+int cllist_push_first(cllist_t *list, const void *data, const size_t datasize)
+{   
+    if (list == NULL) return 99;
+
+    int code = 0;
+    if ((code = cllist_insert_before_node(list, data, datasize, list->head)) != 0) return code;
+
+    list->head = list->head->previous;
+
+    return 0;
+}
+
+int cllist_push_last(cllist_t *list, const void *data, const size_t datasize)
+{
+    if (list == NULL) return 99;
+
+    return cllist_insert_before_node(list, data, datasize, list->head);
+}
+
+int cllist_insert(cllist_t *list, const void *data, const size_t datasize, const size_t index)
+{
+    if (list == NULL) return 99;
+
+    if (index == list->len) return cllist_push_last(list, data, datasize);
+    if (index == 0) return cllist_push_first(list, data, datasize);
+
+    cnode_t *next = cllist_get_node(list, index);
+    if (next == NULL) return 2;
+
+    return cllist_insert_before_node(list, data, datasize, next);
 }
 
 void *cllist_get(const cllist_t *list, const size_t index)
@@ -158,7 +176,6 @@ int cllist_rotate(cllist_t *list, const int places)
         int real_places = places % list->len;
         if (real_places > list->len / 2) {
             // in this case, it is faster to perform counterclockwise rotation
-            //printf("Performing counterclockwise rotation by %d instead of clockwise by %d\n", list->len - real_places, real_places);
             for (size_t i = 0; i < list->len - real_places; ++i) list->head = list->head->next;
         } else {
             for (size_t i = 0; i < real_places; ++i) list->head = list->head->previous;
@@ -170,7 +187,6 @@ int cllist_rotate(cllist_t *list, const int places)
         
         if (real_places > list->len / 2) {
             // in this case, it is faster to perform clockwise rotation
-            //printf("Performing clockwise rotation by %d instead of counterclockwise by %d\n", list->len - real_places, real_places);
             for (size_t i = 0; i < list->len - real_places; ++i) list->head = list->head->previous;
         } else {
             for (size_t i = 0; i < real_places; ++i) list->head = list->head->next;
@@ -178,4 +194,56 @@ int cllist_rotate(cllist_t *list, const int places)
     }
 
     return 0;
+}
+
+int cllist_remove_node(cllist_t *list, cnode_t *node)
+{
+    if (list == NULL) return 99;
+    if (node == NULL) return 1;
+
+    if (list->len <= 1) {
+        list->head = NULL;
+    } else {
+        if (list->head == node) list->head = node->next;
+        
+        node->next->previous = node->previous;
+        node->previous->next = node->next;
+    }
+
+    cnode_destroy(node);
+    --(list->len);
+
+    return 0;
+}
+
+int cllist_remove(cllist_t *list, const size_t index)
+{
+    if (list == NULL) return 99;
+    cnode_t *node = cllist_get_node(list, index);
+    return cllist_remove_node(list, node);
+}
+
+
+size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *))
+{
+    if (list == NULL) return 0;
+    
+    size_t orig_len = list->len;
+    size_t removed = 0;
+    cnode_t *node = list->head;
+
+    for (size_t i = 0; i < orig_len; ++i) {
+
+        if (!filter_function(node->data)) {
+            cnode_t *next = node->next;
+            cllist_remove_node(list, node);
+            node = next;
+            ++removed;
+        } else {
+            node = node->next;
+        }
+
+    }
+
+    return removed;
 }

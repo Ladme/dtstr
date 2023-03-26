@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <time.h>
 #include "../src/linked_list.h"
 
 inline static void print_sizet_list(const llist_t *list, const size_t len)
@@ -572,6 +573,141 @@ static int test_llist_remove(void)
 }
 
 
+static int test_filter_function(void *data)
+{
+    return *((size_t *) data) >= 5;
+}
+
+static int test_llist_filter_mut(void)
+{
+    printf("%-40s", "test_llist_filter_mut ");
+
+    // perform filter on non-existent list
+    assert(llist_filter_mut(NULL, test_filter_function) == 0);
+
+    llist_t *list = llist_new();
+
+    // perform filter on empty list
+    assert(llist_filter_mut(list, test_filter_function) == 0);
+
+    size_t data[] = {1, 3, 6, 4, 5, 5, 0, 2, 3, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        llist_push_first(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    //print_sizet_list(list, 10);
+
+    assert(llist_filter_mut(list, test_filter_function) == 6);
+
+    //print_sizet_list(list, 4);
+    assert(llist_len(list) == 4);
+
+    assert(*((size_t *) llist_get(list, 0)) == 9);
+    assert(*((size_t *) llist_get(list, 1)) == 5);
+    assert(*((size_t *) llist_get(list, 2)) == 5);
+    assert(*((size_t *) llist_get(list, 3)) == 6);
+
+    // applying the same filter again should do nothing
+    assert(llist_filter_mut(list, test_filter_function) == 0);
+    assert(llist_len(list) == 4);
+
+    assert(*((size_t *) llist_get(list, 0)) == 9);
+    assert(*((size_t *) llist_get(list, 1)) == 5);
+    assert(*((size_t *) llist_get(list, 2)) == 5);
+    assert(*((size_t *) llist_get(list, 3)) == 6);
+
+    llist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_filter_function_large(void *data)
+{
+    return *((size_t *) data) >= 500;
+}
+
+static int test_llist_filter_mut_large(void)
+{
+    printf("%-40s", "test_llist_filter_mut (large) ");
+
+    llist_t *list = llist_new();
+
+    for (size_t i = 0; i < 100; ++i) {
+        size_t random = rand() % 1000;
+        llist_push_first(list, (void *) &random, sizeof(size_t));
+    }
+
+    llist_filter_mut(list, test_filter_function_large);
+
+    for (size_t i = 0; i < llist_len(list); ++i) {
+        assert(*((size_t *) llist_get(list, i)) >= 500);
+    }
+
+    llist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+struct test_filter_structure {
+    int element_a;
+    char some_string[];
+};
+
+static int test_filter_function_complex(void *data)
+{
+    struct test_filter_structure *pStructure = (struct test_filter_structure *) data;
+
+    return (pStructure->element_a % 3 == 0 && strcmp(pStructure->some_string, "example1") == 0);
+}
+
+static int test_llist_filter_mut_complex(void)
+{
+    printf("%-40s", "test_llist_filter_mut (complex) ");
+
+    char *string1 = "example1";
+    char *string2 = "example2";
+
+    llist_t *list = llist_new();
+
+    for (size_t i = 0; i < 13; ++i) {
+
+        struct test_filter_structure *structure = malloc(sizeof(struct test_filter_structure) + 20);
+
+        structure->element_a = (int) i;
+        if (i % 2 == 0) {
+            strncpy(structure->some_string, string1, 19);
+        } else {
+            strncpy(structure->some_string, string2, 19);
+        }
+
+        llist_push_first(list, (void *) structure, sizeof(struct test_filter_structure) + 20);
+
+        free(structure);
+
+    }
+
+    assert(llist_filter_mut(list, test_filter_function_complex) == 10);
+
+    assert(llist_len(list) == 3);
+    int expected_elements[] = {12, 6, 0};
+
+    for (size_t i = 0; i < 3; ++i) {
+        struct test_filter_structure *pStructure = (struct test_filter_structure *) llist_get(list, i);
+
+        //printf("%d %s\n", pStructure->element_a, pStructure->some_string);
+
+        assert(pStructure->element_a == expected_elements[i] && strcmp(pStructure->some_string, string1) == 0);
+    }
+
+    llist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 int main(void) 
 {
     test_llist_destroy_null();
@@ -590,6 +726,11 @@ int main(void)
 
     test_llist_remove_after_node();
     test_llist_remove();
+
+    test_llist_filter_mut();
+    srand(time(NULL));
+    test_llist_filter_mut_large();
+    test_llist_filter_mut_complex();
 
     return 0;
 }

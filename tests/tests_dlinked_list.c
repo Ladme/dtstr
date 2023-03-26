@@ -521,6 +521,57 @@ static int test_dllist_remove(void)
 }
 
 
+static int test_filter_function(void *data)
+{
+    return *((size_t *) data) >= 5;
+}
+
+static int test_dllist_filter_mut(void)
+{
+    printf("%-40s", "test_dllist_filter_mut ");
+
+    // perform filter on non-existent list
+    assert(dllist_filter_mut(NULL, test_filter_function) == 0);
+
+    dllist_t *list = dllist_new();
+
+    // perform filter on empty list
+    assert(dllist_filter_mut(list, test_filter_function) == 0);
+
+    size_t data[] = {1, 3, 6, 4, 5, 5, 0, 2, 3, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        dllist_push_first(list, (void *) &data[i], sizeof(size_t));
+    }
+
+    //print_sizet_list(list);
+
+    assert(dllist_filter_mut(list, test_filter_function) == 6);
+
+    //print_sizet_list(list);
+    assert(list->len == 4);
+
+    assert(*((size_t *) dllist_get(list, 0)) == 9);
+    assert(*((size_t *) dllist_get(list, 1)) == 5);
+    assert(*((size_t *) dllist_get(list, 2)) == 5);
+    assert(*((size_t *) dllist_get(list, 3)) == 6);
+
+    // applying the same filter again should do nothing
+    assert(dllist_filter_mut(list, test_filter_function) == 0);
+    assert(list->len == 4);
+
+    assert(*((size_t *) dllist_get(list, 0)) == 9);
+    assert(*((size_t *) dllist_get(list, 1)) == 5);
+    assert(*((size_t *) dllist_get(list, 2)) == 5);
+    assert(*((size_t *) dllist_get(list, 3)) == 6);
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
     test_dllist_destroy_null();
@@ -537,6 +588,8 @@ int main(void)
 
     test_dllist_remove_node();
     test_dllist_remove();
+
+    test_dllist_filter_mut();
 
     return 0;
 }

@@ -104,7 +104,7 @@ void *dllist_get(const dllist_t *list, const size_t index);
  * @paragraph Asymptotic Complexity
  * Constant, O(1)
  * 
- * @param list      linked list to which the node should be added
+ * @param list      doubly linked list to which the node should be added
  * @param data      data to include in the node
  * @param datasize  size of the data to include
  * @param previous  pointer to dnode_t structure which should be positioned right before the newly added node in the modified doubly linked list
@@ -126,7 +126,7 @@ int dllist_insert_after_node(dllist_t *list, const void *data, const size_t data
  * @paragraph Asymptotic Complexity
  * Constant, O(1)
  * 
- * @param list      linked list to which the node should be added
+ * @param list      doubly linked list to which the node should be added
  * @param data      data to include in the node
  * @param datasize  size of the data to include
  * @param next      pointer to dnode_t structure which should be positioned right after the newly added node in the modified doubly linked list
@@ -168,7 +168,7 @@ int dllist_insert(dllist_t *list, const void *data, const size_t datasize, const
  * @paragraph Asymptotic Complexity
  * Constant, O(1)
  * 
- * @param list      linked list from which the node should be removed
+ * @param list      doubly linked list from which the node should be removed
  * @param pointer   pointer to node that should be removed
  * 
  * @return 0 if the node was successfully removed. 1 if the node does not exist. 99 if the doubly linked list does not exist.
@@ -185,11 +185,32 @@ int dllist_remove_node(dllist_t *list, dnode_t *node);
  * @paragraph Asymptotic Complexity
  * Linear, O(n); If you want O(1), use dllist_remove_node.
  * 
- * @param list      linked list from which the node should be removed
+ * @param list      doubly linked list from which the node should be removed
  * @param index     index of the node to remove
  * 
  * @return 0 if the node was successfully removed, else non-zero.
  */
 int dllist_remove(dllist_t *list, const size_t index);
+
+
+/*! @brief Removes all items from the list that do not fulfill a condition. Modifies the list.
+ *
+ * @paragraph Filter function
+ * 'filter_function' is a pointer to function that returns integer and accepts void pointer to data in node.
+ * The function should return >0 (true), if the item is supposed to STAY in the list.
+ * The function should return 0 (false), if the item is supposed to be REMOVED from the list.
+ * 
+ * @paragraph Invalid list
+ * If 'list' is NULL, no operation is performed.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n).
+ * 
+ * @param list              doubly linked list which should be filtered
+ * @param filter_function   function pointer defining filtering condition
+ * 
+ * @return The number of removed items.
+ */
+size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *));
 
 #endif /* DLINKED_LIST_H */

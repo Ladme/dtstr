@@ -122,4 +122,53 @@ void *vec_pop(vec_t *vector);
  */
 void *vec_remove(vec_t *vector, const size_t index);
 
+
+/*! @brief Removes all items from vector that do not fulfill a condition. Modifies the vector.
+ *
+ * @paragraph Filter function
+ * 'filter_function' is a pointer to function that returns integer and accepts void pointer to data at target index.
+ * The function should return >0 (true), if the item is supposed to STAY in the list.
+ * The function should return 0 (false), if the item is supposed to be REMOVED from the list.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, no operation is performed.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Quadratic, O(n^2). This operation is expensive. It might be better to use vec_filter function.
+ * 
+ * @param vector            vector which should be filtered
+ * @param filter_function   function pointer defining filtering condition
+ * 
+ * @return The number of removed items.
+ */
+size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *));
+
+
+/*! @brief Selects all items from vector that fulfill a condition and copies them into another vector. Original vector is not changed.
+ 
+ * @paragraph Filter function
+ * 'filter_function' is a pointer to function that returns integer and accepts void pointer to data at target index.
+ * The function should return >0 (true), if the item is supposed to be copied into the output vector.
+ * The function should return 0 (false), if the item is NOT supposed to be copied into the output vector.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, NULL is returned.
+ * 
+ * @paragraph Output order of items
+ * This function maintains the order of items from the original vector.
+ * 
+ * @paragraph Deallocation of the output vector
+ * Caller is responsible of properly deallocating memory for the returned vec_t structure (use vec_destroy function).
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n).
+ * 
+ * @param vector            input vector for filtering
+ * @param filter_function   function pointer defining filtering condition
+ * @param itemsize          size of the items in vector
+ * 
+ * @return Pointer to vec_t structure with items fulfilling filtering condition. NULL if unsuccessful.
+ */
+vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const size_t itemsize);
+
 #endif /* VECTOR_H */

@@ -140,33 +140,6 @@ void *dllist_get(const dllist_t *list, const size_t index)
     else return node->data;
 }
 
-
-int dllist_insert_after_node(dllist_t *list, const void *data, const size_t datasize, dnode_t *previous)
-{
-    if (list == NULL) return 99;
-
-    if (previous == NULL) {
-        return dllist_push_first(list, data, datasize);
-    }
-
-    dnode_t *node = dnode_new(data, datasize);
-    if (node == NULL) return 1;
-
-    node->next = previous->next;
-    node->previous = previous;
-
-    previous->next = node;
-    if (node->next == NULL) {
-        list->tail = node;
-    } else {
-        node->next->previous = node;
-    }
-
-    ++(list->len);
-
-    return 0;
-}
-
 int dllist_insert_before_node(dllist_t *list, const void *data, const size_t datasize, dnode_t *next)
 {
     if (list == NULL) return 99;
@@ -191,6 +164,13 @@ int dllist_insert_before_node(dllist_t *list, const void *data, const size_t dat
     ++(list->len);
 
     return 0;
+}
+
+int dllist_insert_after_node(dllist_t *list, const void *data, const size_t datasize, dnode_t *previous)
+{
+    if (previous == NULL) return dllist_push_first(list, data, datasize);
+    
+    return dllist_insert_before_node(list, data, datasize, previous->next);
 }
 
 
@@ -237,4 +217,28 @@ int dllist_remove(dllist_t *list, const size_t index)
     if (list == NULL) return 99;
     dnode_t *node = dllist_get_node(list, index);
     return dllist_remove_node(list, node);
+}
+
+
+size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *))
+{
+    if (list == NULL) return 0;
+    
+    size_t removed = 0;
+    dnode_t *node = list->head;
+
+    while (node != NULL) {
+
+        if (!filter_function(node->data)) {
+            dnode_t *next = node->next;
+            dllist_remove_node(list, node);
+            node = next;
+            ++removed;
+        } else {
+            node = node->next;
+        }
+
+    }
+
+    return removed;
 }

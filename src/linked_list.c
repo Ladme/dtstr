@@ -210,3 +210,28 @@ int llist_remove(llist_t *list, const size_t index)
 
     return llist_remove_after_node(list, previous);
 }
+
+size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *))
+{
+    if (list == NULL) return 0;
+
+    size_t removed = 0;
+    node_t *previous = NULL;
+    node_t *node = list->head;
+
+    while (node != NULL) {
+
+        if (!filter_function(node->data)) {
+            llist_remove_after_node(list, previous);
+            if (previous != NULL) node = previous->next;
+            else node = list->head;
+            ++removed;
+
+        } else {
+            previous = node;
+            node = node->next;
+        }
+    }
+
+    return removed;
+}

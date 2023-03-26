@@ -3,7 +3,16 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <time.h>
 #include "../src/vector.h"
+
+inline static void print_sizet_vec(const vec_t *vector)
+{
+    for (size_t i = 0; i < vector->len; ++i) {
+        printf("%ld ", *((size_t *) vec_get(vector, i)));
+    }
+    printf("\n");
+}
 
 static int test_vec_destroy_null(void)
 {
@@ -472,6 +481,254 @@ static int test_vec_remove_all(void)
 }
 
 
+static int test_filter_function(void *data)
+{
+    return *((size_t *) data) >= 5;
+}
+
+static int test_vec_filter_mut(void)
+{
+    printf("%-40s", "test_vec_filter_mut ");
+
+    // perform filter on non-existent vector
+    assert(vec_filter_mut(NULL, test_filter_function) == 0);
+
+    vec_t *vector = vec_new();
+
+    // perform filter on empty vector
+    assert(vec_filter_mut(vector, test_filter_function) == 0);
+
+    size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
+
+    for (size_t i = 0; i < 10; ++i) {
+        vec_push(vector, (void *) &data[i], sizeof(size_t));
+    }
+
+    //print_sizet_vec(vector);
+
+    assert(vec_filter_mut(vector, test_filter_function) == 6);
+    assert(vector->len == 4);
+    //print_sizet_vec(vector);
+
+    assert(*((size_t *) vec_get(vector, 0)) == 9);
+    assert(*((size_t *) vec_get(vector, 1)) == 5);
+    assert(*((size_t *) vec_get(vector, 2)) == 5);
+    assert(*((size_t *) vec_get(vector, 3)) == 6);
+
+    // applying the same filter again should do nothing
+    assert(vec_filter_mut(vector, test_filter_function) == 0);
+    assert(vector->len == 4);
+
+    assert(*((size_t *) vec_get(vector, 0)) == 9);
+    assert(*((size_t *) vec_get(vector, 1)) == 5);
+    assert(*((size_t *) vec_get(vector, 2)) == 5);
+    assert(*((size_t *) vec_get(vector, 3)) == 6);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_filter_function_large(void *data)
+{
+    return *((size_t *) data) >= 500;
+}
+
+static int test_vec_filter_mut_large(void)
+{
+    printf("%-40s", "test_vec_filter_mut (large) ");
+
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 100; ++i) {
+        size_t random = rand() % 1000;
+        vec_push(vector, (void *) &random, sizeof(size_t));
+    }
+
+    vec_filter_mut(vector, test_filter_function_large);
+
+    for (size_t i = 0; i < vector->len; ++i) {
+        assert(*((size_t *) vec_get(vector, i)) >= 500);
+    }
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+struct test_filter_structure {
+    int element_a;
+    char some_string[];
+};
+
+static int test_filter_function_complex(void *data)
+{
+    struct test_filter_structure *pStructure = (struct test_filter_structure *) data;
+
+    return (pStructure->element_a % 3 == 0 && strcmp(pStructure->some_string, "example1") == 0);
+}
+
+static int test_vec_filter_mut_complex(void)
+{
+    printf("%-40s", "test_vec_filter_mut (complex) ");
+
+    char *string1 = "example1";
+    char *string2 = "example2";
+
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 13; ++i) {
+
+        struct test_filter_structure *structure = malloc(sizeof(struct test_filter_structure) + 20);
+
+        structure->element_a = (int) i;
+        if (i % 2 == 0) {
+            strncpy(structure->some_string, string1, 19);
+        } else {
+            strncpy(structure->some_string, string2, 19);
+        }
+
+        vec_push(vector, (void *) structure, sizeof(struct test_filter_structure) + 20);
+
+        free(structure);
+
+    }
+
+    assert(vec_filter_mut(vector, test_filter_function_complex) == 10);
+
+    assert(vector->len == 3);
+    int expected_elements[] = {0, 6, 12};
+
+    for (size_t i = 0; i < 3; ++i) {
+        struct test_filter_structure *pStructure = (struct test_filter_structure *) vec_get(vector, i);
+
+        //printf("%d %s\n", pStructure->element_a, pStructure->some_string);
+
+        assert(pStructure->element_a == expected_elements[i] && strcmp(pStructure->some_string, string1) == 0);
+    }
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_filter(void)
+{
+    printf("%-40s", "test_vec_filter ");
+
+    // perform filter on non-existent vector
+    assert(vec_filter(NULL, test_filter_function, 1) == NULL);
+
+    vec_t *vector = vec_new();
+
+    // perform filter on empty vector
+    vec_t *empty = vec_filter(vector, test_filter_function, sizeof(size_t));
+    assert(empty);
+    assert(empty->len == 0);
+    vec_destroy(empty);
+
+    size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
+
+    for (size_t i = 0; i < 10; ++i) {
+        vec_push(vector, (void *) &data[i], sizeof(size_t));
+    }
+
+    //print_sizet_vec(vector);
+
+    vec_t *filtered1 = vec_filter(vector, test_filter_function, sizeof(size_t));
+    
+    //print_sizet_vec(vector);
+    //print_sizet_vec(filtered1);
+
+    assert(filtered1->len == 4);
+    assert(vector->len == 10);
+    
+    // check that the original vector is unchanged
+    for (size_t i = 0; i < vector->len; ++i) {
+        assert(*((size_t *) vec_get(vector, i)) == data[i]);
+    }
+
+    // check the new vector
+    assert(*((size_t *) vec_get(filtered1, 0)) == 9);
+    assert(*((size_t *) vec_get(filtered1, 1)) == 5);
+    assert(*((size_t *) vec_get(filtered1, 2)) == 5);
+    assert(*((size_t *) vec_get(filtered1, 3)) == 6);
+
+
+    // applying the filtering function again should lead to the same result as before
+    vec_t *filtered2 = vec_filter(vector, test_filter_function, sizeof(size_t));
+    assert(filtered2->len == 4);
+    assert(vector->len == 10);
+
+    // deallocate vector early to check that the values are properly copied
+    vec_destroy(vector);
+
+    // compare filtered1 and filtered2
+    assert(*((size_t *) vec_get(filtered1, 0)) == *((size_t *) vec_get(filtered2, 0)));
+    assert(*((size_t *) vec_get(filtered1, 1)) == *((size_t *) vec_get(filtered2, 1)));
+    assert(*((size_t *) vec_get(filtered1, 2)) == *((size_t *) vec_get(filtered2, 2)));
+    assert(*((size_t *) vec_get(filtered1, 3)) == *((size_t *) vec_get(filtered2, 3)));
+
+    vec_destroy(filtered1);
+    vec_destroy(filtered2);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_vec_filter_complex(void)
+{
+    printf("%-40s", "test_vec_filter (complex) ");
+
+    char *string1 = "example1";
+    char *string2 = "example2";
+
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 13; ++i) {
+
+        struct test_filter_structure *structure = malloc(sizeof(struct test_filter_structure) + 20);
+
+        structure->element_a = (int) i;
+        if (i % 2 == 0) {
+            strncpy(structure->some_string, string1, 19);
+        } else {
+            strncpy(structure->some_string, string2, 19);
+        }
+
+        vec_push(vector, (void *) structure, sizeof(struct test_filter_structure) + 20);
+
+        free(structure);
+
+    }
+
+    vec_t *filtered = vec_filter(vector, test_filter_function_complex, sizeof(struct test_filter_structure) + 20);
+
+    assert(vector->len == 13);
+    assert(filtered->len == 3);
+
+    int expected_elements[] = {0, 6, 12};
+    for (size_t i = 0; i < 3; ++i) {
+        struct test_filter_structure *pStructure = (struct test_filter_structure *) vec_get(filtered, i);
+
+        //printf("%d %s\n", pStructure->element_a, pStructure->some_string);
+
+        assert(pStructure->element_a == expected_elements[i] && strcmp(pStructure->some_string, string1) == 0);
+    }
+
+    vec_destroy(vector);
+    vec_destroy(filtered);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 
 int main(void) 
 {
@@ -495,6 +752,14 @@ int main(void)
     test_vec_pop_and_push();
     test_vec_remove();
     test_vec_remove_all();
+
+    test_vec_filter_mut();
+    srand(time(NULL));
+    test_vec_filter_mut_large();
+    test_vec_filter_mut_complex();
+
+    test_vec_filter();
+    test_vec_filter_complex();
 
     return 0;
 }

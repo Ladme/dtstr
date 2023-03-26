@@ -155,6 +155,35 @@ static void benchmark_llist_remove(size_t items)
     printf("\n");
 }
 
+static int filter_function(void *data)
+{
+    return *((size_t *) data) % 2;
+}
+
+static void benchmark_llist_filter_mut()
+{
+    printf("%s\n", "benchmark_llist_filter_mut [O(n)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 1000000;
+        llist_t *list = llist_fill(prefilled);
+
+        clock_t start = clock();
+
+        size_t removed = llist_filter_mut(list, filter_function);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, filtered out %12lu items: %f s\n", prefilled, removed, time_elapsed);
+
+        llist_destroy(list);
+    }
+    printf("\n");
+}
+
+
 int main(void)
 {
     srand(time(NULL));
@@ -164,4 +193,5 @@ int main(void)
     benchmark_llist_get(1000);
     benchmark_llist_insert(1000);
     benchmark_llist_remove(1000);
+    benchmark_llist_filter_mut();
 }

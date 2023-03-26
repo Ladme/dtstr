@@ -216,4 +216,25 @@ int llist_remove_after_node(llist_t *list, node_t *previous);
  */
 int llist_remove(llist_t *list, const size_t index);
 
+
+/*! @brief Removes all items from the list that do not fulfill a condition. Modifies the list.
+ *
+ * @paragraph Filter function
+ * 'filter_function' is a pointer to function that returns integer and accepts void pointer to data in node.
+ * The function should return >0 (true), if the item is supposed to STAY in the list.
+ * The function should return 0 (false), if the item is supposed to be REMOVED from the list.
+ * 
+ * @paragraph Invalid list
+ * If 'list' is NULL, no operation is performed.
+ * 
+ * @paragraph Asymptotic Complexity
+ * Linear, O(n).
+ * 
+ * @param list              linked list which should be filtered
+ * @param filter_function   function pointer defining filtering condition
+ * 
+ * @return The number of removed items.
+ */
+size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *));
+
 #endif /* LINKED_LIST_H */
