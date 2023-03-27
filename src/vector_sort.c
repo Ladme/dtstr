@@ -103,11 +103,11 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
 }
 
 
-int vec_sort_quick(vec_t *vector, int (*compare_function)(const void *, const void *))
+int vec_sort_quick(vec_t *vector, int (*qsort_compare_function)(const void *, const void *))
 {
     if (vector == NULL) return 99;
 
-    qsort((void *) vector->items, vector->len, sizeof(void *), compare_function);
+    qsort((void *) vector->items, vector->len, sizeof(void *), qsort_compare_function);
 
     return 0;
 }

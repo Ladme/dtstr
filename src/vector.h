@@ -272,7 +272,7 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
 /*! @brief Sorts all items in a vector using stdlib quicksort.
  
  * @paragraph Comparison function
- * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * 'qsort_compare_function' is a pointer to function that returns integer and accept two void pointers.
  * The void pointers point to two particular pieces of data that are compared.
  * 
  * If you want the vector to be sorted in ascending order, the comparison function should have the following behavior:
@@ -280,16 +280,16 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  * It should return 0, if the compared items have the same value.
  * It should returns <0, if the first of the two compared items is smaller.
  * 
- * IMPORTANT! vec_sort_quick requires slightly different compare function that the other sorting functions. 
+ * IMPORTANT! vec_sort_quick requires slightly different comparison function that the other sorting functions. 
  * See below for more details.
  * 
  * @paragraph Specifics of vec_sort_quick
  * vec_t structure contains an array of void pointers pointing to the specific items "saved" in the vector.
- * In other vec_sort_* functions, these void pointers are directly passed to the compare function to perform comparison.
- * Therefore, in the compare function, you only need to dereference them once to get to the target value.
+ * In other vec_sort_* functions, these void pointers are directly passed to the comparison function to perform comparison.
+ * Therefore, in the comparison function, you only need to dereference them once to get to the target value.
  * E.g. you do *((int *) pointer)
  * 
- * This function, however, uses qsort from the standard library which can be used to sort any array of any items.
+ * This function, however, uses qsort from the standard library which can be used to sort array of any items.
  * qsort also uses a compare function and it provides this compare function with POINTERS to the items in the array.
  * As our vec_t structure already contains an array of void pointers, when it is used with qsort, qsort
  * passes void** pointers to the compare function.
@@ -300,11 +300,11 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  * @paragraph Invalid vector
  * If 'vector' is NULL, 99 is returned.
  * 
- * @param vector             vector to sort
- * @param compare_function   function pointer defining how the items should be compared
+ * @param vector                   vector to sort
+ * @param qsort_compare_function   function pointer defining how the items should be compared
  * 
  * @return 0 if successfully sorted. Else non-zero.
  */
-int vec_sort_quick(vec_t *vector, int (*compare_function)(const void *, const void *));
+int vec_sort_quick(vec_t *vector, int (*qsort_compare_function)(const void *, const void *));
 
 #endif /* VECTOR_H */
