@@ -38,6 +38,14 @@ static int vec_reallocate(vec_t **vector)
     return 0;
 }
 
+/*! @brief Swaps two items in a vector. */
+static void vec_swap(vec_t *vector, const size_t i, const size_t j)
+{
+    void *tmp = vector->items[i];
+    vector->items[i] = vector->items[j];
+    vector->items[j] = tmp;
+}
+
 /* *************************************************************************** */
 /*                 PUBLIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
 /* *************************************************************************** */
@@ -154,7 +162,7 @@ size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *))
 
     for (size_t i = 0; i < vector->len; ++i) {
 
-        if (!filter_function(vec_get(vector, i))) {
+        if (!filter_function(vector->items[i])) {
             free(vec_remove(vector, i));
             --i;
             ++removed;
@@ -173,7 +181,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 
     for (size_t i = 0; i < vector->len; ++i) {
 
-        void *item = vec_get(vector, i);
+        void *item = vector->items[i];
 
         if (filter_function(item)) {
             vec_push(filtered, item, itemsize);
@@ -190,9 +198,61 @@ long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *
     
     for (size_t i = 0; i < vector->len; ++i) {
 
-        void *item = vec_get(vector, i);
+        void *item = vector->items[i];
         if (equal_function(item, target)) return (long) i;
     }
 
     return -1;
 }
+
+
+int vec_sort_selection(vec_t *vector, int (*compare_function)(void *, void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    size_t min_index = 0;
+    
+    for (size_t i = 0; i < vector->len - 1; ++i) {
+        min_index = i;
+        for (size_t j = i + 1; j < vector->len; ++j) {
+            if (compare_function(vector->items[min_index], vector->items[j]) > 0) {
+                min_index = j;
+            }
+        }
+
+        vec_swap(vector, i, min_index);
+    }
+
+    return 0;
+}
+
+
+int vec_sort_bubble(vec_t *vector, int (*compare_function)(void *, void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+        for (size_t j = 0; j < vector->len - i - 1; ++j) {
+            if (compare_function(vector->items[j], vector->items[j + 1]) > 0) {
+                vec_swap(vector, j, j + 1);
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+/*int vec_sort_quick(vec_t *vector, int (*compare_function)(void *, void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    void *pivot = vector->items[0];
+
+
+
+
+}*/

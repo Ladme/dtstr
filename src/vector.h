@@ -203,4 +203,63 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *target);
 
 
+/*! @brief Sorts all items in a vector using selection sort.
+ 
+ * @paragraph Comparison function
+ * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * If you want the vector to be sorted in increasing order, the comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should returns <0, if the first of the two compared items is smaller.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, 99 is returned.
+ * 
+ * @paragraph Properties of selection sort
+ * Time complexity:
+ * > worst: O(n^2)
+ * > average: O(n^2)
+ * > best: O(n^2)
+ * Space complexity: O(1)
+ * Stable: NO
+ * 
+ * @param vector             vector to sort
+ * @param compare_function   function pointer defining how the items should be compared
+ * 
+ * @return 0 if successfully sorted. Else non-zero.
+ */
+int vec_sort_selection(vec_t *vector, int (*compare_function)(void *, void *));
+
+
+/*! @brief Sorts all items in a vector using bubble sort.
+ 
+ * @paragraph Comparison function
+ * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * If you want the vector to be sorted in increasing order, the comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should returns <0, if the first of the two compared items is smaller.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, 99 is returned.
+ * 
+ * @paragraph Properties of bubble sort
+ * Time complexity:
+ * > worst: O(n^2)
+ * > average: O(n^2)
+ * > best: O(n)
+ * Space complexity: O(1)
+ * Stable: YES
+ * 
+ * @param vector             vector to sort
+ * @param compare_function   function pointer defining how the items should be compared
+ * 
+ * @return 0 if successfully sorted. Else non-zero.
+ */
+int vec_sort_bubble(vec_t *vector, int (*compare_function)(void *, void *));
+
 #endif /* VECTOR_H */
