@@ -184,14 +184,14 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 }
 
 
-long vec_find(const vec_t *vector, int (*compare_function)(void *, void *), void *target)
+long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *target)
 {
     if (vector == NULL) return -99;
     
     for (size_t i = 0; i < vector->len; ++i) {
 
         void *item = vec_get(vector, i);
-        if (compare_function(item, target)) return (long) i;
+        if (equal_function(item, target)) return (long) i;
     }
 
     return -1;

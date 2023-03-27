@@ -174,13 +174,13 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 
 /*! @brief Searches for item in vector and returns its index.
  
- * @paragraph Comparison function
- * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * @paragraph Equality function
+ * 'equal_function' is a pointer to function that returns integer and accept two void pointers.
  * One void pointer corresponds to pointer to data at particular index. The other void pointer is pointer to
  * data which is being searched for in the vector.
  * 
- * The comparison function should return >0 (true), if the two compared items match each other.
- * The comparison function should return 0 (false), if the two compared items DO NOT match each other.
+ * The equality function should return >0 (true), if the two compared items match each other.
+ * The equality function should return 0 (false), if the two compared items DO NOT match each other.
  * 
  * @paragraph Invalid vector
  * If 'vector' is NULL, -99 is returned.
@@ -195,12 +195,12 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
  * Linear, O(n).
  * 
  * @param vector            vector to search in
- * @param compare_function  function pointer defining how the items should be compared
+ * @param equal_function    function pointer defining how the items should be compared
  * @param target            pointer to data that is searched in the vector
  * 
  * @return Index of the first matching item. Negative value, if unsuccessful.
  */
-long vec_find(const vec_t *vector, int (*compare_function)(void *, void *), void *target);
+long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *target);
 
 
 #endif /* VECTOR_H */

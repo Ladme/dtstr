@@ -240,13 +240,13 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *));
 
 /*! @brief Searches for data in linked list and returns pointer to node containing this data.
  
- * @paragraph Comparison function
- * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * @paragraph Equality function
+ * 'equal_function' is a pointer to function that returns integer and accept two void pointers.
  * One void pointer corresponds to pointer to value in particular node. The other void pointer is pointer to
  * value which is being searched for in the linked list.
  * 
- * The comparison function should return >0 (true), if the two compared values match each other.
- * The comparison function should return 0 (false), if the two compared values DO NOT match each other.
+ * The equality function should return >0 (true), if the two compared values match each other.
+ * The equality function should return 0 (false), if the two compared values DO NOT match each other.
  * 
  * @paragraph Invalid list
  * If 'list' is NULL, NULL is returned.
@@ -261,11 +261,11 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *));
  * Linear, O(n).
  * 
  * @param list              list to search in
- * @param compare_function  function pointer defining how the items should be compared
+ * @param equal_function    function pointer defining how the items should be compared
  * @param target            pointer to data that is searched in the list
  * 
  * @return Pointer to the first node containing the same data as target. NULL, if unsuccessful.
  */
-node_t *llist_find(const llist_t *list, int (*compare_function)(void *, void *), void *target);
+node_t *llist_find(const llist_t *list, int (*equal_function)(void *, void *), void *target);
 
 #endif /* LINKED_LIST_H */

@@ -244,13 +244,13 @@ size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *))
 }
 
 
-dnode_t *dllist_find(const dllist_t *list, int (*compare_function)(void *, void *), void *target)
+dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(void *, void *), void *target)
 {
     if (list == NULL) return NULL;
 
     dnode_t *node = list->head;
     while (node != NULL) {
-        if (compare_function(node->data, target)) return node;
+        if (equal_function(node->data, target)) return node;
         node = node->next;
     }
 
