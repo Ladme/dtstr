@@ -107,7 +107,7 @@ int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const siz
 void *vec_pop(vec_t *vector);
 
 
-/*! @brief Removes the element located at target index.
+/*! @brief Removes the element located at target index and returns it.
  * 
  * @paragraph Note on memory deallocation
  * The caller is responsible for deallocating memory for the removed item.
