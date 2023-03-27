@@ -171,7 +171,7 @@ static void benchmark_vec_remove(size_t items)
 }
 
 
-static int filter_function(void *data)
+static int filter_function(const void *data)
 {
     return *((int *) data) % 2;
 }
@@ -225,9 +225,9 @@ static void benchmark_vec_filter()
 }
 
 
-static int compare_function(void *first, void *second)
+static int compare_function(const void *first, const void *second)
 {
-    return *((int *) first) - *((size_t *) second);
+    return *((int *) first) - *((int *) second);
 }
 
 static void benchmark_vec_sort_selection()
@@ -284,7 +284,7 @@ static void benchmark_vec_sort_bubble_sorted()
 
     for (size_t i = 1; i <= 10; ++i) {
 
-        size_t prefilled = i * 5000;
+        size_t prefilled = i * 100000;
         vec_t *vector = vec_fill_sorted(prefilled);
 
         clock_t start = clock();
@@ -302,6 +302,60 @@ static void benchmark_vec_sort_bubble_sorted()
     printf("\n");
 }
 
+static void benchmark_vec_sort_quicknaive()
+{
+    printf("%s\n", "benchmark_vec_sort_quicknaive [O(n^2)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        vec_t *vector = vec_fill(prefilled);
+
+        clock_t start = clock();
+
+        vec_sort_quicknaive(vector, compare_function);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
+static int compare_function_qsort(const void *first, const void *second)
+{
+    return **((int **) first) - **((int **) second);
+}
+
+static void benchmark_vec_sort_quick()
+{
+    printf("%s\n", "benchmark_vec_sort_quick [O(n^2)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        vec_t *vector = vec_fill(prefilled);
+
+        clock_t start = clock();
+
+        vec_sort_quick(vector, compare_function_qsort);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
+
 
 int main(void)
 {
@@ -313,9 +367,11 @@ int main(void)
     benchmark_vec_filter_mut();
     benchmark_vec_filter();*/
 
-    benchmark_vec_sort_selection();
-    benchmark_vec_sort_bubble();
+    //benchmark_vec_sort_selection();
+    //benchmark_vec_sort_bubble();
     benchmark_vec_sort_bubble_sorted();
+    benchmark_vec_sort_quicknaive();
+    benchmark_vec_sort_quick();
 
     return 0;
 

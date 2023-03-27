@@ -481,7 +481,7 @@ static int test_vec_remove_all(void)
 }
 
 
-static int test_filter_function(void *data)
+static int test_filter_function(const void *data)
 {
     return *((size_t *) data) >= 5;
 }
@@ -530,7 +530,7 @@ static int test_vec_filter_mut(void)
     return 0;
 }
 
-static int test_filter_function_large(void *data)
+static int test_filter_function_large(const void *data)
 {
     return *((size_t *) data) >= 500;
 }
@@ -564,7 +564,7 @@ struct test_filter_structure {
     char some_string[];
 };
 
-static int test_filter_function_complex(void *data)
+static int test_filter_function_complex(const void *data)
 {
     struct test_filter_structure *pStructure = (struct test_filter_structure *) data;
 
@@ -729,7 +729,7 @@ static int test_vec_filter_complex(void)
 }
 
 
-static int test_equality_function(void *data, void *target)
+static int test_equality_function(const void *data, const void *target)
 {
     return *((size_t *) data) == *((size_t *) target);
 }
@@ -772,12 +772,12 @@ static int test_vec_find(void)
 }
 
 
-static int test_comparison_function(void *first, void *second)
+static int test_comparison_function(const void *first, const void *second)
 {
     return ((int) *((size_t *) first)) - ((int) *((size_t *) second));
 }
 
-static int test_comparison_function_reverse(void *first, void *second)
+static int test_comparison_function_reverse(const void *first, const void *second)
 {
     return ((int) *((size_t *) second)) - ((int) *((size_t *) first));
 }
@@ -961,6 +961,195 @@ static int test_vec_sort_bubble(void)
 }
 
 
+static int test_vec_sort_quicknaive(void)
+{
+    printf("%-40s", "test_vec_sort_quicknaive ");
+
+    // sort non-existent vector
+    assert(vec_sort_quicknaive(NULL, test_comparison_function) == 99);
+    
+    // vector #1
+    size_t data1[] = {0, 7, 3, 2, 9, 5, 6, 1, 8, 4};
+    vec_t *vector1 = vec_new();
+
+    // sort empty vector
+    assert(vec_sort_quicknaive(vector1, test_comparison_function) == 0);
+
+    for (size_t i = 0; i < 10; ++i) vec_push(vector1, (void *) &data1[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector1, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector1, i)) == i);
+
+    vec_destroy(vector1);
+
+    // vector #2
+    size_t data2[] = {8, 2, 9, 4, 5, 3, 7, 6, 1, 0};
+    vec_t *vector2 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector2, (void *) &data2[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector2, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector2, i)) == i);
+
+    vec_destroy(vector2);
+    
+    // vector #3
+    size_t data3[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector3 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector3, (void *) &data3[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector3, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    // sorting sorted list
+    assert(vec_sort_quicknaive(vector3, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    vec_destroy(vector3);
+
+    // vector #4
+    size_t data4[] = {3, 5, 3, 1, 3, 7, 2, 6, 6, 4};
+    vec_t *vector4 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector4, (void *) &data4[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector4, test_comparison_function) == 0);
+    assert(*((size_t *) vec_get(vector4, 0)) == 1);
+    assert(*((size_t *) vec_get(vector4, 1)) == 2);
+    assert(*((size_t *) vec_get(vector4, 2)) == 3);
+    assert(*((size_t *) vec_get(vector4, 3)) == 3);
+    assert(*((size_t *) vec_get(vector4, 4)) == 3);
+    assert(*((size_t *) vec_get(vector4, 5)) == 4);
+    assert(*((size_t *) vec_get(vector4, 6)) == 5);
+    assert(*((size_t *) vec_get(vector4, 7)) == 6);
+    assert(*((size_t *) vec_get(vector4, 8)) == 6);
+    assert(*((size_t *) vec_get(vector4, 9)) == 7);
+
+    vec_destroy(vector4);
+
+    // vector #5
+    size_t data5[] = {5, 5, 5, 5, 5};
+    vec_t *vector5 = vec_new();
+    for (size_t i = 0; i < 5; ++i) vec_push(vector5, (void *) &data5[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector5, test_comparison_function) == 0);
+    for (size_t i = 0; i < 5; ++i) assert(*((size_t *) vec_get(vector5, i)) == 5);
+
+    vec_destroy(vector5);
+
+    // vector #6
+    // reverse sort
+    size_t data6[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector6 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector6, (void *) &data6[i], sizeof(size_t));
+
+    assert(vec_sort_quicknaive(vector6, test_comparison_function_reverse) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector6, i)) == (9 - i));
+
+    vec_destroy(vector6);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_comparison_function_qsort(const void *first, const void *second)
+{
+    return ((int) **((size_t **) first)) - ((int) **((size_t **) second));
+}
+
+static int test_comparison_function_qsort_reverse(const void *first, const void *second)
+{
+    return ((int) **((size_t **) second)) - ((int) **((size_t **) first));
+}
+
+static int test_vec_sort_quick(void)
+{
+    printf("%-40s", "test_vec_sort_quick ");
+
+    // sort non-existent vector
+    assert(vec_sort_quick(NULL, test_comparison_function_qsort) == 99);
+    
+    // vector #1
+    size_t data1[] = {0, 7, 3, 2, 9, 5, 6, 1, 8, 4};
+    vec_t *vector1 = vec_new();
+
+    // sort empty vector
+    assert(vec_sort_quick(vector1, test_comparison_function_qsort) == 0);
+
+    for (size_t i = 0; i < 10; ++i) vec_push(vector1, (void *) &data1[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector1, test_comparison_function_qsort) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector1, i)) == i);
+
+    vec_destroy(vector1);
+
+    // vector #2
+    size_t data2[] = {8, 2, 9, 4, 5, 3, 7, 6, 1, 0};
+    vec_t *vector2 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector2, (void *) &data2[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector2, test_comparison_function_qsort) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector2, i)) == i);
+
+    vec_destroy(vector2);
+    
+    // vector #3
+    size_t data3[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector3 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector3, (void *) &data3[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector3, test_comparison_function_qsort) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    // sorting sorted list
+    assert(vec_sort_quick(vector3, test_comparison_function_qsort) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    vec_destroy(vector3);
+
+    // vector #4
+    size_t data4[] = {3, 5, 3, 1, 3, 7, 2, 6, 6, 4};
+    vec_t *vector4 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector4, (void *) &data4[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector4, test_comparison_function_qsort) == 0);
+    assert(*((size_t *) vec_get(vector4, 0)) == 1);
+    assert(*((size_t *) vec_get(vector4, 1)) == 2);
+    assert(*((size_t *) vec_get(vector4, 2)) == 3);
+    assert(*((size_t *) vec_get(vector4, 3)) == 3);
+    assert(*((size_t *) vec_get(vector4, 4)) == 3);
+    assert(*((size_t *) vec_get(vector4, 5)) == 4);
+    assert(*((size_t *) vec_get(vector4, 6)) == 5);
+    assert(*((size_t *) vec_get(vector4, 7)) == 6);
+    assert(*((size_t *) vec_get(vector4, 8)) == 6);
+    assert(*((size_t *) vec_get(vector4, 9)) == 7);
+
+    vec_destroy(vector4);
+
+    // vector #5
+    size_t data5[] = {5, 5, 5, 5, 5};
+    vec_t *vector5 = vec_new();
+    for (size_t i = 0; i < 5; ++i) vec_push(vector5, (void *) &data5[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector5, test_comparison_function_qsort) == 0);
+    for (size_t i = 0; i < 5; ++i) assert(*((size_t *) vec_get(vector5, i)) == 5);
+
+    vec_destroy(vector5);
+
+    // vector #6
+    // reverse sort
+    size_t data6[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector6 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector6, (void *) &data6[i], sizeof(size_t));
+
+    assert(vec_sort_quick(vector6, test_comparison_function_qsort_reverse) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector6, i)) == (9 - i));
+
+    vec_destroy(vector6);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
     test_vec_destroy_null();
@@ -996,6 +1185,8 @@ int main(void)
 
     test_vec_sort_selection();
     test_vec_sort_bubble();
+    test_vec_sort_quicknaive();
+    test_vec_sort_quick();
 
     return 0;
 }

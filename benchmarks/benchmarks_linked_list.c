@@ -155,7 +155,7 @@ static void benchmark_llist_remove(size_t items)
     printf("\n");
 }
 
-static int filter_function(void *data)
+static int filter_function(const void *data)
 {
     return *((size_t *) data) % 2;
 }

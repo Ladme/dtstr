@@ -651,7 +651,7 @@ static int test_cllist_remove(void)
     return 0;
 }
 
-static int test_filter_function(void *data)
+static int test_filter_function(const void *data)
 {
     return *((size_t *) data) >= 5;
 }
@@ -701,7 +701,7 @@ static int test_cllist_filter_mut(void)
     return 0;
 }
 
-static int test_comparison_function(void *data, void *target)
+static int test_comparison_function(const void *data, const void *target)
 {
     return *((size_t *) data) == *((size_t *) target);
 }

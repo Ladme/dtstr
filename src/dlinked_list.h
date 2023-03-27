@@ -211,7 +211,7 @@ int dllist_remove(dllist_t *list, const size_t index);
  * 
  * @return The number of removed items.
  */
-size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *));
+size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(const void *));
 
 
 /*! @brief Searches for data in doubly linked list and returns pointer to node containing this data.
@@ -242,6 +242,6 @@ size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *));
  * 
  * @return Pointer to the first node containing the same data as target. NULL, if unsuccessful.
  */
-dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(void *, void *), void *target);
+dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
 #endif /* DLINKED_LIST_H */

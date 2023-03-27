@@ -248,7 +248,7 @@ int cllist_remove(cllist_t *list, const size_t index);
  * 
  * @return The number of removed items.
  */
-size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *));
+size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(const void *));
 
 
 /*! @brief Searches for data in circular doubly linked list and returns pointer to node containing this data.
@@ -280,6 +280,6 @@ size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *));
  * 
  * @return Pointer to the first node containing the same data as target. NULL, if unsuccessful.
  */
-cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(void *, void *), void *target);
+cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
 #endif /* CLINKED_LIST_H */

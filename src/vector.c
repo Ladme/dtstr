@@ -38,14 +38,6 @@ static int vec_reallocate(vec_t **vector)
     return 0;
 }
 
-/*! @brief Swaps two items in a vector. */
-static void vec_swap(vec_t *vector, const size_t i, const size_t j)
-{
-    void *tmp = vector->items[i];
-    vector->items[i] = vector->items[j];
-    vector->items[j] = tmp;
-}
-
 /* *************************************************************************** */
 /*                 PUBLIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
 /* *************************************************************************** */
@@ -155,7 +147,7 @@ void *vec_remove(vec_t *vector, const size_t index)
 }
 
 
-size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *))
+size_t vec_filter_mut(vec_t *vector, int (*filter_function)(const void *))
 {
     size_t removed = 0;
     if (vector == NULL) return 0;
@@ -174,7 +166,7 @@ size_t vec_filter_mut(vec_t *vector, int (*filter_function)(void *))
 }
 
 
-vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const size_t itemsize)
+vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), const size_t itemsize)
 {
     if (vector == NULL) return NULL;
     vec_t *filtered = vec_new();
@@ -192,7 +184,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(void *), const siz
 }
 
 
-long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *target)
+long vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target)
 {
     if (vector == NULL) return -99;
     
@@ -204,55 +196,3 @@ long vec_find(const vec_t *vector, int (*equal_function)(void *, void *), void *
 
     return -1;
 }
-
-
-int vec_sort_selection(vec_t *vector, int (*compare_function)(void *, void *))
-{
-    if (vector == NULL) return 99;
-    if (vector->len <= 1) return 0;
-
-    size_t min_index = 0;
-    
-    for (size_t i = 0; i < vector->len - 1; ++i) {
-        min_index = i;
-        for (size_t j = i + 1; j < vector->len; ++j) {
-            if (compare_function(vector->items[min_index], vector->items[j]) > 0) {
-                min_index = j;
-            }
-        }
-
-        vec_swap(vector, i, min_index);
-    }
-
-    return 0;
-}
-
-
-int vec_sort_bubble(vec_t *vector, int (*compare_function)(void *, void *))
-{
-    if (vector == NULL) return 99;
-    if (vector->len <= 1) return 0;
-
-    for (size_t i = 0; i < vector->len; ++i) {
-        for (size_t j = 0; j < vector->len - i - 1; ++j) {
-            if (compare_function(vector->items[j], vector->items[j + 1]) > 0) {
-                vec_swap(vector, j, j + 1);
-            }
-        }
-    }
-
-    return 0;
-}
-
-
-/*int vec_sort_quick(vec_t *vector, int (*compare_function)(void *, void *))
-{
-    if (vector == NULL) return 99;
-    if (vector->len <= 1) return 0;
-
-    void *pivot = vector->items[0];
-
-
-
-
-}*/

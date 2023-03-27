@@ -1,8 +1,12 @@
-structures: src/vector.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
-	ar -rcs libdtstr.a src/vector.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
+structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
+	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
 	
 vector: src/vector.c src/vector.h
 	gcc -c src/vector.c -std=c99 -pedantic -Wall -O2 -o src/vector.o
+	make vector_sort
+
+vector_sort: src/vector_sort.c src/vector.h
+	gcc -c src/vector_sort.c -std=c99 -pedantic -Wall -O2 -o src/vector_sort.o
 
 linked_list: src/linked_list.c src/linked_list.h
 	gcc -c src/linked_list.c -std=c99 -pedantic -Wall -O2 -o src/linked_list.o

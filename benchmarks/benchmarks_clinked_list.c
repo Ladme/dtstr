@@ -185,7 +185,7 @@ static void benchmark_cllist_rotate(size_t repeats)
     printf("\n");
 }
 
-static int filter_function(void *data)
+static int filter_function(const void *data)
 {
     return *((size_t *) data) % 2;
 }

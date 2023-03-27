@@ -220,7 +220,7 @@ int dllist_remove(dllist_t *list, const size_t index)
 }
 
 
-size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *))
+size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(const void *))
 {
     if (list == NULL) return 0;
     
@@ -244,7 +244,7 @@ size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(void *))
 }
 
 
-dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(void *, void *), void *target)
+dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(const void *, const void *), const void *target)
 {
     if (list == NULL) return NULL;
 

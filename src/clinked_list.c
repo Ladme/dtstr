@@ -224,7 +224,7 @@ int cllist_remove(cllist_t *list, const size_t index)
 }
 
 
-size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *))
+size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(const void *))
 {
     if (list == NULL) return 0;
     
@@ -249,7 +249,7 @@ size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(void *))
 }
 
 
-cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(void *, void *), void *target)
+cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(const void *, const void *), const void *target)
 {
     if (list == NULL) return NULL;
 

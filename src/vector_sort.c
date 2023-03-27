@@ -1,0 +1,113 @@
+// Released under MIT License.
+// Copyright (c) 2023 Ladislav Bartos
+
+#include "vector.h"
+
+/* *************************************************************************** */
+/*                    PRIVATE FUNCTIONS FOR VEC_T SORTING                      */
+/* *************************************************************************** */
+
+/*! @brief Swaps two items in a vector. */
+static void vec_swap(vec_t *vector, const size_t i, const size_t j)
+{
+    void *tmp = vector->items[i];
+    vector->items[i] = vector->items[j];
+    vector->items[j] = tmp;
+}
+
+/*! @brief Partitioning algorithm for quicksort. */
+static size_t partition(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
+{
+    const void *pivot = vector->items[last];
+    size_t i = first;
+
+    for (size_t j = first; j < last; ++j) {
+
+        if (compare_function(pivot, vector->items[j]) > 0) {
+            if (i != j) vec_swap(vector, i, j);
+            ++i;
+        }
+    }
+
+    if (i != last) vec_swap(vector, i, last);
+    return i;
+}
+
+/*! @brief Actual implementation of quicksort. */
+static void quicksort(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
+{
+    if (first >= last || first < 0 || last > vector->len) return;
+
+    size_t pindex = partition(vector, first, last, compare_function);
+
+    quicksort(vector, first, pindex - 1, compare_function);
+    quicksort(vector, pindex + 1, last, compare_function);
+}
+
+/* *************************************************************************** */
+/*                     PUBLIC FUNCTIONS FOR VEC_T SORTING                      */
+/* *************************************************************************** */
+
+int vec_sort_selection(vec_t *vector, int (*compare_function)(const void *, const void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    size_t min_index = 0;
+    
+    for (size_t i = 0; i < vector->len - 1; ++i) {
+        min_index = i;
+        for (size_t j = i + 1; j < vector->len; ++j) {
+            if (compare_function(vector->items[min_index], vector->items[j]) > 0) {
+                min_index = j;
+            }
+        }
+
+        vec_swap(vector, i, min_index);
+    }
+
+    return 0;
+}
+
+
+int vec_sort_bubble(vec_t *vector, int (*compare_function)(const void *, const void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+
+        int swapped = 0;
+        for (size_t j = 0; j < vector->len - i - 1; ++j) {
+            if (compare_function(vector->items[j], vector->items[j + 1]) > 0) {
+                vec_swap(vector, j, j + 1);
+                swapped = 1;
+            }
+        }
+
+        if (!swapped) return 0;
+    }
+
+    return 0;
+}
+
+
+int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, const void *))
+{
+    if (vector == NULL) return 99;
+    if (vector->len <= 1) return 0;
+
+    quicksort(vector, 0, vector->len - 1, compare_function);
+
+    return 0;
+}
+
+
+int vec_sort_quick(vec_t *vector, int (*compare_function)(const void *, const void *))
+{
+    if (vector == NULL) return 99;
+
+    qsort((void *) vector->items, vector->len, sizeof(void *), compare_function);
+
+    return 0;
+}

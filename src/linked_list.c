@@ -211,7 +211,7 @@ int llist_remove(llist_t *list, const size_t index)
     return llist_remove_after_node(list, previous);
 }
 
-size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *))
+size_t llist_filter_mut(llist_t *list, int (*filter_function)(const void *))
 {
     if (list == NULL) return 0;
 
@@ -236,7 +236,7 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *))
     return removed;
 }
 
-node_t *llist_find(const llist_t *list, int (*equal_function)(void *, void *), void *target)
+node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, const void *), const void *target)
 {
     if (list == NULL) return NULL;
 

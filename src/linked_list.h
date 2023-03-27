@@ -235,7 +235,7 @@ int llist_remove(llist_t *list, const size_t index);
  * 
  * @return The number of removed items.
  */
-size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *));
+size_t llist_filter_mut(llist_t *list, int (*filter_function)(const void *));
 
 
 /*! @brief Searches for data in linked list and returns pointer to node containing this data.
@@ -266,6 +266,6 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(void *));
  * 
  * @return Pointer to the first node containing the same data as target. NULL, if unsuccessful.
  */
-node_t *llist_find(const llist_t *list, int (*equal_function)(void *, void *), void *target);
+node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
 #endif /* LINKED_LIST_H */

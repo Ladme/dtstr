@@ -573,7 +573,7 @@ static int test_llist_remove(void)
 }
 
 
-static int test_filter_function(void *data)
+static int test_filter_function(const void *data)
 {
     return *((size_t *) data) >= 5;
 }
@@ -623,7 +623,7 @@ static int test_llist_filter_mut(void)
     return 0;
 }
 
-static int test_filter_function_large(void *data)
+static int test_filter_function_large(const void *data)
 {
     return *((size_t *) data) >= 500;
 }
@@ -656,7 +656,7 @@ struct test_filter_structure {
     char some_string[];
 };
 
-static int test_filter_function_complex(void *data)
+static int test_filter_function_complex(const void *data)
 {
     struct test_filter_structure *pStructure = (struct test_filter_structure *) data;
 
@@ -708,7 +708,7 @@ static int test_llist_filter_mut_complex(void)
     return 0;
 }
 
-static int test_comparison_function(void *data, void *target)
+static int test_comparison_function(const void *data, const void *target)
 {
     return *((size_t *) data) == *((size_t *) target);
 }
