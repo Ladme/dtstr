@@ -961,6 +961,96 @@ static int test_vec_sort_bubble(void)
 }
 
 
+static int test_vec_sort_insertion(void)
+{
+    printf("%-40s", "test_vec_sort_insertion ");
+
+    // sort non-existent vector
+    assert(vec_sort_insertion(NULL, test_comparison_function) == 99);
+    
+    // vector #1
+    size_t data1[] = {0, 7, 3, 2, 9, 5, 6, 1, 8, 4};
+    vec_t *vector1 = vec_new();
+
+    // sort empty vector
+    assert(vec_sort_insertion(vector1, test_comparison_function) == 0);
+
+    for (size_t i = 0; i < 10; ++i) vec_push(vector1, (void *) &data1[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector1, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector1, i)) == i);
+
+    vec_destroy(vector1);
+
+    // vector #2
+    size_t data2[] = {8, 2, 9, 4, 5, 3, 7, 6, 1, 0};
+    vec_t *vector2 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector2, (void *) &data2[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector2, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector2, i)) == i);
+
+    vec_destroy(vector2);
+    
+    // vector #3
+    size_t data3[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector3 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector3, (void *) &data3[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector3, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    // sorting sorted list
+    assert(vec_sort_insertion(vector3, test_comparison_function) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector3, i)) == i);
+
+    vec_destroy(vector3);
+
+    // vector #4
+    size_t data4[] = {3, 5, 3, 1, 3, 7, 2, 6, 6, 4};
+    vec_t *vector4 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector4, (void *) &data4[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector4, test_comparison_function) == 0);
+    assert(*((size_t *) vec_get(vector4, 0)) == 1);
+    assert(*((size_t *) vec_get(vector4, 1)) == 2);
+    assert(*((size_t *) vec_get(vector4, 2)) == 3);
+    assert(*((size_t *) vec_get(vector4, 3)) == 3);
+    assert(*((size_t *) vec_get(vector4, 4)) == 3);
+    assert(*((size_t *) vec_get(vector4, 5)) == 4);
+    assert(*((size_t *) vec_get(vector4, 6)) == 5);
+    assert(*((size_t *) vec_get(vector4, 7)) == 6);
+    assert(*((size_t *) vec_get(vector4, 8)) == 6);
+    assert(*((size_t *) vec_get(vector4, 9)) == 7);
+
+    vec_destroy(vector4);
+
+    // vector #5
+    size_t data5[] = {5, 5, 5, 5, 5};
+    vec_t *vector5 = vec_new();
+    for (size_t i = 0; i < 5; ++i) vec_push(vector5, (void *) &data5[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector5, test_comparison_function) == 0);
+    for (size_t i = 0; i < 5; ++i) assert(*((size_t *) vec_get(vector5, i)) == 5);
+
+    vec_destroy(vector5);
+
+    // vector #6
+    // reverse sort
+    size_t data6[] = {5, 1, 3, 2, 9, 7, 4, 6, 0, 8};
+    vec_t *vector6 = vec_new();
+    for (size_t i = 0; i < 10; ++i) vec_push(vector6, (void *) &data6[i], sizeof(size_t));
+
+    assert(vec_sort_insertion(vector6, test_comparison_function_reverse) == 0);
+    for (size_t i = 0; i < 10; ++i) assert(*((size_t *) vec_get(vector6, i)) == (9 - i));
+
+    vec_destroy(vector6);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 static int test_vec_sort_quicknaive(void)
 {
     printf("%-40s", "test_vec_sort_quicknaive ");
@@ -1185,6 +1275,7 @@ int main(void)
 
     test_vec_sort_selection();
     test_vec_sort_bubble();
+    test_vec_sort_insertion();
     test_vec_sort_quicknaive();
     test_vec_sort_quick();
 

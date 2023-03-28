@@ -18,11 +18,15 @@ static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 /*! @brief Partitioning algorithm for quicksort. */
 static size_t partition(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
 {
-    const void *pivot = vector->items[last];
+    // we select pivot in the middle of the array to avoid worst case complexity on sorted data
+    size_t pivot_index = (first + last) / 2;  
+    const void *pivot = vector->items[pivot_index];
     size_t i = first;
 
-    for (size_t j = first; j < last; ++j) {
+    // swap the pivot with the last item, so it does not disrupt sorting
+    vec_swap(vector, pivot_index, last);
 
+    for (size_t j = first; j < last; ++j) {
         if (compare_function(pivot, vector->items[j]) > 0) {
             if (i != j) vec_swap(vector, i, j);
             ++i;
@@ -43,6 +47,7 @@ static void quicksort(vec_t *vector, const size_t first, const size_t last, int 
     quicksort(vector, first, pindex - 1, compare_function);
     quicksort(vector, pindex + 1, last, compare_function);
 }
+
 
 /* *************************************************************************** */
 /*                     PUBLIC FUNCTIONS FOR VEC_T SORTING                      */
@@ -91,6 +96,20 @@ int vec_sort_bubble(vec_t *vector, int (*compare_function)(const void *, const v
     return 0;
 }
 
+int vec_sort_insertion(vec_t *vector, int (*compare_function)(const void *, const void *))
+{
+    if (vector == NULL) return 99;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+        size_t j = i;
+        while (j > 0 && compare_function(vector->items[j - 1], vector->items[j]) > 0) {
+            vec_swap(vector, j, j - 1);
+            --j;
+        }
+    }
+
+    return 0;
+}
 
 int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, const void *))
 {

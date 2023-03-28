@@ -247,7 +247,29 @@ int vec_sort_selection(vec_t *vector, int (*compare_function)(const void *, cons
 int vec_sort_bubble(vec_t *vector, int (*compare_function)(const void *, const void *));
 
 
-/*! @brief Sorts all items in a vector using naivly implemented quicksort. If you want performance, use vec_sort_quick.
+/*! @brief Sorts all items in a vector using insertion sort.
+ 
+ * @paragraph Comparison function
+ * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * If you want the vector to be sorted in ascending order, the comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should returns <0, if the first of the two compared items is smaller.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, 99 is returned.
+ * 
+ * @param vector             vector to sort
+ * @param compare_function   function pointer defining how the items should be compared
+ * 
+ * @return 0 if successfully sorted. Else non-zero.
+ */
+int vec_sort_insertion(vec_t *vector, int (*compare_function)(const void *, const void *));
+
+
+/*! @brief Sorts all items in a vector using naively implemented quicksort. If you want performance, use vec_sort_quick.
  
  * @paragraph Comparison function
  * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
