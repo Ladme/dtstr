@@ -173,7 +173,12 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
 
 
 /*! @brief Searches for item in vector and returns its index.
- 
+ *
+ * @paragraph Performance
+ * This function is slow. If you plan to perform multiple searches in the same vector, it might be
+ * better to first sort the array using quicksort (vec_sort_quick or vec_sort_quicknaive) and then search it 
+ * using binary search (vec_find_bsearch).
+ * 
  * @paragraph Equality function
  * 'equal_function' is a pointer to function that returns integer and accept two void pointers.
  * One void pointer corresponds to pointer to data at particular index. The other void pointer is pointer to
@@ -189,7 +194,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  * If no corresponding item has been found, -1 is returned.
  * 
  * @paragraph Multiple identical items in vector
- * The function always returns the index of the first matching item in the vector.
+ * The function always returns the index of the first matching item in the vector (with the lowest index).
  * 
  * @paragraph Asymptotic Complexity
  * Linear, O(n).
@@ -201,6 +206,38 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  * @return Index of the first matching item. Negative value, if unsuccessful.
  */
 long vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
+
+
+/*! @brief Searches for item in vector that is SORTED in ASCENDING order and returns its index. Uses binary search.
+ * 
+ * @paragraph Comparison function
+ * 'compare_function' is a pointer to function that returns integer and accept two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * The comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should returns <0, if the first of the two compared items is smaller.
+ * 
+ * @paragraph Invalid vector
+ * If 'vector' is NULL, -99 is returned.
+ * 
+ * @paragraph No item found
+ * If no corresponding item has been found, -1 is returned.
+ * 
+ * @paragraph Multiple identical items in vector
+ * The function always returns the index of the first matching item in the vector (with the lowest index).
+ * 
+ * @paragraph Asymptotic Complexity
+ * Logarithmic, O(log n).
+ * 
+ * @param vector            vector to search in
+ * @param compare_function  function pointer defining how the items should be compared
+ * @param target            pointer to data that is searched in the vector
+ * 
+ * @return Index of the first matching item. Negative value, if unsuccessful.
+ */
+long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target);
 
 
 /*! @brief Sorts all items in a vector using selection sort.

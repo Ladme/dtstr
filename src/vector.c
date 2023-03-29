@@ -196,3 +196,27 @@ long vec_find(const vec_t *vector, int (*equal_function)(const void *, const voi
 
     return -1;
 }
+
+
+long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target)
+{
+    if (vector == NULL) return -99;
+
+    size_t first = 0;
+    size_t last = vector->len - 1;
+
+    while (first <= last && first >= 0 && last < vector->len) {
+        size_t middle = (first + last) / 2;
+
+        // if middle item is smaller than target, we know that target is on the right side of the vector
+        if (compare_function(target, vector->items[middle]) > 0) first = middle + 1;
+        // the target is on the left side of the vector
+        else if (compare_function(target, vector->items[middle]) < 0) last = middle - 1;
+        // rescan to make sure that this is the first occurence of the searched item
+        else if (first != middle) last = middle;
+        // the target is in the middle
+        else return (long) middle;
+    }
+
+    return -1;
+}

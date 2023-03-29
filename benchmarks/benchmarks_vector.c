@@ -1,12 +1,13 @@
 // Released under MIT License.
 // Copyright (c) 2023 Ladislav Bartos
 
+#include <assert.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include "../src/vector.h"
 
-static vec_t *vec_fill(size_t items)
+static vec_t *vec_fill(const size_t items)
 {
     vec_t *vector = vec_new();
 
@@ -19,7 +20,7 @@ static vec_t *vec_fill(size_t items)
     return vector;
 }
 
-static vec_t *vec_fill_sorted(size_t items)
+static vec_t *vec_fill_sorted(const size_t items)
 {
     vec_t *vector = vec_new();
 
@@ -29,6 +30,24 @@ static vec_t *vec_fill_sorted(size_t items)
         vec_push(vector, &value, sizeof(int));
     }
 
+    return vector;
+}
+
+static vec_t *vec_fill_specific(const size_t items, int *specific, const size_t n_specific)
+{
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < items - n_specific; ++i) {
+        int random = rand();
+
+        vec_push(vector, &random, sizeof(int));
+    }
+
+    for (size_t i = 0; i < n_specific; ++i) {
+        int random_index = rand() % (items - n_specific);
+        vec_insert(vector, &specific[i], sizeof(int), random_index);
+    }
+    
     return vector;
 }
 
@@ -199,7 +218,7 @@ static void benchmark_vec_filter_mut()
     printf("\n");
 }
 
-static void benchmark_vec_filter()
+static void benchmark_vec_filter(void)
 {
     printf("%s\n", "benchmark_vec_filter [O(n)]");
 
@@ -210,7 +229,7 @@ static void benchmark_vec_filter()
 
         clock_t start = clock();
 
-        vec_t *filtered = vec_filter(vector, filter_function, sizeof(size_t));
+        vec_t *filtered = vec_filter(vector, filter_function, sizeof(int));
 
         clock_t end = clock();
         double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -224,13 +243,78 @@ static void benchmark_vec_filter()
     printf("\n");
 }
 
+static int equal_function(const void *data, const void *target)
+{
+    return *((int *) data) == *((int *) target);
+}
+
+
+static void benchmark_vec_find(void)
+{
+    printf("%s\n", "benchmark_vec_find [O(n)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        int items_to_find[1000] = {0};
+        for (size_t j = 0; j < 1000; ++j) items_to_find[j] = rand() % 1000;
+
+        vec_t *vector = vec_fill_specific(prefilled, items_to_find, 1000);
+
+        clock_t start = clock();
+
+        for (size_t j = 0; j < 1000; ++j) {
+            vec_find(vector, equal_function, &items_to_find[j]);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, performing 1000 searches: %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
 
 static int compare_function(const void *first, const void *second)
 {
     return *((int *) first) - *((int *) second);
 }
 
-static void benchmark_vec_sort_selection()
+static void benchmark_vec_find_bsearch(void)
+{
+    printf("%s\n", "benchmark_vec_find_bsearch [O(log n)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        vec_t *vector = vec_fill_sorted(prefilled);
+
+        clock_t start = clock();
+
+        for (size_t j = 0; j < 1000000; ++j) {
+            int item_to_find = rand() % prefilled;
+            vec_find_bsearch(vector, compare_function, &item_to_find);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, performing 1 million searches: %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
+/* *************************************************************************** */
+/*                      BENCHMARKS OF SORTING ALGORITHMS                       */
+/* *************************************************************************** */
+
+static void benchmark_vec_sort_selection(void)
 {
     printf("%s\n", "benchmark_vec_sort_selection");
 
@@ -254,7 +338,7 @@ static void benchmark_vec_sort_selection()
     printf("\n");
 }
 
-static void benchmark_vec_sort_bubble()
+static void benchmark_vec_sort_bubble(void)
 {
     printf("%s\n", "benchmark_vec_sort_bubble");
 
@@ -278,7 +362,7 @@ static void benchmark_vec_sort_bubble()
     printf("\n");
 }
 
-static void benchmark_vec_sort_bubble_sorted()
+static void benchmark_vec_sort_bubble_sorted(void)
 {
     printf("%s\n", "benchmark_vec_sort_bubble (sorted data)");
 
@@ -302,7 +386,7 @@ static void benchmark_vec_sort_bubble_sorted()
     printf("\n");
 }
 
-static void benchmark_vec_sort_insertion()
+static void benchmark_vec_sort_insertion(void)
 {
     printf("%s\n", "benchmark_vec_sort_insertion");
 
@@ -326,7 +410,7 @@ static void benchmark_vec_sort_insertion()
     printf("\n");
 }
 
-static void benchmark_vec_sort_quicknaive()
+static void benchmark_vec_sort_quicknaive(void)
 {
     printf("%s\n", "benchmark_vec_sort_quicknaive");
 
@@ -350,7 +434,7 @@ static void benchmark_vec_sort_quicknaive()
     printf("\n");
 }
 
-static void benchmark_vec_sort_quicknaive_sorted()
+static void benchmark_vec_sort_quicknaive_sorted(void)
 {
     printf("%s\n", "benchmark_vec_sort_quicknaive (sorted data)");
 
@@ -379,7 +463,7 @@ static int compare_function_qsort(const void *first, const void *second)
     return **((int **) first) - **((int **) second);
 }
 
-static void benchmark_vec_sort_quick()
+static void benchmark_vec_sort_quick(void)
 {
     printf("%s\n", "benchmark_vec_sort_quick");
 
@@ -403,7 +487,7 @@ static void benchmark_vec_sort_quick()
     printf("\n");
 }
 
-static void benchmark_vec_sort_quick_sorted()
+static void benchmark_vec_sort_quick_sorted(void)
 {
     printf("%s\n", "benchmark_vec_sort_quick (sorted data)");
 
@@ -428,16 +512,47 @@ static void benchmark_vec_sort_quick_sorted()
 }
 
 
+static void benchmark_vec_sort_quicknaive_and_find(void)
+{
+    printf("%s\n", "benchmark_vec_sort_quicknaive_and_find ");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        int items_to_find[10000] = {0};
+        for (size_t j = 0; j < 10000; ++j) items_to_find[j] = rand() % 10000;
+
+        vec_t *vector = vec_fill_specific(prefilled, items_to_find, 10000);
+
+        clock_t start = clock();
+
+        vec_sort_quicknaive(vector, compare_function);
+
+        for (size_t j = 0; j < 10000; ++j) {
+            vec_find_bsearch(vector, compare_function, &items_to_find[j]);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, performing 10,0000 searches: %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+}
+
 
 int main(void)
 {
-    /*benchmark_vec_push(100000);
+    benchmark_vec_push(100000);
     benchmark_vec_get(100000);
     benchmark_vec_insert(10000);
     benchmark_vec_pop(100000);
     benchmark_vec_remove(10000);
     benchmark_vec_filter_mut();
-    benchmark_vec_filter();*/
+    benchmark_vec_filter();
+    benchmark_vec_find();
+    benchmark_vec_find_bsearch();
 
     benchmark_vec_sort_selection();
     benchmark_vec_sort_bubble();
@@ -447,6 +562,7 @@ int main(void)
     benchmark_vec_sort_quicknaive_sorted();
     benchmark_vec_sort_quick();
     benchmark_vec_sort_quick_sorted();
+    benchmark_vec_sort_quicknaive_and_find();
 
     return 0;
 

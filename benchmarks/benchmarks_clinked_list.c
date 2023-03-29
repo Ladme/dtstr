@@ -190,7 +190,7 @@ static int filter_function(const void *data)
     return *((size_t *) data) % 2;
 }
 
-static void benchmark_cllist_filter_mut()
+static void benchmark_cllist_filter_mut(void)
 {
     printf("%s\n", "benchmark_cllist_filter_mut [O(n)]");
 
