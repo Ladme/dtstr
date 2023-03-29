@@ -1,5 +1,5 @@
-structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
-	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o
+structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o
+	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o
 	
 vector: src/vector.c src/vector.h
 	gcc -c src/vector.c -std=c99 -pedantic -Wall -O2 -o src/vector.o
@@ -17,11 +17,15 @@ dlinked_list: src/dlinked_list.c src/dlinked_list.h
 clinked_list: src/clinked_list.c src/clinked_list.h
 	gcc -c src/clinked_list.c -std=c99 -pedantic -Wall -O2 -o src/clinked_list.o
 
-tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c libdtstr.a
+dictionary: src/dictionary.c src/dictionary.h src/linked_list.c src/linked_list.h
+	gcc -c src/dictionary.c -std=c99 -pedantic -Wall -O2 -o src/dictionary.o
+
+tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c libdtstr.a
 	make tests_vector
 	make tests_linked_list
 	make tests_dlinked_list
 	make tests_clinked_list
+	make tests_dictionary
 
 tests_vector: tests/tests_vector.c src/vector.o libdtstr.a
 	gcc tests/tests_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_vector
@@ -34,6 +38,9 @@ tests_dlinked_list: tests/tests_dlinked_list.c src/dlinked_list.o libdtstr.a
 
 tests_clinked_list: tests/tests_clinked_list.c src/clinked_list.o libdtstr.a
 	gcc tests/tests_clinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_clinked_list
+
+tests_dictionary: tests/tests_dictionary.c src/dictionary.o libdtstr.a
+	gcc tests/tests_dictionary.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_dictionary
 
 benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c libdtstr.a
 	make benchmarks_vector
