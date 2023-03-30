@@ -27,7 +27,7 @@ typedef struct vector {
 vec_t *vec_new(void);
 
 
-/*! @brief Destroys the vec_t structure properly deallocating memory.
+/*! @brief Destroys vec_t structure properly deallocating memory.
  *
  * @param vector        vector to destroy
  */

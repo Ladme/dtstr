@@ -8,6 +8,7 @@
 static void dict_print_sizet(const dict_t *dict)
 {
     for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
         dnode_t *head = dict->items[i]->head;
         while (head != NULL) {
             if (head->data != NULL) {
@@ -40,6 +41,10 @@ static int test_dict_set(void)
 {
     printf("%-40s", "test_dict_set ");
 
+    // working with invalid dictionary
+    size_t test_value = 12;
+    assert(dict_set(NULL, "test_key", &test_value, sizeof(size_t)) == 99);
+
     dict_t *dict = dict_new();
 
     // do not change the keys nor DICT_BLOCK
@@ -68,7 +73,7 @@ static int test_dict_set(void)
     assert(dict->items[43]->len == 2);
     for (size_t i = 0; i < 64; ++i) {
         if (i != 1 && i != 9 && i != 38 && i != 39 && i != 43) {
-            assert(dict->items[i]->len == 0);
+            assert(dict->items[i] == NULL);
         }
     }
 
@@ -80,7 +85,7 @@ static int test_dict_set(void)
     assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->data)->value == 42);
     assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->next->data)->value == 666);
 
-    assert(dict->available == 22);
+    assert(dict->available == 27);
 
     // add item with a key that is already present in the dictionary
     size_t new_value = 99;
@@ -95,7 +100,7 @@ static int test_dict_set(void)
     assert(dict->items[43]->len == 2);
     for (size_t i = 0; i < 64; ++i) {
         if (i != 1 && i != 9 && i != 38 && i != 39 && i != 43) {
-            assert(dict->items[i]->len == 0);
+            assert(dict->items[i] == NULL);
         }
     }
 
@@ -106,17 +111,232 @@ static int test_dict_set(void)
     assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->data)->value == 234);
     assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->next->data)->value == 666);
 
-    assert(dict->available == 22);
+    assert(dict->available == 27);
 
     dict_destroy(dict);
     printf("OK\n");
     return 0;
 }
 
+static int test_dict_get(void)
+{
+    printf("%-40s", "test_dict_get ");
+
+    dict_t *dict = dict_new();
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+    
+    for (size_t i = 0; i < 10; ++i) {
+        assert(dict_set(dict, keys[i], &(values[i]), sizeof(size_t)) == 0);
+    }
+
+    assert(*(size_t *) dict_get(dict, keys[9]) == 0);
+    assert(*(size_t *) dict_get(dict, keys[8]) == 5000);
+    assert(*(size_t *) dict_get(dict, keys[7]) == 10);
+    assert(*(size_t *) dict_get(dict, keys[6]) == 888);
+    assert(*(size_t *) dict_get(dict, keys[5]) == 234);
+    assert(*(size_t *) dict_get(dict, keys[4]) == 0);
+    assert(*(size_t *) dict_get(dict, keys[3]) == 10000);
+    assert(*(size_t *) dict_get(dict, keys[2]) == 42);
+    assert(*(size_t *) dict_get(dict, keys[1]) == 666);
+    assert(*(size_t *) dict_get(dict, keys[0]) == 123);
+
+    // reassigning value of key
+    size_t val = 555;
+    assert(dict_set(dict, "something", &val, sizeof(size_t)) == 0);
+    assert(*(size_t *) dict_get(dict, "something") == 555);
+
+    // getting non-existent key
+    assert(dict_get(dict, "nonexistent") == NULL);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dict_len(void)
+{
+    printf("%-40s", "test_dict_len ");
+
+    assert(dict_len(NULL) == 0);
+
+    dict_t *dict = dict_new();
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    
+    assert(dict_len(dict) == 0);
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(dict_set(dict, keys[i], &(values[i]), sizeof(size_t)) == 0);
+        assert(dict_len(dict) == i + 1);
+    }
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dict_del(void)
+{
+    printf("%-40s", "test_dict_del ");
+
+    assert(dict_del(NULL, "test") == 99);
+
+    dict_t *dict = dict_new();
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(dict_set(dict, keys[i], &(values[i]), sizeof(size_t)) == 0);
+    }
+
+    assert(dict->available == 27);
+
+    // attempt to delete non-existent key
+    assert(dict_del(dict, "nonexistent") == 2);
+
+    // delete all keys
+    for (int i = 9; i >= 0; --i) {
+        assert(dict_del(dict, keys[i]) == 0);
+        assert(dict_len(dict) == i);
+    }
+
+    assert(dict->available == 32);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_eq_string(const void *string1, const void *string2)
+{
+    return !strcmp((char *) string1, (char *) string2);
+}
+
+static int test_dict_keys(void)
+{
+    printf("%-40s", "test_dict_keys ");
+
+    // invalid dict
+    vec_t *vec = dict_keys(NULL);
+    assert(vec->len == 0);
+    vec_destroy(vec);
+
+    dict_t *dict = dict_new();
+
+    // empty dict
+    vec = dict_keys(dict);
+    assert(vec->len == 0);
+    vec_destroy(vec);
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(dict_set(dict, keys[i], &(values[i]), sizeof(size_t)) == 0);
+    }
+
+    // 10 keys
+    vec = dict_keys(dict);
+    assert(vec->len == 10);
+
+    // check that the original keys are actually present in the vector
+    for (size_t i = 0; i < 10; ++i) {
+        assert(vec_find(vec, test_eq_string, keys[i]) >= 0);
+    }
+
+    vec_destroy(vec);
+
+    // overwriting key
+    size_t value = 12;
+    assert(dict_set(dict, "array", &value, sizeof(size_t)) == 0);
+    vec = dict_keys(dict);
+    assert(vec->len == 10);
+    vec_destroy(vec);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_eq_sizet(const void *value1, const void *value2)
+{
+    return (*(size_t *) value1) == (*(size_t *) value2); 
+}
+
+
+static int test_dict_values(void)
+{
+    printf("%-40s", "test_dict_values ");
+
+    // invalid dict
+    vec_t *vec = dict_values(NULL);
+    assert(vec->len == 0);
+    vec_destroy(vec);
+
+    dict_t *dict = dict_new();
+
+    // empty dict
+    vec = dict_values(dict);
+    assert(vec->len == 0);
+    vec_destroy(vec);
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(dict_set(dict, keys[i], &(values[i]), sizeof(size_t)) == 0);
+    }
+
+    // 10 values
+    vec = dict_values(dict);
+    assert(vec->len == 10);
+
+    // check that the original values are actually present in the vector
+    for (size_t i = 0; i < 10; ++i) {
+        assert(vec_find(vec, test_eq_sizet, &values[i]) >= 0);
+    }
+
+    vec_destroy(vec);
+
+    // overwriting key
+    size_t value = 12;
+    assert(dict_set(dict, "array", &value, sizeof(size_t)) == 0);
+    vec = dict_values(dict);
+    assert(vec->len == 10);
+    assert(vec_find(vec, test_eq_sizet, &value) >= 0);
+    vec_destroy(vec);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
     test_dict_new();
     test_dict_set();
+    test_dict_get();
+    test_dict_len();
+    test_dict_del();
+
+    test_dict_keys();
+    test_dict_values();
 
     return 0;
 }

@@ -28,6 +28,13 @@ static size_t hash_key(const char *key)
     return hash;
 }
 
+/*! @brief Returns index at which target key points in a specific dictionary. */
+inline static size_t dict_index(const dict_t *dict, const char *key)
+{
+    return hash_key(key) % dict->allocated;
+}
+
+/*! @brief Allocate memory for new dictionary entry. Returns pointer to new entry or NULL if allocation fails. */
 static dict_entry_t *dict_entry_new(const char *key, const void *value, const size_t valuesize)
 {
     dict_entry_t *entry = calloc(1, sizeof(dict_entry_t));
@@ -51,11 +58,58 @@ static dict_entry_t *dict_entry_new(const char *key, const void *value, const si
     return entry;
 }
 
+/*! @brief Frees memory allocated for dictionary entry. */
 static void dict_entry_destroy(dict_entry_t *entry)
 {
     free(entry->value);
     free(entry->key);
     free(entry);
+}
+
+/*! @brief Returns key of entry in target node. */
+inline static char *node_get_key(const dnode_t *node)
+{
+    return (*(dict_entry_t **) node->data)->key;
+}
+
+/*! @brief Returns value of entry in target node. */
+inline static void *node_get_value(const dnode_t *node)
+{
+    return (*(dict_entry_t **) node->data)->value;
+}
+
+/*! @brief Gets pointer to node containing entry with the given key. If such node does not exist, returns NULL. */
+static dnode_t *dict_get_node(const dllist_t *list, const char *key, const size_t index)
+{
+    dnode_t *node = list->head;
+
+    while (node != NULL) {
+        if (strcmp(node_get_key(node), key) == 0) return node;
+        node = node->next;
+    }
+
+    return NULL;
+}
+
+/*! @brief Gets pointer to dictionary entry with given key. If such entry does not exist, returns NULL. */
+static dict_entry_t *dict_get_entry(const dict_t *dict, const char *key)
+{
+    const size_t index = dict_index(dict, key);
+    if (dict->items[index] == NULL) return NULL;
+
+    const dnode_t *node = dict_get_node(dict->items[index], key, index);
+    if (node == NULL) return NULL;
+
+    return *(dict_entry_t **) node->data;
+}
+
+/*! @brief Properly frees memory for dictionary entry in target node and removes the node from linked list.
+ * Returns zero if successful, else returns non-zero. */
+static int dict_node_entry_destroy(dllist_t *list, dnode_t *node)
+{
+    dict_entry_t *entry = *(dict_entry_t **) node->data;
+    dict_entry_destroy(entry);
+    return dllist_remove_node(list, node);
 }
 
 /* *************************************************************************** */
@@ -80,10 +134,6 @@ dict_t *dict_new(void)
     dict->allocated = DICT_BLOCK;
     dict->available = DICT_BLOCK / 2;
 
-    for (size_t i = 0; i < dict->allocated; ++i) {
-        dict->items[i] = dllist_new();
-    }
-
     return dict;
 }
 
@@ -93,6 +143,8 @@ void dict_destroy(dict_t *dict)
     if (dict == NULL) return;
 
     for (size_t i = 0; i < dict->allocated; ++i) {
+
+        if (dict->items[i] == NULL) continue;
 
         dnode_t *head = dict->items[i]->head;
         while (head != NULL) {
@@ -108,37 +160,122 @@ void dict_destroy(dict_t *dict)
 }
 
 
+void *dict_get(const dict_t *dict, const char *key)
+{
+    if (dict == NULL) return NULL;
+
+    const size_t index = dict_index(dict, key);;
+    const dict_entry_t *entry = dict_get_entry(dict, key);
+
+    if (entry == NULL) return NULL;
+
+    return entry->value;
+}
+
+
 // TODO: reallocation
 int dict_set(dict_t *dict, const char *key, const void *value, const size_t valuesize)
 {
     if (dict == NULL) return 99;
 
-    size_t index = hash_key(key) % dict->allocated;
+    const size_t index = dict_index(dict, key);
 
-    dict_entry_t *new_entry = dict_entry_new(key, value, valuesize);
+    // create new entry
+    const dict_entry_t *new_entry = dict_entry_new(key, value, valuesize);
     if (new_entry == NULL) return 1;
 
-    // check if this key already exists; if it does, remove the previous instance of this key
-    dnode_t *node = dict->items[index]->head;
-    while (node != NULL) {
-        if (node->data != NULL) {
-            dict_entry_t *check = *(dict_entry_t **) node->data;
-            if (strcmp(check->key, key) == 0) {
-                // remove entry from the linked list
-                dnode_t *temporary = node->next;
-                dict_entry_destroy(check);
-                if (dllist_remove_node(dict->items[index], node) != 0) return 2;
-                ++dict->available;
-                node = temporary;
-                continue;
-            }
-        }
-
-        node = node->next;
+    // check whether target position of array already contains a linked list
+    // if not, create it
+    if (dict->items[index] == NULL) {
+        dict->items[index] = dllist_new();
+        if (dict->items[index] == NULL) return 4;
+        --dict->available;
+    } else {
+        // check if this key already exists; if it does, remove the previous instance of this key
+        dnode_t *check_node = dict_get_node(dict->items[index], key, index); 
+        if (check_node != NULL && dict_node_entry_destroy(dict->items[index], check_node) != 0) return 2; 
     }
 
+    // add entry to linked list
     if (dllist_push_first(dict->items[index], &new_entry, sizeof(dict_entry_t *)) == 1) return 3;
     
-    --dict->available;
     return 0;
+}
+
+
+size_t dict_len(const dict_t *dict)
+{
+    if (dict == NULL) return 0;
+
+    size_t count = 0;
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+
+        count += dict->items[i]->len;
+    }
+
+    return count;
+}
+
+// TODO: shrinking
+int dict_del(dict_t *dict, const char *key)
+{
+    if (dict == NULL) return 99;
+
+    size_t index = dict_index(dict, key);
+    if (dict->items[index] == NULL) return 2;
+    dnode_t *node = dict_get_node(dict->items[index], key, index);
+    if (node == NULL) return 2;
+
+    if (dict_node_entry_destroy(dict->items[index], node) != 0) return 1;
+
+    // check if the linked list is empty; if it is, remove it
+    if (dict->items[index]->len == 0) {
+        dllist_destroy(dict->items[index]);
+        dict->items[index] = NULL;
+        ++dict->available;
+    }
+
+    return 0;
+}
+
+vec_t *dict_keys(const dict_t *dict)
+{
+    vec_t *keys = vec_new();
+    if (keys == NULL) return NULL;
+
+    if (dict == NULL) return keys;
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+
+        dnode_t *node = dict->items[i]->head;
+        while (node != NULL) {
+            char *key = node_get_key(node);
+            vec_push(keys, key, strlen(key) + 1); 
+            node = node->next;
+        }
+    }
+
+    return keys;
+}
+
+vec_t *dict_values(const dict_t *dict)
+{
+    vec_t *values = vec_new();
+    if (values == NULL) return NULL;
+
+    if (dict == NULL) return values;
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+
+        dnode_t *node = dict->items[i]->head;
+        while (node != NULL) {
+            vec_push(values, node_get_value(node), sizeof(void *)); 
+            node = node->next;
+        }
+    }
+
+    return values;
 }
