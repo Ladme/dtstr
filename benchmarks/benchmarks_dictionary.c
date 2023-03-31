@@ -1,0 +1,215 @@
+// Released under MIT License.
+// Copyright (c) 2023 Ladislav Bartos
+
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include "../src/dictionary.h"
+
+
+static dict_t *dict_fill(const size_t items)
+{
+    dict_t *dict = dict_new();
+
+    for (int i = 0; i < items; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%d", i);
+
+        dict_set(dict, key, &i, sizeof(int));
+    }
+
+    return dict;
+}
+
+static void benchmark_dict_set(const size_t items)
+{
+    printf("%s\n", "benchmark_dict_set [O(1)]");
+
+    for (size_t i = 0; i <= 10; ++i) {
+
+        size_t prefilled = i * 1000;
+        dict_t *dict = dict_fill(prefilled);
+
+        size_t initial = dict->allocated;
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < items; ++i) {
+            int random = rand() % (prefilled + items);
+            char key[20] = "";
+            sprintf(key, "key%d", random);
+
+            dict_set(dict, key, &random, sizeof(int));
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, setting %12lu items: %f s  (I: %ld, F: %ld, N: %d)\n", 
+            prefilled, items, time_elapsed, 
+            initial, dict->allocated, (int) log2f( (float) dict->allocated / initial));
+
+        dict_destroy(dict);
+    }
+    printf("\n");
+}
+
+static void benchmark_dict_get(const size_t items)
+{
+    printf("%s\n", "benchmark_dict_get [O(1)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        dict_t *dict = dict_fill(prefilled);
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < items; ++i) {
+            int random = rand() % prefilled;
+            char key[20] = "";
+            sprintf(key, "key%d", random);
+
+            dict_get(dict, key);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, getting %12lu items: %f s\n", prefilled, items, time_elapsed);
+
+        dict_destroy(dict);
+    }
+    printf("\n");
+}
+
+static void benchmark_dict_len(const size_t repeats)
+{
+    printf("%s\n", "benchmark_dict_len [O(n)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 10000;
+        dict_t *dict = dict_fill(prefilled);
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < repeats; ++i) {
+            dict_len(dict);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, obtaining length %12lu times: %f s\n", prefilled, repeats, time_elapsed);
+
+        dict_destroy(dict);
+    }
+    printf("\n");
+}
+
+static void benchmark_dict_del(const size_t items)
+{
+    printf("%s\n", "benchmark_dict_del [O(1)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 10000;
+        dict_t *dict = dict_fill(prefilled);
+
+        size_t initial = dict->allocated;
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < items; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%ld", i);
+
+            dict_del(dict, key);
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, removing %12lu items: %f s  (I: %ld, F: %ld, N: %d)\n", 
+        prefilled, items, time_elapsed,
+        initial, dict->allocated, (int) log2f( (float) dict->allocated / initial));
+
+        dict_destroy(dict);
+    }
+    printf("\n");
+}
+
+static void benchmark_dict_set_del(const size_t repeats)
+{
+    printf("%s\n", "benchmark_dict_set_del ");
+
+    for (size_t i = 1; i <= 10; ++i) {
+        size_t items = i * 10000;
+        
+        dict_t *dict = dict_new();
+        size_t initial = dict->allocated;
+        size_t expanding = 0;
+        size_t shrinking = 0;
+
+        clock_t start = clock();
+
+        for (size_t j = 0; j < repeats; ++j) {
+
+            for (int k = 0; k < items; ++k) {
+                char key[20] = "";
+                sprintf(key, "key%d", k);
+
+                dict_set(dict, key, &k, sizeof(int));
+            }
+
+            expanding += (size_t) log2f( (float) dict->allocated / initial);
+            initial = dict->allocated;
+
+            for (int k = 0; k < items; ++k) {
+                int negative_k = -k;
+                char key[20] = "";
+                sprintf(key, "key%d", k);
+
+                dict_set(dict, key, &negative_k, sizeof(int));
+            }
+
+            expanding += (size_t) log2f( (float) dict->allocated / initial);
+            initial = dict->allocated;
+
+            for (int k = 0; k < items; ++k) {
+                char key[20] = "";
+                sprintf(key, "key%d", k);
+
+                dict_del(dict, key);
+            }
+
+            shrinking += (size_t) log2f( (float) initial / dict->allocated);
+            initial = dict->allocated;
+
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> setting and deleting %12lu items, %ld times: %f s  (E: %ld, S: %ld)\n", items, repeats, time_elapsed, expanding, shrinking);
+
+        dict_destroy(dict);
+    }
+    printf("\n");
+}
+
+int main(void)
+{
+    srand(time(NULL));
+
+    benchmark_dict_set(100000);
+    benchmark_dict_get(10000);
+    benchmark_dict_len(1000);
+    benchmark_dict_del(10000);
+    benchmark_dict_set_del(10);
+
+}

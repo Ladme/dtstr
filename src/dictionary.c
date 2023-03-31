@@ -34,6 +34,27 @@ inline static size_t dict_index(const dict_t *dict, const char *key)
     return hash_key(key) % dict->allocated;
 }
 
+/*! @brief Creates a new dictionary allocating space for 'capacity' linked lists. */
+inline static dict_t *dict_with_capacity(const size_t capacity)
+{
+    dict_t *dict = calloc(1, sizeof(dict_t));
+    if (dict == NULL) {
+        return NULL;
+    }
+
+    // allocate memory for items
+    dict->items = calloc(capacity, sizeof(dllist_t *));
+    if (dict->items == NULL) {
+        free(dict);
+        return NULL;
+    }
+
+    dict->allocated = capacity;
+    dict->available = capacity / 2;
+
+    return dict;
+}
+
 /*! @brief Allocate memory for new dictionary entry. Returns pointer to new entry or NULL if allocation fails. */
 static dict_entry_t *dict_entry_new(const char *key, const void *value, const size_t valuesize)
 {
@@ -112,29 +133,98 @@ static int dict_node_entry_destroy(dllist_t *list, dnode_t *node)
     return dllist_remove_node(list, node);
 }
 
+/*! @brief Collects all entries from a dictionary. Returns NULL, if unsuccessful. */
+static vec_t *dict_collect_entries(const dict_t *dict)
+{
+    vec_t *entries = vec_new();
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+
+        dnode_t *node = dict->items[i]->head;
+        while (node != NULL) {
+            
+            if (vec_push(entries, node->data, sizeof(dict_entry_t *)) != 0) return NULL;
+            node = node->next;
+        }
+    }
+
+    return entries;
+}
+
+/*! @brief Assigns all entries from 'entries' vector to target dictionary. Returns 0, if successful. Else returns non-zero. */
+static int dict_assign_entries(dict_t *dict, const vec_t *entries)
+{
+    for (size_t i = 0; i < entries->len; ++i) {
+        
+        const dict_entry_t *entry = *(dict_entry_t **) entries->items[i];
+        const size_t index = dict_index(dict, entry->key);
+
+        if (dict->items[index] == NULL) {
+            dict->items[index] = dllist_new();
+            if (dict->items[index] == NULL) return 1;
+            --dict->available;
+        }
+
+        if (dllist_push_first(dict->items[index], &entry, sizeof(dict_entry_t *)) == 1) return 2;
+    }
+
+    return 0;
+}
+
+/*! @brief Expands dictionary, allocating more memory for it and reassigning entries. Returns 0, if successful, else returns non-zero. */
+static int dict_expand(dict_t *dict)
+{
+    vec_t *entries = dict_collect_entries(dict);
+    if (entries == NULL) return 1;
+    
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+        dllist_destroy(dict->items[i]);
+        dict->items[i] = NULL;
+    }
+
+    size_t prev_allocated = dict->allocated;
+    dict->allocated *= 2;
+    dict->available = dict->allocated / 2;
+    dict->items = realloc(dict->items, dict->allocated * sizeof(void *));
+    memset(dict->items + prev_allocated, 0, (dict->allocated - prev_allocated) * sizeof(void *));
+    if (dict->items == NULL) return 3;
+
+    int return_code = dict_assign_entries(dict, entries);
+    vec_destroy(entries);
+    return return_code;
+}
+
+/*! @brief Shrinks dictionary, deallocating unneeded memory. Returns 0, if successful, else returns non-zero.*/
+static int dict_shrink(dict_t *dict)
+{
+    vec_t *entries = dict_collect_entries(dict);
+    if (entries == NULL) return 1;
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+        dllist_destroy(dict->items[i]);
+        dict->items[i] = NULL;
+    }
+
+    dict->allocated /= 2;
+    dict->available = dict->allocated / 2;
+    dict->items = realloc(dict->items, dict->allocated * sizeof(void *));
+    if (dict->items == NULL) return 3;
+
+    int return_code = dict_assign_entries(dict, entries);
+    vec_destroy(entries);
+    return return_code;
+}
+
 /* *************************************************************************** */
 /*                  PUBLIC FUNCTIONS ASSOCIATED WITH DICT_T                    */
 /* *************************************************************************** */
 
-
 dict_t *dict_new(void)
 {
-    dict_t *dict = calloc(1, sizeof(dict_t));
-    if (dict == NULL) {
-        return NULL;
-    }
-
-    // allocate memory for items
-    dict->items = calloc(DICT_BLOCK, sizeof(dllist_t *));
-    if (dict->items == NULL) {
-        free(dict);
-        return NULL;
-    }
-
-    dict->allocated = DICT_BLOCK;
-    dict->available = DICT_BLOCK / 2;
-
-    return dict;
+    return dict_with_capacity(DICT_BLOCK);
 }
 
 
@@ -173,16 +263,17 @@ void *dict_get(const dict_t *dict, const char *key)
 }
 
 
-// TODO: reallocation
 int dict_set(dict_t *dict, const char *key, const void *value, const size_t valuesize)
 {
     if (dict == NULL) return 99;
 
-    const size_t index = dict_index(dict, key);
+    size_t index = dict_index(dict, key);
 
-    // create new entry
-    const dict_entry_t *new_entry = dict_entry_new(key, value, valuesize);
-    if (new_entry == NULL) return 1;
+    // expand dict, if capacity is reached
+    if (dict->available == 0 && dict->items[index] == NULL) {
+        if (dict_expand(dict) != 0) return 5;
+        index = dict_index(dict, key);
+    }
 
     // check whether target position of array already contains a linked list
     // if not, create it
@@ -191,10 +282,21 @@ int dict_set(dict_t *dict, const char *key, const void *value, const size_t valu
         if (dict->items[index] == NULL) return 4;
         --dict->available;
     } else {
-        // check if this key already exists; if it does, remove the previous instance of this key
+        // check if this key already exists; if it does, remove overwrite the previous instance of this key
         dnode_t *check_node = dict_get_node(dict->items[index], key, index); 
-        if (check_node != NULL && dict_node_entry_destroy(dict->items[index], check_node) != 0) return 2; 
+        if (check_node != NULL) {
+            dict_entry_t *check_entry = *(dict_entry_t **) check_node->data;
+            free(check_entry->value);
+            check_entry->value = malloc(valuesize);
+            if (check_entry->value == NULL) return 2;
+            memcpy(check_entry->value, value, valuesize);
+            return 0;
+        }
     }
+
+    // create new entry
+    const dict_entry_t *new_entry = dict_entry_new(key, value, valuesize);
+    if (new_entry == NULL) return 1;
 
     // add entry to linked list
     if (dllist_push_first(dict->items[index], &new_entry, sizeof(dict_entry_t *)) == 1) return 3;
@@ -217,7 +319,6 @@ size_t dict_len(const dict_t *dict)
     return count;
 }
 
-// TODO: shrinking
 int dict_del(dict_t *dict, const char *key)
 {
     if (dict == NULL) return 99;
@@ -235,6 +336,10 @@ int dict_del(dict_t *dict, const char *key)
         dict->items[index] = NULL;
         ++dict->available;
     }
+
+    
+    // shrink dictionary
+    if (dict->allocated > DICT_BLOCK &&  3 * dict->allocated - 8 * dict->available <= 0 && dict_shrink(dict) != 0) return 3;
 
     return 0;
 }

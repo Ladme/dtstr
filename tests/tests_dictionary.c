@@ -104,11 +104,11 @@ static int test_dict_set(void)
         }
     }
 
-    assert(strcmp((*(dict_entry_t **) dict->items[9]->head->data)->key, "number3") == 0);
-    assert(strcmp((*(dict_entry_t **) dict->items[9]->head->next->data)->key, "reasonable") == 0);
+    assert(strcmp((*(dict_entry_t **) dict->items[9]->head->data)->key, "reasonable") == 0);
+    assert(strcmp((*(dict_entry_t **) dict->items[9]->head->next->data)->key, "number3") == 0);
     assert(strcmp((*(dict_entry_t **) dict->items[9]->head->next->next->data)->key, "linked_list") == 0);
-    assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->data)->value == 99);
-    assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->data)->value == 234);
+    assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->data)->value == 234);
+    assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->data)->value == 99);
     assert(*(size_t *) (*(dict_entry_t **) dict->items[9]->head->next->next->data)->value == 666);
 
     assert(dict->available == 27);
@@ -151,6 +151,36 @@ static int test_dict_get(void)
 
     // getting non-existent key
     assert(dict_get(dict, "nonexistent") == NULL);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dict_set_get_large(void)
+{
+    printf("%-40s", "test_dict_set_get (large) ");
+
+    dict_t *dict = dict_new();
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16384);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(*(size_t *) dict_get(dict, key) == i);
+    }
 
     dict_destroy(dict);
     printf("OK\n");
@@ -212,6 +242,50 @@ static int test_dict_del(void)
     }
 
     assert(dict->available == 32);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_dict_set_del_large(void)
+{
+    printf("%-40s", "test_dict_set_del (large) ");
+
+    dict_t *dict = dict_new();
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16384);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_del(dict, key) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 64);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16384);
 
     dict_destroy(dict);
     printf("OK\n");
@@ -331,9 +405,15 @@ int main(void)
 {
     test_dict_new();
     test_dict_set();
+
     test_dict_get();
+
+    test_dict_set_get_large();
+
     test_dict_len();
     test_dict_del();
+
+    test_dict_set_del_large();
 
     test_dict_keys();
     test_dict_values();

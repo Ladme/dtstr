@@ -46,9 +46,10 @@ void dict_destroy(dict_t *dict);
  * @paragraph Possible error return codes
  * This function may return the following error codes:
  * 1, if new memory could not be allocated for new dictionary entry.
- * 2, if previous instance of key in dictionary could not be properly destroyed.
+ * 2, if previous instance of key in dictionary could not be overwritten
  * 3, if pushing into linked list failed.
  * 4, if new linked list could not be created.
+ * 5, if dictionary could not be expanded.
  * 99, if the dictionary does not exist (the dict pointer is NULL).
  * 
  * @param dict          dictionary to add the key-value pair to
@@ -91,6 +92,7 @@ size_t dict_len(const dict_t *dict);
  * 0, if entry successfully removed.
  * 1, if entry could not be removed.
  * 2, if entry with corresponding key does not exist.
+ * 3, if dictionary could not be shrunk.
  * 99, if dictionary does not exist.
  */
 int dict_del(dict_t *dict, const char *key);

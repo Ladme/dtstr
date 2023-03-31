@@ -42,23 +42,27 @@ tests_clinked_list: tests/tests_clinked_list.c src/clinked_list.o libdtstr.a
 tests_dictionary: tests/tests_dictionary.c src/dictionary.o libdtstr.a
 	gcc tests/tests_dictionary.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_dictionary
 
-benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c libdtstr.a
+benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c libdtstr.a
 	make benchmarks_vector
 	make benchmarks_linked_list
 	make benchmarks_dlinked_list
 	make benchmarks_clinked_list
+	make benchmarks_dictionary
 	
 benchmarks_vector: benchmarks/benchmarks_vector.c src/vector.o libdtstr.a
-	gcc benchmarks/benchmarks_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_vector
+	gcc benchmarks/benchmarks_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_vector
 
 benchmarks_linked_list: benchmarks/benchmarks_linked_list.c src/linked_list.o libdtstr.a
-	gcc benchmarks/benchmarks_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_linked_list
+	gcc benchmarks/benchmarks_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_linked_list
 
 benchmarks_dlinked_list: benchmarks/benchmarks_dlinked_list.c src/dlinked_list.o libdtstr.a
-	gcc benchmarks/benchmarks_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_dlinked_list
+	gcc benchmarks/benchmarks_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_dlinked_list
 
 benchmarks_clinked_list: benchmarks/benchmarks_clinked_list.c src/clinked_list.o libdtstr.a
-	gcc benchmarks/benchmarks_clinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o benchmarks/benchmarks_clinked_list
+	gcc benchmarks/benchmarks_clinked_list.c libdtstr.a -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_clinked_list
+
+benchmarks_dictionary: benchmarks/benchmarks_dictionary.c src/dictionary.o libdtstr.a
+	gcc benchmarks/benchmarks_dictionary.c libdtstr.a -lm -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_dictionary
 
 clean: 
 	rm -f *.a *.o src/*.a src/*.o
