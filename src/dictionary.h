@@ -45,7 +45,7 @@ void dict_destroy(dict_t *dict);
  *
  * @paragraph Possible error return codes
  * This function may return the following error codes:
- * 1, if new memory could not be allocated for new dictionary entry.
+ * 1, if memory could not be allocated for new dictionary entry.
  * 2, if previous instance of key in dictionary could not be overwritten
  * 3, if pushing into linked list failed.
  * 4, if new linked list could not be created.

@@ -187,6 +187,48 @@ static int test_dict_set_get_large(void)
     return 0;
 }
 
+static int test_dict_set_get_large_overwrite(void)
+{
+    printf("%-40s", "test_dict_set_get (large, overwrite) ");
+
+    dict_t *dict = dict_new();
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16384);
+
+    size_t new_value = 666;
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &new_value, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16384);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(*(size_t *) dict_get(dict, key) == 666);
+    }
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
 static int test_dict_len(void)
 {
     printf("%-40s", "test_dict_len ");
@@ -409,6 +451,7 @@ int main(void)
     test_dict_get();
 
     test_dict_set_get_large();
+    test_dict_set_get_large_overwrite();
 
     test_dict_len();
     test_dict_del();

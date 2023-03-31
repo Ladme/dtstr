@@ -196,7 +196,7 @@ static int dict_expand(dict_t *dict)
     return return_code;
 }
 
-/*! @brief Shrinks dictionary, deallocating unneeded memory. Returns 0, if successful, else returns non-zero.*/
+/*! @brief Shrinks dictionary, deallocating unneeded memory and reasssigning entries. Returns 0, if successful, else returns non-zero.*/
 static int dict_shrink(dict_t *dict)
 {
     vec_t *entries = dict_collect_entries(dict);
@@ -282,7 +282,7 @@ int dict_set(dict_t *dict, const char *key, const void *value, const size_t valu
         if (dict->items[index] == NULL) return 4;
         --dict->available;
     } else {
-        // check if this key already exists; if it does, remove overwrite the previous instance of this key
+        // check if this key already exists; if it does, overwrite the previous instance of this key
         dnode_t *check_node = dict_get_node(dict->items[index], key, index); 
         if (check_node != NULL) {
             dict_entry_t *check_entry = *(dict_entry_t **) check_node->data;
@@ -336,10 +336,9 @@ int dict_del(dict_t *dict, const char *key)
         dict->items[index] = NULL;
         ++dict->available;
     }
-
     
     // shrink dictionary
-    if (dict->allocated > DICT_BLOCK &&  3 * dict->allocated - 8 * dict->available <= 0 && dict_shrink(dict) != 0) return 3;
+    if (dict->allocated > DICT_BLOCK &&  3 * dict->allocated <= 8 * dict->available && dict_shrink(dict) != 0) return 3;
 
     return 0;
 }
@@ -357,7 +356,7 @@ vec_t *dict_keys(const dict_t *dict)
         dnode_t *node = dict->items[i]->head;
         while (node != NULL) {
             char *key = node_get_key(node);
-            vec_push(keys, key, strlen(key) + 1); 
+            if (vec_push(keys, key, strlen(key) + 1) != 0) return NULL; 
             node = node->next;
         }
     }
@@ -377,7 +376,7 @@ vec_t *dict_values(const dict_t *dict)
 
         dnode_t *node = dict->items[i]->head;
         while (node != NULL) {
-            vec_push(values, node_get_value(node), sizeof(void *)); 
+            if (vec_push(values, node_get_value(node), sizeof(void *)) != 0) return NULL; 
             node = node->next;
         }
     }
