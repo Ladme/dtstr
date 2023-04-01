@@ -24,48 +24,51 @@ typedef struct dict {
 } dict_t;
 
 
-/*! @brief Creates new dict_t structure and allocates memory for it.
+/** 
+ * @brief Creates new `dict_t` structure and allocates memory for it.
  *
- * @paragraph Memory deallocation
- * Destroy dict_t structure using dict_destroy function.
+ * @note Destroy `dict_t` structure using dict_destroy function.
  * 
  * @return Pointer to the created dict_t, if successful. NULL if not successful.
  */
 dict_t *dict_new(void);
 
 
-/*! @brief Destroys dict_t structure properly deallocating memory.
+/**
+ * @brief Destroys `dict_t` structure while properly deallocating memory.
  *
- * @param dict        dictionary to destroy
+ * @param dict  Dictionary to destroy
  */
 void dict_destroy(dict_t *dict);
 
 
-/*! @brief Adds key with its associated value into dictionary.
+/** 
+ * @brief Adds key with its associated value into dictionary.
  *
- * @paragraph Possible error return codes
- * This function may return the following error codes:
- * 1, if memory could not be allocated for new dictionary entry.
- * 2, if previous instance of key in dictionary could not be overwritten
- * 3, if pushing into linked list failed.
- * 4, if new linked list could not be created.
- * 5, if dictionary could not be expanded.
- * 99, if the dictionary does not exist (the dict pointer is NULL).
+ * @param dict      Dictionary to add the key-value pair to
+ * @param key       Key for hashing
+ * @param value     Value to be stored
+ * @param valuesize Size of the value
  * 
- * @param dict          dictionary to add the key-value pair to
- * @param key           key for hashing
- * @param value         value to be stored
- * @param valuesize     size of the value
+ * @note
+ * - This function may return the following error codes:
+ * @note 1, if memory could not be allocated for new dictionary entry.
+ * @note 2, if previous instance of key in dictionary could not be overwritten
+ * @note 3, if pushing into linked list failed.
+ * @note 4, if new linked list could not be created.
+ * @note 5, if dictionary could not be expanded.
+ * @note 99, if the dictionary does not exist (the dict pointer is NULL).
  * 
  * @return Zero, if the item has been succesfully added. Else non-zero.
  */
 int dict_set(dict_t *dict, const char *key, const void *value, const size_t valuesize);
 
 
-/*! @brief Gets value associated with a key from dictionary.
+/**
+ * @brief Gets value associated with a key from dictionary.
  *  
- * @param dict          dictionary to search in
- * @param key           key to search for
+ * @param dict  Dictionary to search in
+ * @param key   Key to search for
  * 
  * @return 
  * Void pointer to the value associated with target key. 
@@ -74,19 +77,21 @@ int dict_set(dict_t *dict, const char *key, const void *value, const size_t valu
 void *dict_get(const dict_t *dict, const char *key);
 
 
-/*! @brief Calculates the number of key-value pairs in dictionary.
+/** 
+ * @brief Calculates the number of key-value pairs in dictionary.
  *
- * @param dict          concerned dictionary
+ * @param dict  Concerned dictionary
  * 
  * @return Number of key-value pairs in the dictionary. If dict is NULL, returns 0.
  */
 size_t dict_len(const dict_t *dict);
 
 
-/*! @brief Removes dictionary entry with corresponding key from the dictionary.
+/** 
+ * @brief Removes dictionary entry with corresponding key from the dictionary.
  *  
- * @param dict          concerned dictionary
- * @param key           key to search for
+ * @param dict  Concerned dictionary
+ * @param key   Key to search for
  * 
  * @return 
  * 0, if entry successfully removed.
@@ -98,16 +103,14 @@ size_t dict_len(const dict_t *dict);
 int dict_del(dict_t *dict, const char *key);
 
 
-/*! @brief Fetches all keys from dictionary. Returns a vector.
+/** 
+ * @brief Fetches all keys from dictionary. Returns a vector.
  *
- * @paragraph Invalid dictionary
- * If dict is NULL, the returned vector is empty.
+ * @param dict  Concerned dictionary
  * 
- * @paragraph Memory deallocation
- * The caller is responsible for deallocating memory for the output vector
- * by calling vec_destroy function.
- *
- * @param dict          concerned dictionary
+ * @note - If dict is NULL, the returned vector is empty.
+ * 
+ * @note - The caller is responsible for deallocating memory for the output vector by calling `vec_destroy` function.
  * 
  * @return 
  * Vector of void pointers pointing to arrays of chars. 
@@ -116,16 +119,14 @@ int dict_del(dict_t *dict, const char *key);
 vec_t *dict_keys(const dict_t *dict);
 
 
-/*! @brief Fetches all values from dictionary. Returns a vector.
+/** 
+ * @brief Fetches all values from dictionary. Returns a vector.
  *
- * @paragraph Invalid dictionary
- * If dict is NULL, the returned vector is empty.
+ * @param dict  Concerned dictionary
  * 
- * @paragraph Memory deallocation
- * The caller is responsible for deallocating memory for the output vector
- * by calling vec_destroy function.
- *
- * @param dict          concerned dictionary
+ * @note - If dict is NULL, the returned vector is empty.
+ * 
+ * @note - The caller is responsible for deallocating memory for the output vector by calling `vec_destroy` function.
  * 
  * @return 
  * Vector of void pointers pointing to values. 
@@ -134,18 +135,20 @@ vec_t *dict_keys(const dict_t *dict);
 vec_t *dict_values(const dict_t *dict);
 
 
-/*! @brief Loops through all values in dictionary and applies 'function' to each value.
+/** 
+ * @brief Loops through all values in dictionary and applies 'function' to each value.
  * 
- * @param dict                   dictionary to apply the function to
- * @param function               function to apply
+ * @param dict      Dictionary to apply the function to
+ * @param function  Function to apply
  */
 void dict_map(dict_t *dict, void (*function)(void *));
 
 
-/*! @brief Loops through all entries in dictionary and applies 'function' to each entry.
+/** 
+ * @brief Loops through all entries in dictionary and applies 'function' to each entry.
  * 
- * @param dict                   dictionary to apply the function to
- * @param function               function to apply
+ * @param dict      Dictionary to apply the function to
+ * @param function  Function to apply
  */
 void dict_map_entries(dict_t *dict, void (*function)(void *));
 
