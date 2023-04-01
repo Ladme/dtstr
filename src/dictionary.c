@@ -80,8 +80,10 @@ static dict_entry_t *dict_entry_new(const char *key, const void *value, const si
 }
 
 /*! @brief Frees memory allocated for dictionary entry. */
-static void dict_entry_destroy(dict_entry_t *entry)
+static void dict_entry_destroy(void *item)
 {
+    if (item == NULL) return;
+    dict_entry_t *entry = *(dict_entry_t **) item;
     free(entry->value);
     free(entry->key);
     free(entry);
@@ -128,8 +130,7 @@ static dict_entry_t *dict_get_entry(const dict_t *dict, const char *key)
  * Returns zero if successful, else returns non-zero. */
 static int dict_node_entry_destroy(dllist_t *list, dnode_t *node)
 {
-    dict_entry_t *entry = *(dict_entry_t **) node->data;
-    dict_entry_destroy(entry);
+    dict_entry_destroy(node->data);
     return dllist_remove_node(list, node);
 }
 
@@ -236,12 +237,7 @@ void dict_destroy(dict_t *dict)
 
         if (dict->items[i] == NULL) continue;
 
-        dnode_t *head = dict->items[i]->head;
-        while (head != NULL) {
-            if (head->data != NULL) dict_entry_destroy(*(dict_entry_t **) head->data);
-            head = head->next;
-        }
-
+        dllist_map(dict->items[i], dict_entry_destroy);
         dllist_destroy(dict->items[i]);
     }
 
@@ -382,4 +378,29 @@ vec_t *dict_values(const dict_t *dict)
     }
 
     return values;
+}
+
+void dict_map(dict_t *dict, void (*function)(void *))
+{
+    if (dict == NULL) return;
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->items[i] == NULL) continue;
+
+        dnode_t *node = dict->items[i]->head;
+        while (node != NULL) {
+
+            if (node->data != NULL) function((*(dict_entry_t **) node->data)->value);            
+            node = node->next;
+        }
+    }
+}
+
+void dict_map_entries(dict_t *dict, void (*function)(void *))
+{
+    if (dict == NULL) return;
+
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        dllist_map(dict->items[i], function);
+    }
 }

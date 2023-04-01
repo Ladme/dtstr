@@ -244,4 +244,12 @@ size_t dllist_filter_mut(dllist_t *list, int (*filter_function)(const void *));
  */
 dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
+
+/*! @brief Loops through all items in doubly linked list and applies 'function' to each item.
+ * 
+ * @param list                     doubly linked list to apply the function to
+ * @param function                 function to apply
+ */
+void dllist_map(dllist_t *list, void (*function)(void *));
+
 #endif /* DLINKED_LIST_H */

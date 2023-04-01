@@ -5,20 +5,17 @@
 #include <stdio.h>
 #include "../src/dictionary.h"
 
-static inline void dict_print_sizet(const dict_t *dict)
-{
-    for (size_t i = 0; i < dict->allocated; ++i) {
-        if (dict->items[i] == NULL) continue;
-        dnode_t *head = dict->items[i]->head;
-        while (head != NULL) {
-            if (head->data != NULL) {
-                dict_entry_t *entry = *(dict_entry_t **) head->data;
-                printf("%s: %lu\n", entry->key, *(size_t *) entry->value);
-            }
 
-            head = head->next;
-        }
-    }
+static void print_sizet(void *item)
+{
+    dict_entry_t *entry = *(dict_entry_t **) item;
+    printf("%s: %ld, ", entry->key, *(size_t *) entry->value);
+}
+
+static inline void dict_print_sizet(dict_t *dict)
+{
+    dict_map_entries(dict, print_sizet);
+    printf("\n");
 }
 
 static int test_dict_new(void) 
@@ -442,6 +439,80 @@ static int test_dict_values(void)
     return 0;
 }
 
+static void multiply_by_two(void *item)
+{
+    size_t *ptr = (size_t *) item;
+    *ptr *= 2;
+}
+
+static int test_dict_map(void)
+{
+    printf("%-40s", "test_dict_map ");
+
+    dict_map(NULL, multiply_by_two);
+
+    dict_t *dict = dict_new();
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        dict_set(dict, keys[i], &values[i], sizeof(size_t));
+    }
+
+    dict_map(dict, multiply_by_two);
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert( *(size_t *) dict_get(dict, keys[i]) == values[i] * 2);
+    }
+
+    //dict_print_sizet(dict);
+
+    dict_destroy(dict);
+
+    printf("OK\n");
+    return 0;
+}
+
+static void multiply_by_two_from_entry(void *item)
+{
+    dict_entry_t *entry = *(dict_entry_t **) item;
+    size_t *val_ptr = (size_t *) entry->value;
+    *val_ptr *= 2;
+}
+
+static int test_dict_map_entries(void)
+{
+    printf("%-40s", "test_dict_map_entries ");
+
+    dict_map(NULL, multiply_by_two_from_entry);
+
+    dict_t *dict = dict_new();
+
+    char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+    size_t values[] = {123, 666, 42, 10000, 0,
+                       234, 888, 10, 5000,  0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        dict_set(dict, keys[i], &values[i], sizeof(size_t));
+    }
+
+    dict_map_entries(dict, multiply_by_two_from_entry);
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert( *(size_t *) dict_get(dict, keys[i]) == values[i] * 2);
+    }
+
+    //dict_print_sizet(dict);
+
+    dict_destroy(dict);
+
+    printf("OK\n");
+    return 0;
+}
 
 int main(void) 
 {
@@ -460,6 +531,9 @@ int main(void)
 
     test_dict_keys();
     test_dict_values();
+
+    test_dict_map();
+    test_dict_map_entries();
 
     return 0;
 }

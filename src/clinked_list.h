@@ -282,4 +282,12 @@ size_t cllist_filter_mut(cllist_t *list, int (*filter_function)(const void *));
  */
 cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
+
+/*! @brief Loops through all items in circular doubly linked list and applies 'function' to each item.
+ * 
+ * @param list                     circular doubly linked list to apply the function to
+ * @param function                 function to apply
+ */
+void cllist_map(cllist_t *list, void (*function)(void *));
+
 #endif /* CLINKED_LIST_H */

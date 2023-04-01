@@ -90,3 +90,29 @@ int avl_insert(avl_t *tree, const void *item)
 
     return avl_node_create(tree, item, parent, tree->datasize, dir);
 }
+
+void avl_map(avl_t *tree, void (*function)(void *))
+{
+    if (tree == NULL) return;
+
+    queue_t *queue = queue_new();
+    void *item = NULL;
+
+    avl_node_t *node = tree->root;
+    while (node != NULL) {
+        function(node->data);
+
+        if (node->left != NULL) queue_en(queue, &(node->left), sizeof(avl_node_t *));
+        if (node->right != NULL) queue_en(queue, &(node->right), sizeof(avl_node_t *));
+
+        // free memory for item obtained in previous cycle
+        free(item);
+        item = queue_de(queue, sizeof(avl_node_t *));
+        if (item == NULL) node = NULL;
+        else node = *(avl_node_t **) item;
+    }
+
+    // free last item
+    free(item);
+    queue_destroy(queue);
+}

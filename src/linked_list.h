@@ -268,4 +268,13 @@ size_t llist_filter_mut(llist_t *list, int (*filter_function)(const void *));
  */
 node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, const void *), const void *target);
 
+
+/*! @brief Loops through all items in linked list and applies 'function' to each item.
+ * 
+ * @param list                     linked list to apply the function to
+ * @param function                 function to apply
+ */
+void llist_map(llist_t *list, void (*function)(void *));
+
+
 #endif /* LINKED_LIST_H */

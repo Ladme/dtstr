@@ -6,11 +6,14 @@
 #include <time.h>
 #include "../src/vector.h"
 
-inline static void print_sizet_vec(const vec_t *vector)
+static void print_sizet(void *item)
 {
-    for (size_t i = 0; i < vector->len; ++i) {
-        printf("%ld ", *((size_t *) vec_get(vector, i)));
-    }
+    printf("%ld ", *(size_t *) item);
+}
+
+inline static void print_sizet_vec(vec_t *vector)
+{
+    vec_map(vector, print_sizet);
     printf("\n");
 }
 
@@ -811,6 +814,38 @@ static int test_vec_find_bsearch(void)
     return 0;
 }
 
+static void multiply_by_two(void *item)
+{
+    size_t *ptr = (size_t *) item;
+    *ptr *= 2;
+}
+
+static int test_vec_map(void)
+{
+    printf("%-40s", "test_vec_map ");
+
+    vec_map(NULL, multiply_by_two);
+
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 200; ++i) {
+        vec_push(vector, &i, sizeof(size_t));
+    }
+
+    vec_map(vector, multiply_by_two);
+
+    for (size_t i = 0; i < vector->len; ++i) {
+        assert( *(size_t *) vec_get(vector, i) == i * 2);
+    }
+
+    //print_sizet_vec(vector);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_comparison_function_reverse(const void *first, const void *second)
 {
     return ((int) *((size_t *) second)) - ((int) *((size_t *) first));
@@ -1334,6 +1369,8 @@ int main(void)
 
     test_vec_find();
     test_vec_find_bsearch();
+
+    test_vec_map();
 
     test_vec_sort_selection();
     test_vec_sort_bubble();

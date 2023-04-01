@@ -366,4 +366,12 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  */
 int vec_sort_quick(vec_t *vector, int (*qsort_compare_function)(const void *, const void *));
 
+
+/*! @brief Loops through all items in vector and applies 'function' to each item.
+ * 
+ * @param vector                   vector to apply the function to
+ * @param function                 function to apply
+ */
+void vec_map(vec_t *vector, void (*function)(void *));
+
 #endif /* VECTOR_H */

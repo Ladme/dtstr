@@ -623,6 +623,36 @@ static int test_dllist_find(void)
     return 0;
 }
 
+static void multiply_by_two(void *item)
+{
+    size_t *ptr = (size_t *) item;
+    *ptr *= 2;
+}
+
+static int test_dllist_map(void)
+{
+    printf("%-40s", "test_dllist_map ");
+
+    dllist_map(NULL, multiply_by_two);
+
+    dllist_t *list = dllist_new();
+
+    for (size_t i = 0; i < 100; ++i) {
+        dllist_push_last(list, &i, sizeof(size_t));
+    }
+
+    dllist_map(list, multiply_by_two);
+
+    for (size_t i = 0; i < 100; ++i) {
+        assert( *(size_t *) dllist_get(list, i) == i * 2);
+    }
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 int main(void) 
 {
@@ -644,6 +674,8 @@ int main(void)
     test_dllist_filter_mut();
 
     test_dllist_find();
+
+    test_dllist_map();
 
     return 0;
 }

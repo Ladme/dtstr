@@ -23,7 +23,7 @@ dictionary: src/dictionary.c src/dictionary.h src/linked_list.c src/linked_list.
 queue: src/queue.c src/queue.h src/dlinked_list.c src/dlinked_list.h
 	gcc -c src/queue.c -std=c99 -pedantic -Wall -O2 -o src/queue.o
 
-avl_tree: src/avl_tree.c src/avl_tree.h
+avl_tree: src/avl_tree.c src/avl_tree.h src/queue.c src/queue.h
 	gcc -c src/avl_tree.c -std=c99 -pedantic -Wall -O2 -o src/avl_tree.o
 
 tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_avl_tree.c libdtstr.a

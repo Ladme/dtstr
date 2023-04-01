@@ -133,4 +133,20 @@ vec_t *dict_keys(const dict_t *dict);
  */
 vec_t *dict_values(const dict_t *dict);
 
+
+/*! @brief Loops through all values in dictionary and applies 'function' to each value.
+ * 
+ * @param dict                   dictionary to apply the function to
+ * @param function               function to apply
+ */
+void dict_map(dict_t *dict, void (*function)(void *));
+
+
+/*! @brief Loops through all entries in dictionary and applies 'function' to each entry.
+ * 
+ * @param dict                   dictionary to apply the function to
+ * @param function               function to apply
+ */
+void dict_map_entries(dict_t *dict, void (*function)(void *));
+
 #endif /* DICTIONARY_H */

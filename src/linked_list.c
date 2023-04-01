@@ -248,3 +248,15 @@ node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, cons
 
     return NULL;
 }
+
+void llist_map(llist_t *list, void (*function)(void *))
+{
+    if (list == NULL) return;
+
+    node_t *node = list->head;
+
+    while (node != NULL) {
+        function(node->data);
+        node = node->next;
+    }
+}

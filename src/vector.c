@@ -220,3 +220,10 @@ long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *,
 
     return -1;
 }
+
+
+void vec_map(vec_t *vector, void (*function)(void *))
+{
+    if (vector == NULL) return;
+    for (size_t i = 0; i < vector->len; ++i) function(vector->items[i]);
+}

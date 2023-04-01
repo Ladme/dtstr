@@ -72,12 +72,47 @@ static int test_queue_operations(void)
 }
 
 
+static void multiply_by_two(void *item)
+{
+    size_t *ptr = (size_t *) item;
+    *ptr *= 2;
+}
+
+static int test_queue_map(void)
+{
+    printf("%-40s", "test_queue_map ");
+
+    queue_map(NULL, multiply_by_two);
+
+    queue_t *queue = queue_new();
+
+    for (size_t i = 0; i < 100; ++i) {
+        queue_en(queue, &i, sizeof(size_t));
+    }
+
+    queue_map(queue, multiply_by_two);
+
+    for (size_t i = 0; i < 100; ++i) {
+        void *item = queue_de(queue, sizeof(size_t));
+        assert( *(size_t *) item == i * 2);
+        free(item);
+    }
+
+    queue_destroy(queue);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void)
 {
     test_queue_destroy_null();
     test_queue_new();
 
     test_queue_operations();
+
+    test_queue_map();
 
     return 0;
 }
