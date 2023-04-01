@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "../src/dictionary.h"
 
-static void dict_print_sizet(const dict_t *dict)
+static inline void dict_print_sizet(const dict_t *dict)
 {
     for (size_t i = 0; i < dict->allocated; ++i) {
         if (dict->items[i] == NULL) continue;
