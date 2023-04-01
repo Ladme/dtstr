@@ -319,6 +319,8 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  * @param vector                   Vector to sort.
  * @param qsort_compare_function   Function pointer defining how the items should be compared.
  *  
+ * @note - If the 'vector' parameter is NULL, 99 is returned.
+ * 
  * @note
  * - The `qsort_compare_function` is a pointer to a function that returns an integer and accepts two void pointers.
  * The void pointers point to two particular pieces of data that are compared. 
@@ -331,24 +333,17 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  * It should return <0 if the first of the two compared items is smaller.
  * 
  * @note 
- * - However, please note that vec_sort_quick requires a slightly different comparison function than the other sorting
- * functions. Please see below for more details.
+ * - However, note that `vec_sort_quick` requires a slightly different comparison function than the other sorting
+ * functions. See below for more details.
  * 
  * @note
- * - The vec_t structure contains an array of void pointers pointing to the specific items "saved" in the vector. 
- * In other `vec_sort_*` functions, these void pointers are directly passed to the comparison function to perform
- * comparison. Therefore, in the comparison function, you only need to dereference them once to get to the target value.
- * For example, you do *((int *) pointer).
- * 
- * - This function, however, uses the `qsort` function from the standard library, which can be used to sort an array of
- * any items. `qsort` also uses a compare function and it provides this compare function with POINTERS to the items
- * in the array. As our `vec_t` structure already contains an array of void pointers, when it is used with `qsort`,
- * `qsort` passes void** pointers to the compare function.
- * 
- * - Therefore, to get to the data from void pointer in the compare function, you have to use double dereference.
- * For example, you do **((int **) pointer).
- * 
- * @note - If the 'vector' parameter is NULL, 99 is returned.
+ * - The `vec_t` structure contains an array of void pointers, which point to the items saved in the vector. 
+ *   In the `vec_sort_*` functions, these pointers are passed directly to the comparison function for comparison. 
+ *   In contrast, this function uses the `qsort` function from the standard library, which can sort an array of any items. 
+ *   `qsort` also uses a `compare function` and provides it with pointers to the items in the array. 
+ *   As `vec_t` already contains an array of void pointers, when it is used with `qsort`, `qsort` passes `void**` pointers to the `compare function`. 
+ *   Therefore, in the `compare function`, to access the data from the void pointer, double dereferencing is required. 
+ *   For example, **((int **) pointer) would be used to dereference an integer pointer.
  * 
  * @return 0 if the vector is successfully sorted; otherwise, a non-zero value is returned.
  */

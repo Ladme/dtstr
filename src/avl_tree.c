@@ -107,6 +107,7 @@ void avl_map(avl_t *tree, void (*function)(void *))
 
         // free memory for item obtained in previous cycle
         free(item);
+        
         item = queue_de(queue, sizeof(avl_node_t *));
         if (item == NULL) node = NULL;
         else node = *(avl_node_t **) item;
