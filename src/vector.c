@@ -38,6 +38,14 @@ static int vec_reallocate(vec_t **vector)
     return 0;
 }
 
+/*! @brief Swaps two items in a vector. */
+inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
+{
+    void *tmp = vector->items[i];
+    vector->items[i] = vector->items[j];
+    vector->items[j] = tmp;
+}
+
 /* *************************************************************************** */
 /*                 PUBLIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
 /* *************************************************************************** */
@@ -253,9 +261,29 @@ long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, con
 }
 
 
-
 void vec_map(vec_t *vector, void (*function)(void *))
 {
     if (vector == NULL) return;
     for (size_t i = 0; i < vector->len; ++i) function(vector->items[i]);
+}
+
+
+void vec_shuffle(vec_t *vector)
+{
+    if (vector == NULL || vector->len < 2) return;
+
+    for (size_t i = 0; i < vector->len - 1; ++i) {
+        size_t j = rand() % (vector->len - i) + i;
+        
+        if (i != j) vec_swap(vector, i, j);
+    }
+}
+
+void vec_reverse(vec_t *vector)
+{
+    if (vector == NULL || vector-> len < 2) return;
+
+    for (size_t i = 0; i < vector->len / 2; ++i) {
+        vec_swap(vector, i, vector->len - i - 1);
+    }
 }

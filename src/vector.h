@@ -276,6 +276,35 @@ long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, con
 
 
 /** 
+ * @brief Loops through all items in vector and applies 'function' to each item.
+ * 
+ * @param vector    Vector to apply the function to
+ * @param function  Function to apply
+ */
+void vec_map(vec_t *vector, void (*function)(void *));
+
+
+/**
+ * @brief Shuffles the items of a vector.
+ * 
+ * @param vector A pointer to the vector structure to be shuffled.
+ * 
+ * @note - The Fisher-Yates shuffle algorithm is used to randomly reorder items in the vector. 
+ * @note - The random number generator used by this function must 
+ *         be seeded before calling the function, e.g by calling `srand(time(NULL))`;
+ */
+void vec_shuffle(vec_t *vector);
+
+
+/**
+ * @brief Reverses the order of items in a vector.
+ *
+ * @param vector A pointer to the vector to be reversed.
+ */
+void vec_reverse(vec_t *vector);
+
+
+/** 
  * @brief Sorts all items in a vector using selection sort.
  *
  * @param vector             Vector to sort
@@ -398,14 +427,5 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  * @return 0 if the vector is successfully sorted; otherwise, a non-zero value is returned.
  */
 int vec_sort_quick(vec_t *vector, int (*qsort_compare_function)(const void *, const void *));
-
-
-/** 
- * @brief Loops through all items in vector and applies 'function' to each item.
- * 
- * @param vector    Vector to apply the function to
- * @param function  Function to apply
- */
-void vec_map(vec_t *vector, void (*function)(void *));
 
 #endif /* VECTOR_H */

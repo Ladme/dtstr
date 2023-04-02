@@ -8,7 +8,7 @@
 /* *************************************************************************** */
 
 /*! @brief Swaps two items in a vector. */
-static void vec_swap(vec_t *vector, const size_t i, const size_t j)
+inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 {
     void *tmp = vector->items[i];
     vector->items[i] = vector->items[j];

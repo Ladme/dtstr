@@ -1007,6 +1007,99 @@ static int test_vec_map(void)
     return 0;
 }
 
+static int test_vec_shuffle(void)
+{
+    printf("%-40s", "test_vec_shuffle ");
+
+    // shuffle non-existent vector
+    vec_shuffle(NULL);
+
+    // shuffle empty vector
+    vec_t *vector = vec_new();
+    vec_shuffle(vector);
+    
+    // shuffle vector with one element
+    size_t first = 0;
+    vec_push(vector, &first, sizeof(size_t));
+    vec_shuffle(vector);
+
+    for (size_t i = 1; i < 200; ++i) {
+        vec_push(vector, &i, sizeof(size_t));
+    }
+
+    //print_sizet_vec(vector);
+
+    // shuffle vector with 200 items
+    vec_shuffle(vector);
+
+    // check that all original items are present in the vector
+    // and that the vector is NOT sorted
+    short sorted = 1;
+    for (size_t i = 0; i < 200; ++i) {
+        assert(vec_find(vector, test_equality_function, &i) >= 0);
+        if (i >= 1 && vec_get(vector, i) > vec_get(vector, i - 1)) sorted = 0;
+    }
+
+    assert(!sorted);
+
+    //print_sizet_vec(vector);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_reverse(void)
+{
+    printf("%-40s", "test_vec_reverse ");
+
+    // reverse non-existent vector
+    vec_reverse(NULL);
+
+    // reverse empty vector
+    vec_t *vector = vec_new();
+    vec_reverse(vector);
+    
+    // reverse vector with one element
+    size_t first = 0;
+    vec_push(vector, &first, sizeof(size_t));
+    vec_reverse(vector);
+
+    for (size_t i = 1; i < 200; ++i) {
+        vec_push(vector, &i, sizeof(size_t));
+    }
+
+    // reverse vector with 200 items
+    vec_reverse(vector);
+
+    //print_sizet_vec(vector);
+
+    for (size_t i = 0; i < 200; ++i) {
+        assert(*(size_t *) vec_get(vector, i) == 200 - i - 1);
+    }
+
+    // add one more item and reverse again
+    size_t one_more = 200;
+    vec_insert(vector, &one_more, sizeof(size_t), 0);
+
+    //print_sizet_vec(vector);
+
+    vec_reverse(vector);
+    for (size_t i = 0; i < 201; ++i) {
+        assert(*(size_t *) vec_get(vector, i) == i);
+    }
+
+    //print_sizet_vec(vector);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+
 static int test_comparison_function_reverse(const void *first, const void *second)
 {
     return ((int) *((size_t *) second)) - ((int) *((size_t *) first));
@@ -1497,8 +1590,51 @@ static int test_vec_sort_and_find(void)
 }
 
 
+static int test_vec_shuffle_and_sort(void)
+{
+    printf("%-40s", "test_vec_shuffle_and_sort ");
+
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 200; ++i) {
+        vec_push(vector, &i, sizeof(size_t));
+    }
+
+    vec_shuffle(vector);
+
+    //print_sizet_vec(vector);
+
+    // check that all original items are present in the vector
+    // and that the vector is NOT sorted
+    short sorted = 1;
+    for (size_t i = 0; i < 200; ++i) {
+        assert(vec_find(vector, test_equality_function, &i) >= 0);
+        if (i >= 1 && vector->items[i] > vector->items[i - 1]) sorted = 0;
+    }
+
+    assert(!sorted);
+
+    // sort the vector again
+    vec_sort_quicknaive(vector, test_comparison_function);
+
+    // check that the vector is sorted
+    for (size_t i = 0; i < 200; ++i) {
+        assert(*(size_t *) vec_get(vector, i) == i);
+    }
+
+    //print_sizet_vec(vector);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
+    srand(time(NULL));
+
     test_vec_destroy_null();
     test_vec_new();
     test_vec_push();
@@ -1521,7 +1657,6 @@ int main(void)
     test_vec_remove_all();
 
     test_vec_filter_mut();
-    srand(time(NULL));
     test_vec_filter_mut_large();
     test_vec_filter_mut_complex();
 
@@ -1536,6 +1671,9 @@ int main(void)
 
     test_vec_map();
 
+    test_vec_shuffle();
+    test_vec_reverse();
+
     test_vec_sort_selection();
     test_vec_sort_bubble();
     test_vec_sort_insertion();
@@ -1543,6 +1681,7 @@ int main(void)
     test_vec_sort_quick();
 
     test_vec_sort_and_find();
+    test_vec_shuffle_and_sort();
 
     return 0;
 }
