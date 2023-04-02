@@ -32,14 +32,14 @@ int avl_insert(avl_t *tree, const void *item);
 
 
 /** 
- * @brief Loops through all items in AVL tree and applies 'function' to each item.
+ * @brief Loops through all items in AVL tree and applies `function` to each item.
  * 
  * @param tree                     tree to apply the function to
  * @param function                 function to apply
  * 
  * @note - Note that modifying the values stored in an AVL tree using the avl_map function can disrupt the balance of the tree.
- * @note - The avl_map function utilizes breadth-first search to traverse the nodes in the tree. 
- *         Starting from the root node, the specified 'function' is applied to each node in the tree's levels. 
+ * @note - The avl_map function utilizes level-order (breadth-first) traversal over the nodes in the tree.
+ *         Starting from the root node, the specified `function` is applied to each node in the tree's levels. 
  *         Nodes at the same level are processed from left to right, ensuring that each node is visited before moving on to the next level.
  * 
  */

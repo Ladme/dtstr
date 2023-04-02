@@ -55,7 +55,7 @@ void *vec_get(const vec_t *const vector, const size_t index);
  * 
  * @note - Data provided using the `item` pointer is copied to a new memory location. You can therefore safely deallocate the original item.
  *
- * @note - Asymttotic Complexity: Constant, O(1)
+ * @note - Asymptotic Complexity: Constant, O(1)
  * 
  * @param vector    The vector to which to add the item.
  * @param item      The item to add.
@@ -71,7 +71,7 @@ int vec_push(vec_t *vector, void *const item, const size_t itemsize);
  * 
  * @note - Data provided using the `item` pointer is copied to new memory location. You can therefore freely deallocate the original item.
  * 
- * @complexity Linear, O(n)
+ * @note - Asymptotic Complexity: Linear, O(n)
  * 
  * @param vector    Pointer to the vector to use.
  * @param item      Pointer to the item to add.
