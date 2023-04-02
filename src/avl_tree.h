@@ -86,7 +86,7 @@ void avl_map_depth(avl_t *tree, void (*function)(void *));
 
 
 /** 
- * @brief Traverses all items in AVL tree and applies `function` to each item. The traversal-order is undefined.
+ * @brief Traverses all items in AVL tree and applies `function` to each item. The traversal order is undefined.
  * 
  * @param tree      Tree to apply the function to
  * @param function  Function to apply

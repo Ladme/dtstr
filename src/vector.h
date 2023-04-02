@@ -287,7 +287,7 @@ void vec_map(vec_t *vector, void (*function)(void *));
 /**
  * @brief Shuffles the items of a vector.
  * 
- * @param vector A pointer to the vector structure to be shuffled.
+ * @param vector A pointer to the vector structure to be shuffled
  * 
  * @note - The Fisher-Yates shuffle algorithm is used to randomly reorder items in the vector. 
  * @note - The random number generator used by this function must 
@@ -299,7 +299,7 @@ void vec_shuffle(vec_t *vector);
 /**
  * @brief Reverses the order of items in a vector.
  *
- * @param vector A pointer to the vector to be reversed.
+ * @param vector A pointer to the vector to be reversed
  */
 void vec_reverse(vec_t *vector);
 
