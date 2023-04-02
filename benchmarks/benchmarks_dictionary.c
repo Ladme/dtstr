@@ -202,6 +202,52 @@ static void benchmark_dict_set_del(const size_t repeats)
     printf("\n");
 }
 
+static void benchmarks_dict_set_preallocated(void)
+{
+    printf("%s\n", "benchmark_dict_set (default vs. preallocated)");
+
+    size_t items[] = {100, 1000, 10000, 100000, 1000000};
+
+    for (size_t j = 0; j < 5; ++j) {
+
+        clock_t start = clock();
+        dict_t *dict = dict_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> setting %12lu items, base capacity %12lu: %f s\n", items[j], DICT_DEFAULT_CAPACITY, time_elapsed);
+
+        dict_destroy(dict);
+
+        //***
+
+        start = clock();
+        dict = dict_with_capacity(items[j]);
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> setting %12lu items, base capacity %12lu: %f s\n", items[j], items[j], time_elapsed);
+
+        dict_destroy(dict);
+
+        printf("\n");
+    }
+}
+
 int main(void)
 {
     srand(time(NULL));
@@ -211,5 +257,7 @@ int main(void)
     benchmark_dict_len(1000);
     benchmark_dict_del(10000);
     benchmark_dict_set_del(10);
+
+    benchmarks_dict_set_preallocated();
 
 }

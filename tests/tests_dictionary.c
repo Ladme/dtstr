@@ -25,8 +25,9 @@ static int test_dict_new(void)
     dict_t *dict = dict_new();
 
     assert(dict);
-    assert(dict->allocated > 0);
-    assert(dict->available > 0);
+    assert(dict->allocated == DICT_DEFAULT_CAPACITY * 2);
+    assert(dict->available == DICT_DEFAULT_CAPACITY);
+    assert(dict->base_capacity == DICT_DEFAULT_CAPACITY * 2);
 
     dict_destroy(dict);
 
@@ -42,9 +43,9 @@ static int test_dict_set(void)
     size_t test_value = 12;
     assert(dict_set(NULL, "test_key", &test_value, sizeof(size_t)) == 99);
 
-    dict_t *dict = dict_new();
+    dict_t *dict = dict_with_capacity(32);
 
-    // do not change the keys nor DICT_BLOCK
+    // do not change the keys or the base capacity
     // sun & this clash (1)
     // linked_list, number3, reasonable clash (9)
     // beta, hashtag clash (39)
@@ -258,7 +259,7 @@ static int test_dict_del(void)
 
     assert(dict_del(NULL, "test") == 99);
 
-    dict_t *dict = dict_new();
+    dict_t *dict = dict_with_capacity(32);
 
     char *keys[] = {"sun", "linked_list", "number3", "beta", "something",
                     "reasonable", "array", "alpha", "hashtag", "this"};
@@ -313,7 +314,7 @@ static int test_dict_set_del_large(void)
     }
 
     //dict_print_sizet(dict);
-    assert(dict->allocated == 64);
+    assert(dict->allocated == DICT_DEFAULT_CAPACITY * 2);
 
     for (size_t i = 0; i < 10000; ++i) {
 
@@ -330,6 +331,58 @@ static int test_dict_set_del_large(void)
     printf("OK\n");
     return 0;
 }
+
+static int test_dict_set_del_preallocated(void)
+{
+    printf("%-40s", "test_dict_set_del (large, preallocated) ");
+
+    dict_t *dict = dict_with_capacity(2000);
+
+    assert(dict->allocated == 4000);
+    assert(dict->base_capacity == 4000);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16000);
+    assert(dict->base_capacity == 4000);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_del(dict, key) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 4000);
+    assert(dict->base_capacity == 4000);
+
+    for (size_t i = 0; i < 10000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(dict_set(dict, key, &i, sizeof(size_t)) == 0);
+    }
+
+    //dict_print_sizet(dict);
+    assert(dict->allocated == 16000);
+    assert(dict->base_capacity == 4000);
+
+    dict_destroy(dict);
+    printf("OK\n");
+    return 0;
+}
+
+
 
 static int test_eq_string(const void *string1, const void *string2)
 {
@@ -528,6 +581,7 @@ int main(void)
     test_dict_del();
 
     test_dict_set_del_large();
+    test_dict_set_del_preallocated();
 
     test_dict_keys();
     test_dict_values();

@@ -10,7 +10,7 @@
 /*! @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
 static inline int vec_check_shrink(vec_t *vector)
 {
-    return (vector->len <= vector->capacity / 4) && (vector->capacity > VEC_INITIAL_CAPACITY);
+    return (vector->capacity > vector->base_capacity) && (vector->len <= vector->capacity / 4);
 }
 
 /*! @brief Shrinks the vector in capacity by half. Returns 0, if successful. Else returns non-zero. */
@@ -52,13 +52,19 @@ inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 
 vec_t *vec_new(void) 
 {
+    return vec_with_capacity(VEC_DEFAULT_CAPACITY);
+}
+
+vec_t *vec_with_capacity(const size_t base_capacity)
+{
     vec_t *vector = calloc(1, sizeof(vec_t));
     if (vector == NULL) return NULL;
 
-    vector->items = calloc(VEC_INITIAL_CAPACITY, sizeof(void *));
+    vector->items = calloc(base_capacity, sizeof(void *));
     if (vector->items == NULL) return NULL;
 
-    vector->capacity = VEC_INITIAL_CAPACITY;
+    vector->capacity = base_capacity;
+    vector->base_capacity = base_capacity;
 
     return vector;
 }

@@ -18,20 +18,44 @@ typedef struct dict_entry {
 } dict_entry_t;
 
 typedef struct dict {
-    size_t allocated;       // the number of entries for which memory has been allocated
+    size_t allocated;       // the number of positions for entries for which memory has been allocated
     size_t available;       // the number of positions for entries that are available
+    size_t base_capacity;   // the number of positions for entries that are initially allocated
     dllist_t **items;
 } dict_t;
 
+/** @brief The number of entries that are GUARANTEED to fit into a dictionary created by `dict_new` without reallocating. */
+#define DICT_DEFAULT_CAPACITY 16UL
 
 /** 
  * @brief Creates new `dict_t` structure and allocates memory for it.
  *
- * @note Destroy `dict_t` structure using dict_destroy function.
+ * @note - Destroy `dict_t` structure using dict_destroy function.
+ * @note - Allocates space for at least `DICT_DEFAULT_CAPACITY` key-value pairs. 
+ *         This space is dynamically expanded when needed but expanding the dictionary is a very costly operation.
+ *         You may want to preallocate memory for a specific number of key-value pairs using `dict_with_capacity` function.
  * 
  * @return Pointer to the created dict_t, if successful. NULL if not successful.
  */
 dict_t *dict_new(void);
+
+
+/**
+ * @brief Creates a new `dict_t` structure and preallocates space for a specified number of entries.
+ *
+ * @param capacity  The guaranteed number of key-value pairs that the dictionary can store without having to reallocate memory
+ * 
+ * @note - Note that the capacity does NOT directly correspond to the number of allocated positions for key-value pairs.
+ *         Instead it specifies the guaranteed number of key-value pairs that the dictionary can store without having to
+ *         reallocate memory.
+ * @note - Note that the real number of key-value pairs that the dictionary fits before reallocating may be much higher
+ *         depending on the number of hash collisions.
+ * @note - Properly setting the expected capacity of a dictionary can bring MASSIVE performance benefits. Do not underestimate it.
+ * @note - The dictionary will never shrink below the specified `capacity`.
+ * 
+ * @return A pointer to the newly allocated dictionary structure, or NULL if memory allocation fails.
+ */
+dict_t *dict_with_capacity(const size_t capacity);
 
 
 /**

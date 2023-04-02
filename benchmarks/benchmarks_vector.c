@@ -310,6 +310,47 @@ static void benchmark_vec_find_bsearch(void)
     printf("\n");
 }
 
+static void benchmarks_vec_push_preallocated(void)
+{
+    printf("%s\n", "benchmark_vec_push (default vs. preallocated)");
+
+    size_t items[] = {100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
+
+    for (size_t j = 0; j < 7; ++j) {
+
+        clock_t start = clock();
+        vec_t *vector = vec_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            vec_push(vector, &i, sizeof(size_t));
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> pushing %12lu items, base capacity %12lu: %f s\n", items[j], VEC_DEFAULT_CAPACITY, time_elapsed);
+
+        vec_destroy(vector);
+
+        //***
+
+        start = clock();
+        vector = vec_with_capacity(items[j]);
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            vec_push(vector, &i, sizeof(size_t));
+        }
+
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> pushing %12lu items, base capacity %12lu: %f s\n", items[j], items[j], time_elapsed);
+
+        vec_destroy(vector);
+
+        printf("\n");
+    }
+}
 /* *************************************************************************** */
 /*                      BENCHMARKS OF SORTING ALGORITHMS                       */
 /* *************************************************************************** */
@@ -553,6 +594,7 @@ int main(void)
     benchmark_vec_filter();
     benchmark_vec_find();
     benchmark_vec_find_bsearch();
+    benchmarks_vec_push_preallocated();
 
     benchmark_vec_sort_selection();
     benchmark_vec_sort_bubble();

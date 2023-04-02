@@ -12,9 +12,6 @@ static const unsigned long FNV_OFFSET = 14695981039346656037UL;
 /*! @brief Hashing constant for hash_key function */
 static const unsigned long FNV_PRIME = 1099511628211UL;
 
-/*! @brief The number of linked lists for which memory is initially allocated. */
-static const size_t DICT_BLOCK = 64;
-
 
 /*! @brief Hashing function for string. */
 static size_t hash_key(const char *key)
@@ -32,27 +29,6 @@ static size_t hash_key(const char *key)
 inline static size_t dict_index(const dict_t *dict, const char *key)
 {
     return hash_key(key) % dict->allocated;
-}
-
-/*! @brief Creates a new dictionary allocating space for 'capacity' linked lists. */
-inline static dict_t *dict_with_capacity(const size_t capacity)
-{
-    dict_t *dict = calloc(1, sizeof(dict_t));
-    if (dict == NULL) {
-        return NULL;
-    }
-
-    // allocate memory for items
-    dict->items = calloc(capacity, sizeof(dllist_t *));
-    if (dict->items == NULL) {
-        free(dict);
-        return NULL;
-    }
-
-    dict->allocated = capacity;
-    dict->available = capacity / 2;
-
-    return dict;
 }
 
 /*! @brief Allocate memory for new dictionary entry. Returns pointer to new entry or NULL if allocation fails. */
@@ -225,7 +201,29 @@ static int dict_shrink(dict_t *dict)
 
 dict_t *dict_new(void)
 {
-    return dict_with_capacity(DICT_BLOCK);
+    return dict_with_capacity(DICT_DEFAULT_CAPACITY);
+}
+
+
+dict_t *dict_with_capacity(const size_t capacity)
+{
+    dict_t *dict = calloc(1, sizeof(dict_t));
+    if (dict == NULL) {
+        return NULL;
+    }
+
+    // allocate memory for items
+    dict->items = calloc(capacity * 2, sizeof(dllist_t *));
+    if (dict->items == NULL) {
+        free(dict);
+        return NULL;
+    }
+
+    dict->allocated = capacity * 2;
+    dict->base_capacity = dict->allocated;
+    dict->available = capacity;
+
+    return dict;
 }
 
 
@@ -334,7 +332,7 @@ int dict_del(dict_t *dict, const char *key)
     }
     
     // shrink dictionary
-    if (dict->allocated > DICT_BLOCK &&  3 * dict->allocated <= 8 * dict->available && dict_shrink(dict) != 0) return 3;
+    if (dict->allocated > dict->base_capacity &&  3 * dict->allocated <= 8 * dict->available && dict_shrink(dict) != 0) return 3;
 
     return 0;
 }

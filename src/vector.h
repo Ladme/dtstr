@@ -8,23 +8,39 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VEC_INITIAL_CAPACITY 16
-
 typedef struct vector {
     size_t len;
     size_t capacity;
+    size_t base_capacity;
     void **items;
 } vec_t;
 
+#define VEC_DEFAULT_CAPACITY 16UL
 
 /**
  * @brief Creates a new `vec_t` structure and allocates memory for it.
  *
  * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
+ * @note - Allocates space for `VEC_DEFAULT_CAPACITY` items. 
+ *         This space is dynamically expanded when needed but expanding the vector is a costly operation.
+ *         You may want to preallocate memory for a specific number of items using `vec_with_capacity` function.
  * 
  * @return A pointer to the newly created `vec_t` structure if successful; otherwise, NULL.
  */
 vec_t *vec_new(void);
+
+
+/**
+ * @brief Creates a new `vec_t` structure and preallocates space for a specified number of items.
+ *
+ * @param base_capacity     The initial capacity of the vector
+ * 
+ * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
+ * @note - The vector will never shrink below the specified `base_capacity`.
+ * 
+ * @return A pointer to the newly created `vec_t` structure if successful; otherwise, NULL.
+ */
+vec_t *vec_with_capacity(const size_t base_capacity);
 
 
 /**

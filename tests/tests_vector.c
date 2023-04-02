@@ -35,7 +35,8 @@ static int test_vec_new(void)
 
     assert(vector);
     assert(vector->len == 0);
-    assert(vector->capacity == VEC_INITIAL_CAPACITY);
+    assert(vector->capacity == VEC_DEFAULT_CAPACITY);
+    assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
 
     vec_destroy(vector);
 
@@ -307,7 +308,7 @@ static int test_vec_pop(void)
     }
 
     assert(vector->len == 0);
-    assert(vector->capacity == VEC_INITIAL_CAPACITY);
+    assert(vector->capacity == vector->base_capacity);
 
     vec_destroy(vector);
     
@@ -358,7 +359,7 @@ static int test_vec_pop_and_push(void)
     }
 
     assert(vector->len == 0);
-    assert(vector->capacity == VEC_INITIAL_CAPACITY);
+    assert(vector->capacity == vector->base_capacity);
 
     for (size_t i = 0; i < 130; ++i) {
         assert(!vec_push(vector, &test_array[i], sizeof(int)));
@@ -476,6 +477,47 @@ static int test_vec_remove_all(void)
         else if (vector->len == 16) assert(vector->capacity == 32);
         else if (vector->len == 8) assert(vector->capacity == 16);
     }
+
+    vec_destroy(vector);
+    
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_push_pop_preallocated(void)
+{
+    printf("%-40s", "test_vec_push_pop (preallocated) ");
+
+    vec_t *vector = vec_with_capacity(128);
+
+    assert(vector->len == 0);
+    assert(vector->capacity == 128);
+    assert(vector->base_capacity == 128);
+
+    for (size_t i = 0; i < 128; ++i) {
+        assert(!vec_push(vector, &i, sizeof(size_t)));
+    }
+
+    assert(vector->len == 128);
+    assert(vector->capacity == 128);
+    assert(vector->base_capacity == 128);
+
+    size_t additional = 129;
+    assert(!vec_push(vector, &additional, sizeof(size_t)));
+
+    assert(vector->len == 129);
+    assert(vector->capacity == 256);
+    assert(vector->base_capacity == 128);
+
+    for (size_t i = 0; i < 129; ++i) {
+        void *item = vec_pop(vector);
+        assert(item);
+        free(item);
+    }
+
+    assert(vector->len == 0);
+    assert(vector->capacity == 128);
+    assert(vector->base_capacity == 128);  
 
     vec_destroy(vector);
     
@@ -1655,6 +1697,7 @@ int main(void)
     test_vec_pop_and_push();
     test_vec_remove();
     test_vec_remove_all();
+    test_vec_push_pop_preallocated();
 
     test_vec_filter_mut();
     test_vec_filter_mut_large();
