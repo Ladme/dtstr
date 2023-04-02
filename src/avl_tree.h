@@ -56,6 +56,17 @@ void avl_destroy(avl_t *tree);
 int avl_insert(avl_t *tree, const void *item);
 
 
+avl_node_t *avl_find(const avl_t *tree, const void *target);
+
+/** 
+ * @brief Computes the height of the AVL tree.
+ * 
+ * @param tree      Tree to calculate the height of
+ * 
+ */
+size_t avl_height(const avl_t *tree);
+
+
 /** 
  * @brief Traverses all items in AVL tree breadth-first and applies `function` to each item.
  * 

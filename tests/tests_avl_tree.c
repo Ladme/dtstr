@@ -11,6 +11,17 @@ static int avl_compare_ints(const void *x, const void *y)
     return (*(int *) x - *(int *) y);
 }
 
+/** @brief Computes the height of the longest branch of the AVL subtree rooted at the given node. */
+static size_t avl_branch_height(const avl_node_t *node)
+{
+    if (node == NULL) return 0;
+
+    size_t left_height = avl_branch_height(node->left);
+    size_t right_height = avl_branch_height(node->right);
+
+    return (left_height > right_height) ? left_height + 1 : right_height + 1;
+}
+
 inline static void avl_print_int(const avl_t *tree)
 {
     queue_t *queue = queue_new();
@@ -51,6 +62,7 @@ inline static void avl_print_int(const avl_t *tree)
 
     free(item);
     queue_destroy(queue);
+    queue_destroy(levels);
 }
 
 static int test_avl_destroy_null(void)
@@ -76,60 +88,720 @@ static int test_avl_new(void)
     return 0;
 }
 
-static int test_avl_insert(void)
+static int test_avl_insert_basic(void)
 {
-    printf("%-40s", "test_avl_insert ");
+    printf("%-40s", ">>> basic ");
+
+    int item = 8;
+
+    assert(avl_insert(NULL, &item) == 99);
 
     avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
-    
-    int data[] = {5, 3, 4, 6, 7, 2, 9, 0, 1, 7};
-    
-    assert(avl_insert(tree, &data[0]) == 0);
-    assert(*(int *) tree->root->data == 5);
-    assert(tree->root->parent == NULL);
 
-    assert(avl_insert(tree, &data[1]) == 0);
-    assert(*(int *) tree->root->left->data == 3);
-    assert(tree->root->left->parent == tree->root);
-
-    assert(avl_insert(tree, &data[2]) == 0);
-    assert(*(int *) tree->root->left->right->data == 4);
-    assert(tree->root->left->right->parent == tree->root->left);
-
-    assert(avl_insert(tree, &data[3]) == 0);
-    assert(*(int *) tree->root->right->data == 6);
-    assert(tree->root->right->parent == tree->root);
-
-    assert(avl_insert(tree, &data[4]) == 0);
-    assert(*(int *) tree->root->right->right->data == 7);
-    assert(tree->root->right->right->parent == tree->root->right);
-
-    assert(avl_insert(tree, &data[5]) == 0);
-    assert(*(int *) tree->root->left->left->data == 2);
-    assert(tree->root->left->left->parent == tree->root->left);
-
-    assert(avl_insert(tree, &data[6]) == 0);
-    assert(*(int *) tree->root->right->right->right->data == 9);
-    assert(tree->root->right->right->right->parent == tree->root->right->right);
-
-    assert(avl_insert(tree, &data[7]) == 0);
-    assert(*(int *) tree->root->left->left->left->data == 0);
-    assert(tree->root->left->left->left->parent == tree->root->left->left);
-
-    assert(avl_insert(tree, &data[8]) == 0);
-    assert(*(int *) tree->root->left->left->left->right->data == 1);
-    assert(tree->root->left->left->left->parent == tree->root->left->left);
-
-    assert(avl_insert(tree, &data[9]) == 1);
-    assert(*(int *) tree->root->left->left->left->right->data == 1);
-
-    //avl_print_int(tree);
+    assert(avl_insert(tree, &item) == 0);
+    assert(avl_insert(tree, &item) == 1);
 
     avl_destroy(tree);
 
     printf("OK\n");
     return 0;
 }
+
+
+static int test_avl_insert_left_right(void)
+{
+    printf("%-40s", ">>> ROT left + right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 6, 7, 4, 3};
+    
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+    
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 6);
+    
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 4);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 4);
+    assert(*(int *) tree->root->left->left->data == 3);
+    assert(*(int *) tree->root->left->right->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_left_left(void)
+{
+    printf("%-40s", ">>> ROT left + left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 6, 7, 8, 9};
+    
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 6);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 8);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 8);
+    assert(*(int *) tree->root->right->left->data == 7);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_right_left(void)
+{
+    printf("%-40s", ">>> ROT right + left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 4, 3, 6, 7};
+    
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 4);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+    
+
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 6);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 6);
+    assert(*(int *) tree->root->right->right->data == 7);
+    assert(*(int *) tree->root->right->left->data == 5);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_right_right(void)
+{
+    printf("%-40s", ">>> ROT right + right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 4, 3, 2, 1};
+    
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 4);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+    
+
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 2);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 2);
+    assert(*(int *) tree->root->right->data == 5);
+    assert(*(int *) tree->root->left->left->data == 1);
+    assert(*(int *) tree->root->left->right->data == 3);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_left_leftright(void)
+{
+    printf("%-40s", ">>> ROT left + left-right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 6, 7, 3, 4};
+    
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 6);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 3);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-right-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 4);
+    assert(*(int *) tree->root->left->left->data == 3);
+    assert(*(int *) tree->root->left->right->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_leftright_left(void)
+{
+    printf("%-40s", ">>> ROT left-right + left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 3, 4, 6, 7};
+    
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 3);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 6);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 6);
+    assert(*(int *) tree->root->right->left->data == 5);
+    assert(*(int *) tree->root->right->right->data == 7);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_left_rightleft(void)
+{
+    printf("%-40s", ">>> ROT left + right-left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 6, 7, 9, 8};
+    
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 6);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-left-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 8);
+    assert(*(int *) tree->root->right->left->data == 7);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_rightleft_left(void)
+{
+    printf("%-40s", ">>> ROT right-left + left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 7, 6, 8, 9};
+    
+    // creating right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 7);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 8);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-left-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 8);
+    assert(*(int *) tree->root->right->left->data == 7);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_right_leftright(void)
+{
+    printf("%-40s", ">>> ROT right + left-right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 4, 3, 1, 2};
+    
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 4);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 1);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-right-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 2);
+    assert(*(int *) tree->root->left->left->data == 1);
+    assert(*(int *) tree->root->left->right->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_leftright_right(void)
+{
+    printf("%-40s", ">>> ROT left-right + right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 3, 4, 2, 1};
+    
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 3);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 2);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 2);
+    assert(*(int *) tree->root->left->left->data == 1);
+    assert(*(int *) tree->root->left->right->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_right_rightleft(void)
+{
+    printf("%-40s", ">>> ROT right + right-left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 4, 3, 7, 6};
+    
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 4);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 7);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-left-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 6);
+    assert(*(int *) tree->root->right->left->data == 5);
+    assert(*(int *) tree->root->right->right->data == 7);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_rightleft_right(void)
+{
+    printf("%-40s", ">>> ROT right-left + right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 7, 6, 4, 3};
+    
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 7);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 4);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 4);
+    assert(*(int *) tree->root->right->data == 7);
+    assert(*(int *) tree->root->left->left->data == 3);
+    assert(*(int *) tree->root->left->right->data == 5);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_leftright_leftright(void)
+{
+    printf("%-40s", ">>> ROT left-right + left-right ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 3, 4, 1, 2};
+    
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->left->data == 3);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // left-right-rotation occurs here ^
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    // creating right-left-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->left->left->data == 1);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // left-right-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 4);
+    assert(*(int *) tree->root->left->data == 2);
+    assert(*(int *) tree->root->left->left->data == 1);
+    assert(*(int *) tree->root->left->right->data == 3);
+    assert(*(int *) tree->root->right->data == 5);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_rightleft_rightleft(void)
+{
+    printf("%-40s", ">>> ROT right-left + right-left ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    
+    int data[] = {5, 7, 6, 9, 8};
+    
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[0]) == 0);
+    assert(*(int *) tree->root->data == 5);
+
+    assert(avl_insert(tree, &data[1]) == 0);
+    assert(*(int *) tree->root->right->data == 7);
+
+    assert(avl_insert(tree, &data[2]) == 0);
+    // right-left-rotation occurs here ^
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 7);
+
+    // creating left-right-heavy tree
+    assert(avl_insert(tree, &data[3]) == 0);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    assert(avl_insert(tree, &data[4]) == 0);
+    // right-left-rotation occurs here ^
+    //avl_print_int(tree);
+    assert(*(int *) tree->root->data == 6);
+    assert(*(int *) tree->root->left->data == 5);
+    assert(*(int *) tree->root->right->data == 8);
+    assert(*(int *) tree->root->right->left->data == 7);
+    assert(*(int *) tree->root->right->right->data == 9);
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_insert_large(void)
+{
+    srand(94378348);
+
+    printf("%-40s", ">>> large tree ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    vec_t *data = vec_with_capacity(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(data, &i, sizeof(int));
+    }
+
+    vec_shuffle(data);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(avl_insert(tree, vec_get(data, i)) == 0);
+    }
+
+    // verify the validity of the tree
+    // I) depth-first comparison of values in the nodes
+    // II) sanity check of the node balance
+    avl_node_t *node = tree->root;
+    vec_t *stack = vec_new();
+    vec_push(stack, &node, sizeof(avl_node_t *));
+
+    while (stack->len != 0) {
+
+        void *item = vec_pop(stack);
+        node = *(avl_node_t **) item;
+
+        int right = (int) avl_branch_height(node->right);
+        int left = (int) avl_branch_height(node->left);
+
+        assert(abs(right - left) <= 1);
+
+        if (node->right != NULL) {
+            assert(avl_compare_ints(node->data, node->right->data) < 0); 
+            //printf("%d (parent) vs %d (right)\n", *(int *) node->data, *(int *) node->right->data);
+            vec_push(stack, &(node->right), sizeof(avl_node_t *));
+        }
+        if (node->left != NULL) {
+            assert(avl_compare_ints(node->data, node->left->data) > 0);
+            //printf("%d (parent) vs %d (left)\n", *(int *) node->data, *(int *) node->left->data);
+            vec_push(stack, &(node->left), sizeof(avl_node_t *));
+        }
+
+        free(item);
+    }
+
+    vec_destroy(stack);
+
+    //printf("Height: %ld\n", avl_height(tree));
+
+    //avl_print_int(tree);
+
+    vec_destroy(data);
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_find(void)
+{
+    srand(94378348);
+
+    printf("%-40s", "test_avl_find ");
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    vec_t *data = vec_with_capacity(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(data, &i, sizeof(int));
+    }
+
+    vec_shuffle(data);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(avl_insert(tree, vec_get(data, i)) == 0);
+    }
+
+    int to_find[] = {12, 100, 167, 243, 555, 873, 943, 1045, -15};
+
+    assert(avl_find(NULL, &to_find[0]) == NULL);
+    assert(*(int *) (avl_find(tree, &to_find[0]))->data == 12);
+    assert(*(int *) (avl_find(tree, &to_find[1]))->data == 100);
+    assert(*(int *) (avl_find(tree, &to_find[2]))->data == 167);
+    assert(*(int *) (avl_find(tree, &to_find[3]))->data == 243);
+    assert(*(int *) (avl_find(tree, &to_find[4]))->data == 555);
+    assert(*(int *) (avl_find(tree, &to_find[5]))->data == 873);
+    assert(*(int *) (avl_find(tree, &to_find[6]))->data == 943);
+    assert(avl_find(tree, &to_find[7]) == NULL);
+    assert(avl_find(tree, &to_find[8]) == NULL);
+
+    vec_destroy(data);
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+
+static int test_avl_insert(void)
+{
+    printf("test_avl_insert \n");
+
+    test_avl_insert_basic();
+
+    test_avl_insert_left_right();
+    test_avl_insert_left_left();
+    test_avl_insert_right_left();
+    test_avl_insert_right_right();
+
+    test_avl_insert_left_leftright();
+    test_avl_insert_leftright_left();
+    test_avl_insert_left_rightleft();
+    test_avl_insert_rightleft_left();
+
+    test_avl_insert_right_leftright();
+    test_avl_insert_leftright_right();
+    test_avl_insert_right_rightleft();
+    test_avl_insert_rightleft_right();
+
+    test_avl_insert_leftright_leftright();
+    test_avl_insert_rightleft_rightleft();
+
+    test_avl_insert_large();
+
+    return 0;
+
+}
+
 
 static void multiply_by_two(void *item)
 {
@@ -143,7 +815,7 @@ static void print_int(void *item)
     printf("%d ", value);
 }
 
-static int test_avl_map_breadth_depth(void)
+/*static int test_avl_map_breadth_depth(void)
 {
     printf("%-40s", "test_avl_map_breadth_depth ");
 
@@ -202,17 +874,22 @@ static int test_avl_map(void)
 
     printf("OK\n");
     return 0;
-}
+}*/
 
 int main(void)
 {
+
     test_avl_destroy_null();
     test_avl_new();
 
     test_avl_insert();
 
+    test_avl_find();
+
     //test_avl_map_breadth_depth();
-    test_avl_map();
+    //test_avl_map();
+
+
 
     return 0;
 }
