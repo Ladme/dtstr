@@ -901,6 +901,80 @@ static int test_vec_find_max(void)
     return 0;
 }
 
+struct person {
+    unsigned age_years;
+    unsigned age_months;
+    char name[20];
+};
+
+static int age_comparison_function(const void *first, const void *second)
+{
+    struct person *p1 = (struct person *) first;
+    struct person *p2 = (struct person *) second;
+
+    if (p1->age_years != p2->age_years) return p1->age_years - p2->age_years;
+    else return p1->age_months - p2->age_months;
+}
+
+static int test_vec_find_min_max_complex(void)
+{
+    printf("%-40s", "test_vec_find_min_max (complex) ");
+
+    struct person p1 = {.age_years = 8, .age_months = 2, .name = "Kate"};
+    struct person p2 = {.age_years = 37, .age_months = 8, .name = "Elizabeth"};
+    struct person p3 = {.age_years = 37, .age_months = 11, .name = "John"};
+    struct person p4 = {.age_years = 8, .age_months = 0, .name = "Jimmy"};
+    struct person p5 = {.age_years = 37, .age_months = 11, .name = "Rebecca"};
+
+    vec_t *vector = vec_new();
+
+    vec_push(vector, &p1, sizeof(struct person));
+    vec_push(vector, &p2, sizeof(struct person));
+    vec_push(vector, &p3, sizeof(struct person));
+
+    size_t found = 0;
+
+    // find youngest person
+    found = vec_find_min(vector, age_comparison_function);
+    assert(found == 0);
+    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Kate") == 0);
+    //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
+
+    // add Jimmy and find new youngest person
+    vec_push(vector, &p4, sizeof(struct person));
+    found = vec_find_min(vector, age_comparison_function);
+    assert(found == 3);
+    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Jimmy") == 0);
+    //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
+
+    // find oldest person
+    found = vec_find_max(vector, age_comparison_function);
+    assert(found == 2);
+    assert(strcmp(((struct person *) vec_get(vector, found))->name, "John") == 0);
+    //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
+
+    // add Rebecca to the end of the vector and find oldest person
+    vec_push(vector, &p5, sizeof(struct person));
+    found = vec_find_max(vector, age_comparison_function);
+    assert(found == 2);
+    assert(strcmp(((struct person *) vec_get(vector, found))->name, "John") == 0);
+    //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
+
+    // move Rebecca to the front and find oldest person
+    free(vec_pop(vector));
+    vec_insert(vector, &p5, sizeof(struct person), 1);
+    found = vec_find_max(vector, age_comparison_function);
+    assert(found == 1);
+    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Rebecca") == 0);
+    //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 static void multiply_by_two(void *item)
 {
     size_t *ptr = (size_t *) item;
@@ -1458,6 +1532,7 @@ int main(void)
     test_vec_find_bsearch();
     test_vec_find_min();
     test_vec_find_max();
+    test_vec_find_min_max_complex();
 
     test_vec_map();
 

@@ -86,30 +86,39 @@ static int test_avl_insert(void)
     
     assert(avl_insert(tree, &data[0]) == 0);
     assert(*(int *) tree->root->data == 5);
+    assert(tree->root->parent == NULL);
 
     assert(avl_insert(tree, &data[1]) == 0);
     assert(*(int *) tree->root->left->data == 3);
+    assert(tree->root->left->parent == tree->root);
 
     assert(avl_insert(tree, &data[2]) == 0);
     assert(*(int *) tree->root->left->right->data == 4);
+    assert(tree->root->left->right->parent == tree->root->left);
 
     assert(avl_insert(tree, &data[3]) == 0);
     assert(*(int *) tree->root->right->data == 6);
+    assert(tree->root->right->parent == tree->root);
 
     assert(avl_insert(tree, &data[4]) == 0);
     assert(*(int *) tree->root->right->right->data == 7);
+    assert(tree->root->right->right->parent == tree->root->right);
 
     assert(avl_insert(tree, &data[5]) == 0);
     assert(*(int *) tree->root->left->left->data == 2);
+    assert(tree->root->left->left->parent == tree->root->left);
 
     assert(avl_insert(tree, &data[6]) == 0);
     assert(*(int *) tree->root->right->right->right->data == 9);
+    assert(tree->root->right->right->right->parent == tree->root->right->right);
 
     assert(avl_insert(tree, &data[7]) == 0);
     assert(*(int *) tree->root->left->left->left->data == 0);
+    assert(tree->root->left->left->left->parent == tree->root->left->left);
 
     assert(avl_insert(tree, &data[8]) == 0);
     assert(*(int *) tree->root->left->left->left->right->data == 1);
+    assert(tree->root->left->left->left->parent == tree->root->left->left);
 
     assert(avl_insert(tree, &data[9]) == 1);
     assert(*(int *) tree->root->left->left->left->right->data == 1);
@@ -126,6 +135,39 @@ static void multiply_by_two(void *item)
 {
     int *ptr = (int *) item;
     *ptr *= 2;
+}
+
+static void print_int(void *item)
+{
+    int value = *(int *) item;
+    printf("%d ", value);
+}
+
+static int test_avl_map_breadth_depth(void)
+{
+    printf("%-40s", "test_avl_map_breadth_depth ");
+
+    avl_map_breadth(NULL, print_int);
+    avl_map_depth(NULL, print_int);
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+
+    int data[] = {5, 3, 4, 6, 7, 2, 9, 0, 1, 7};
+
+    for (size_t i = 0; i < 9; ++i) {
+        avl_insert(tree, &data[i]);
+    }
+
+    printf("\n");
+    avl_map_breadth(tree, print_int);
+    printf("\n");
+    avl_map_depth(tree, print_int);
+    printf("\n");
+
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
 }
 
 static int test_avl_map(void)
@@ -169,6 +211,7 @@ int main(void)
 
     test_avl_insert();
 
+    //test_avl_map_breadth_depth();
     test_avl_map();
 
     return 0;

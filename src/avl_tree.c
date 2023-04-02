@@ -9,6 +9,7 @@
 
 enum direction { LEFT, RIGHT };
 
+/** @brief Destroy the given branch of the AVL tree recursively. */
 static void avl_branch_destroy(avl_node_t *node)
 {
     if (node->left != NULL)  avl_branch_destroy(node->left);
@@ -17,7 +18,7 @@ static void avl_branch_destroy(avl_node_t *node)
     free(node);
 }
 
-/*! Create a new node of an avl tree and assign it to the provided parent. Returns 0, if successful, else returns 1. */
+/** @brief Create a new node of an avl tree and assign it to the provided parent. Returns 0, if successful, else returns 1. */
 static int avl_node_create(avl_t *tree, const void *item, avl_node_t *parent, const size_t datasize, const enum direction dir)
 {
     avl_node_t *node = calloc(1, sizeof(avl_node_t));
@@ -32,8 +33,10 @@ static int avl_node_create(avl_t *tree, const void *item, avl_node_t *parent, co
     if (parent != NULL) {
         if (dir == LEFT) parent->left = node;
         else parent->right = node;
+        node->parent = parent;
     } else {
         tree->root = node;
+        node->parent = NULL;
     }
     
     return 0;
@@ -91,7 +94,7 @@ int avl_insert(avl_t *tree, const void *item)
     return avl_node_create(tree, item, parent, tree->datasize, dir);
 }
 
-void avl_map(avl_t *tree, void (*function)(void *))
+void avl_map_breadth(avl_t *tree, void (*function)(void *))
 {
     if (tree == NULL) return;
 
@@ -116,4 +119,37 @@ void avl_map(avl_t *tree, void (*function)(void *))
     // free last item
     free(item);
     queue_destroy(queue);
+}
+
+void avl_map_depth(avl_t *tree, void (*function)(void *))
+{
+    if (tree == NULL) return;
+
+    vec_t *stack = vec_new();
+    void *item = NULL;
+
+    avl_node_t *node = tree->root;
+    while (node != NULL) {
+        function(node->data);
+
+        if (node->right != NULL) vec_push(stack, &(node->right), sizeof(avl_node_t *));
+        if (node->left != NULL) vec_push(stack, &(node->left), sizeof(avl_node_t *));
+        
+        // free memory for item obtained in previous cycle
+        free(item);
+        
+        item = vec_pop(stack);
+        if (item == NULL) node = NULL;
+        else node = *(avl_node_t **) item;
+    }
+
+    // free last item
+    free(item);
+    vec_destroy(stack);
+}
+
+
+void avl_map(avl_t *tree, void (*function)(void *))
+{
+    avl_map_breadth(tree, function);
 }
