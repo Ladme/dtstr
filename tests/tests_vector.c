@@ -814,6 +814,93 @@ static int test_vec_find_bsearch(void)
     return 0;
 }
 
+static int test_int_comparison_function(const void *first, const void *second)
+{
+    return ((int) *((int *) first)) - ((int) *((int *) second));
+}
+
+static int test_vec_find_min(void)
+{
+    printf("%-40s", "test_vec_find_min ");
+
+    int items[] = {5, 3, 1, 7, 6, 0, -1};
+
+    // search in a non-existent vector
+    assert(vec_find_min(NULL, test_int_comparison_function) == -99);
+
+    // search in an empty vector
+    vec_t *vector = vec_new();
+    assert(vec_find_min(vector, test_int_comparison_function) == -1);
+
+    // search in a vector of length 1
+    vec_push(vector, &items[0], sizeof(int));
+    assert(vec_find_min(vector, test_int_comparison_function) == 0);
+
+    // search for a minimum located in the middle of the vector
+    for (size_t i = 1; i < 5; ++i) {
+        vec_push(vector, &items[i], sizeof(int));
+    }
+    assert(vec_find_min(vector, test_int_comparison_function) == 2);
+
+    // search for a minimum located at the start of the vector
+    vec_insert(vector, &items[5], sizeof(int), 0);
+    assert(vec_find_min(vector, test_int_comparison_function) == 0);
+
+    // search for a minimum located at the end of the vector
+    vec_push(vector, &items[6], sizeof(int));
+    assert(vec_find_min(vector, test_int_comparison_function) == 6);
+
+    // multiple minima in the vector
+    vec_insert(vector, &items[6], sizeof(int), 2);
+    assert(vec_find_min(vector, test_int_comparison_function) == 2);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_find_max(void)
+{
+    printf("%-40s", "test_vec_find_max ");
+
+    int items[] = {-4, -2, -1, -3, -5, 0, 7};
+
+    // search in a non-existent vector
+    assert(vec_find_max(NULL, test_int_comparison_function) == -99);
+
+    // search in an empty vector
+    vec_t *vector = vec_new();
+    assert(vec_find_max(vector, test_int_comparison_function) == -1);
+
+    // search in a vector of length 1
+    vec_push(vector, &items[0], sizeof(int));
+    assert(vec_find_max(vector, test_int_comparison_function) == 0);
+
+    // search for a maximum located in the middle of the vector
+    for (size_t i = 1; i < 5; ++i) {
+        vec_push(vector, &items[i], sizeof(int));
+    }
+    assert(vec_find_max(vector, test_int_comparison_function) == 2);
+
+    // search for a maximum located at the start of the vector
+    vec_insert(vector, &items[5], sizeof(int), 0);
+    assert(vec_find_max(vector, test_int_comparison_function) == 0);
+
+    // search for a maximum located at the end of the vector
+    vec_push(vector, &items[6], sizeof(int));
+    assert(vec_find_max(vector, test_int_comparison_function) == 6);
+
+    // multiple maxima in the vector
+    vec_insert(vector, &items[6], sizeof(int), 2);
+    assert(vec_find_max(vector, test_int_comparison_function) == 2);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 static void multiply_by_two(void *item)
 {
     size_t *ptr = (size_t *) item;
@@ -1369,6 +1456,8 @@ int main(void)
 
     test_vec_find();
     test_vec_find_bsearch();
+    test_vec_find_min();
+    test_vec_find_max();
 
     test_vec_map();
 

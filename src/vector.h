@@ -225,6 +225,56 @@ long vec_find(const vec_t *vector, int (*equal_function)(const void *, const voi
 long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target);
 
 
+/**
+ * @brief Finds the index of the minimum item in a vector.
+ * 
+ * @param vector            The vector to search for the minimum item.
+ * @param compare_function  The function to use to compare the items in the vector.
+ * 
+ * @note
+ * - `compare_function` is a pointer to function that returns integer and accepts two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * The comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should return <0, if the first of the two compared items is smaller.
+ * 
+ * @note - If there are multiple items with the same value that is the minimum value in the vector, 
+ * the function will return the index of the first occurrence of that value in the vector.
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return The index of the minimum item in the vector, or -1 if the vector is empty, or -99 if the vector is NULL.
+ */
+long vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *));
+
+
+/**
+ * @brief Finds the index of the maximum item in a vector.
+ * 
+ * @param vector            The vector to search for the maximum item.
+ * @param compare_function  The function to use to compare the items in the vector.
+ * 
+ * @note
+ * - `compare_function` is a pointer to function that returns integer and accepts two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * The comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should return <0, if the first of the two compared items is smaller.
+ * 
+ * @note - If there are multiple items with the same value that is the maximum value in the vector, 
+ * the function will return the index of the first occurrence of that value in the vector.
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return The index of the maximum item in the vector, or -1 if the vector is empty, or -99 if the vector is NULL.
+ */
+long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, const void *));
+
+
 /** 
  * @brief Sorts all items in a vector using selection sort.
  *
