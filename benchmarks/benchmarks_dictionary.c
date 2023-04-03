@@ -37,7 +37,7 @@ static void benchmark_dict_set(const size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand() % (prefilled + items);
             char key[20] = "";
             sprintf(key, "key%d", random);
@@ -68,7 +68,7 @@ static void benchmark_dict_get(const size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand() % prefilled;
             char key[20] = "";
             sprintf(key, "key%d", random);
@@ -97,7 +97,7 @@ static void benchmark_dict_len(const size_t repeats)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < repeats; ++i) {
+        for (size_t j = 0; j < repeats; ++j) {
             dict_len(dict);
         }
 
@@ -124,7 +124,7 @@ static void benchmark_dict_del(const size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             char key[20] = "";
             sprintf(key, "key%ld", i);
 

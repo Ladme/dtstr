@@ -9,7 +9,7 @@
 
 static vec_t *vec_fill(const size_t items)
 {
-    vec_t *vector = vec_with_capacity(items);
+    vec_t *vector = vec_new();
 
     for (size_t i = 0; i < items; ++i) {
         int random = rand();
@@ -62,7 +62,7 @@ static void benchmark_vec_push(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand();
 
             vec_push(vector, &random, sizeof(int));
@@ -90,7 +90,7 @@ static void benchmark_vec_insert(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand();
 
             vec_insert(vector, &random, sizeof(int), 0);
@@ -118,7 +118,7 @@ static void benchmark_vec_get(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 1; i < items; ++i) {
+        for (size_t j = 1; j < items; ++j) {
             size_t random_index = rand() % prefilled;
 
             vec_get(vector, random_index);
@@ -146,7 +146,7 @@ static void benchmark_vec_pop(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 1; i < items; ++i) {
+        for (size_t j = 1; j < items; ++j) {
             free(vec_pop(vector));
         }
 
@@ -172,7 +172,7 @@ static void benchmark_vec_remove(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 1; i < items; ++i) {
+        for (size_t j = 1; j < items; ++j) {
             size_t random_index = rand() % prefilled;
 
             free(vec_remove(vector, random_index));

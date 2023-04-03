@@ -30,7 +30,7 @@ static void benchmark_llist_push_first(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand();
 
             llist_push_first(list, &random, sizeof(int));
@@ -57,7 +57,7 @@ static void benchmark_llist_push_last(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random = rand();
 
             llist_push_last(list, &random, sizeof(int));
@@ -84,7 +84,7 @@ static void benchmark_llist_get(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             size_t random_index = rand() % prefilled;
 
             llist_get(list, random_index);
@@ -111,7 +111,7 @@ static void benchmark_llist_insert(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             int random_data = rand();
             size_t random_index = rand() % prefilled;
 
@@ -139,7 +139,7 @@ static void benchmark_llist_remove(size_t items)
 
         clock_t start = clock();
 
-        for (size_t i = 0; i < items; ++i) {
+        for (size_t j = 0; j < items; ++j) {
             size_t random_index = rand() % prefilled;
 
             llist_remove(list, random_index);
