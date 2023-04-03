@@ -48,7 +48,7 @@ dict_t *dict_new(void);
  * @note - Note that the capacity does NOT directly correspond to the number of allocated positions for key-value pairs.
  *         Instead it specifies the guaranteed number of key-value pairs that the dictionary can store without having to
  *         reallocate memory.
- * @note - Note that the real number of key-value pairs that the dictionary fits before reallocating may be much higher
+ * @note - Note that the real number of key-value pairs that the dictionary fits before reallocating can be much higher
  *         depending on the number of hash collisions.
  * @note - Properly setting the expected capacity of a dictionary can bring MASSIVE performance benefits. Do not underestimate it.
  * @note - The dictionary will never shrink below the specified `capacity`.

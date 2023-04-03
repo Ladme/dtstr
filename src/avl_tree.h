@@ -54,16 +54,43 @@ avl_t *avl_new(const size_t datasize, int (*compare_function)(const void *, cons
 void avl_destroy(avl_t *tree);
 
 
+/**
+ * @brief Inserts an item into an AVL tree.
+ *
+ * @param tree      AVL tree to insert the item into
+ * @param item      Void pointer to the item to be inserted
+ *
+ * @note - Asymptotic Complexity: Logarithmic, O(log n)
+ * 
+ * @return Returns 0 on success, 1 if the item with the same value exists in the tree, 
+ * 2 if memory allocation fails, and 99 if the tree is NULL.
+ */
 int avl_insert(avl_t *tree, const void *item);
 
 
+/**
+ * @brief Finds a node in an AVL tree with the specified value and returns pointer to this node.
+ *
+ * @param tree      AVL tree to search in
+ * @param target    Pointer to the searched value
+ 
+ * @note - Asymptotic Complexity: Logarithmic, O(log n)
+ * 
+ * @return Pointer to the node with the specified value if found, NULL otherwise.
+ */
 avl_node_t *avl_find(const avl_t *tree, const void *target);
 
+
 /** 
- * @brief Computes the height of the AVL tree.
+ * @brief Returns the height of the AVL tree.
  * 
  * @param tree      Tree to calculate the height of
  * 
+ * @note - Actually just returns the height label for root of the three. 
+ *         Therefore, the tree must be balanced and updated.
+ * @note - Empty tree and tree with a single node have height of 0.
+ * 
+ * @return Height of the tree. Zero, if the tree is NULL.
  */
 size_t avl_height(const avl_t *tree);
 
