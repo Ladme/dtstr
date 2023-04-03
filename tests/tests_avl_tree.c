@@ -11,15 +11,25 @@ static int avl_compare_ints(const void *x, const void *y)
     return (*(int *) x - *(int *) y);
 }
 
-/** @brief Computes the height of the longest branch of the AVL subtree rooted at the given node. */
-static size_t avl_branch_height(const avl_node_t *node)
+/** @brief Returns the balance factor of the given AVL node. */
+static int avl_node_balance(const avl_node_t *node)
 {
+    size_t left = (node->left == NULL) ? 0 : node->left->height + 1;
+    size_t right = (node->right == NULL) ? 0 : node->right->height + 1;
+    
+    return (int) right - (int) left;
+}
+
+static size_t compute_branch_height(const avl_node_t *node)
+{   
     if (node == NULL) return 0;
 
-    size_t left_height = avl_branch_height(node->left);
-    size_t right_height = avl_branch_height(node->right);
+    size_t left = (node->left == NULL) ? 0 : compute_branch_height(node->left) + 1;
+    size_t right = (node->right == NULL) ? 0 : compute_branch_height(node->right) + 1;
 
-    return (left_height > right_height) ? left_height + 1 : right_height + 1;
+    if (left == 0 && right == 0) return 0;
+    
+    return (left > right) ? left : right;
 }
 
 inline static void avl_print_int(const avl_t *tree)
@@ -93,13 +103,22 @@ static int test_avl_insert_basic(void)
     printf("%-40s", ">>> basic ");
 
     int item = 8;
+    int item2 = 7;
 
     assert(avl_insert(NULL, &item) == 99);
 
     avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
 
     assert(avl_insert(tree, &item) == 0);
+    assert(*(int *) tree->root->data == 8);
     assert(avl_insert(tree, &item) == 1);
+
+    assert(tree->root->height == 0);
+
+    assert(avl_insert(tree, &item2) == 0);
+    assert(*(int *) tree->root->left->data == 7);
+    assert(tree->root->height == 1);
+    assert(tree->root->left->height == 0);
 
     avl_destroy(tree);
 
@@ -120,10 +139,8 @@ static int test_avl_insert_left_right(void)
     assert(avl_insert(tree, &data[0]) == 0);
     assert(*(int *) tree->root->data == 5);
     
-
     assert(avl_insert(tree, &data[1]) == 0);
     assert(*(int *) tree->root->right->data == 6);
-    
 
     assert(avl_insert(tree, &data[2]) == 0);
     // left-rotation occurs here ^
@@ -690,6 +707,7 @@ static int test_avl_insert_large(void)
     // verify the validity of the tree
     // I) depth-first comparison of values in the nodes
     // II) sanity check of the node balance
+    // III) sanity check of the height labels
     avl_node_t *node = tree->root;
     vec_t *stack = vec_new();
     vec_push(stack, &node, sizeof(avl_node_t *));
@@ -699,10 +717,8 @@ static int test_avl_insert_large(void)
         void *item = vec_pop(stack);
         node = *(avl_node_t **) item;
 
-        int right = (int) avl_branch_height(node->right);
-        int left = (int) avl_branch_height(node->left);
-
-        assert(abs(right - left) <= 1);
+        assert(abs(avl_node_balance(node)) <= 1);
+        assert(node->height == compute_branch_height(node));
 
         if (node->right != NULL) {
             assert(avl_compare_ints(node->data, node->right->data) < 0); 
@@ -723,6 +739,41 @@ static int test_avl_insert_large(void)
     //printf("Height: %ld\n", avl_height(tree));
 
     //avl_print_int(tree);
+
+    vec_destroy(data);
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_height(void)
+{
+    srand(24347348);
+
+    printf("%-40s", "test_avl_height ");
+
+    size_t height = avl_height(NULL);
+    assert(height == 0);
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    height = avl_height(tree);
+    assert(height == 0);
+
+    vec_t *data = vec_with_capacity(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(data, &i, sizeof(int));
+    }
+
+    vec_shuffle(data);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(avl_insert(tree, vec_get(data, i)) == 0);
+        if (i == 0) assert(avl_height(tree) == 0);
+    }
+
+    assert(avl_height(tree) == compute_branch_height(tree->root));
 
     vec_destroy(data);
     avl_destroy(tree);
@@ -809,13 +860,13 @@ static void multiply_by_two(void *item)
     *ptr *= 2;
 }
 
-static void print_int(void *item)
+/*static void print_int(void *item)
 {
     int value = *(int *) item;
     printf("%d ", value);
 }
 
-/*static int test_avl_map_breadth_depth(void)
+static int test_avl_map_breadth_depth(void)
 {
     printf("%-40s", "test_avl_map_breadth_depth ");
 
@@ -840,9 +891,9 @@ static void print_int(void *item)
 
     printf("OK\n");
     return 0;
-}
+}*/
 
-static int test_avl_map(void)
+/*static int test_avl_map(void)
 {
     printf("%-40s", "test_avl_map ");
 
@@ -883,6 +934,7 @@ int main(void)
     test_avl_new();
 
     test_avl_insert();
+    test_avl_height();
 
     test_avl_find();
 

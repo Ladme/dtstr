@@ -51,7 +51,7 @@ static void benchmark_avl_insert(const size_t items)
 
     for (size_t i = 0; i <= 10; ++i) {
 
-        size_t prefilled = i * 5000;
+        size_t prefilled = i * 10000;
         avl_t *tree = avl_fill_random(prefilled);
 
         clock_t start = clock();
@@ -75,17 +75,20 @@ static void benchmark_avl_insert(const size_t items)
 
 static void benchmark_avl_height(void)
 {
-    printf("%s\n", "benchmark_avl_height [O(log n)]");
+    printf("%s\n", "benchmark_avl_height");
 
-
-    size_t items = 100000;
+    size_t items = 1000000;
     avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    size_t actually_added = 0;
 
-    for (size_t i = 0; i <= items; ++i) {
+    for (size_t i = 1; i <= items; ++i) {
         int random = rand();
 
-        avl_insert(tree, &random);
-        if (i % 5000 == 0)  printf("> tree contains %12lu items, height is %12lu\n", i, avl_height(tree));
+        if (avl_insert(tree, &random) == 0) ++actually_added;
+
+        if (i % 50000 == 0) {
+            printf("> tried inserting %12lu items, actually inserted %12lu items, height is %12lu\n", i, actually_added, avl_height(tree));
+        }
     }
 
     avl_destroy(tree);
@@ -99,7 +102,7 @@ static void benchmark_avl_find(const size_t items)
 
    for (size_t i = 1; i <= 10; ++i) {
 
-        size_t prefilled = i * 5000;
+        size_t prefilled = i * 10000;
         avl_t *tree = avl_fill(prefilled);
 
         clock_t start = clock();
@@ -121,13 +124,152 @@ static void benchmark_avl_find(const size_t items)
 }
 
 
+static vec_t *vec_fill(const size_t items)
+{
+    vec_t *vector = vec_with_capacity(items);
+
+    for (int i = 0; i < items; ++i) {
+
+        vec_push(vector, &i, sizeof(int));
+    }
+
+    vec_shuffle(vector);
+
+    return vector;
+}
+
+
+static int vec_equal_function(const void *data, const void *target)
+{
+    return *((int *) data) == *((int *) target);
+}
+
+static int vec_compare_function(const void *first, const void *second)
+{
+    return *((int *) first) - *((int *) second);
+}
+
+static int vec_compare_function_qsort(const void *first, const void *second)
+{
+    return **((int **) first) - **((int **) second);
+}
+
+/** @brief A number of items (prefilled) is inserted into AVL or vector. These structures are then searched `items` times. */
+static void benchmarks_search_vec_vs_avl(const size_t fill_factor, const size_t items, const int no_sorting)
+{
+    printf("%s\n", "benchmark_search_vec_vs_avl");
+
+   for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * fill_factor;
+        vec_t *input = vec_fill(prefilled);
+
+        // AVL TREE
+        
+        clock_t start = clock();
+
+        avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+
+        for (size_t j = 0; j < prefilled; ++j) {
+            assert(avl_insert(tree, vec_get(input, j)) == 0);
+        }
+
+        for (size_t j = 0; j < items; ++j) {
+            int random = rand() % (int) prefilled;
+
+            assert(avl_find(tree, &random));
+        }
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> AVL TREE:           filling with %12lu items, searching for %12lu items: %f s\n", prefilled, items, time_elapsed);
+
+        avl_destroy(tree);
+
+        // VECTOR, NO SORTING
+        if (no_sorting) {
+
+            start = clock();
+
+            vec_t *vector = vec_with_capacity(prefilled);
+
+            for (size_t j = 0; j < prefilled; ++j) {
+                assert(vec_push(vector, vec_get(input, j), sizeof(int)) == 0);
+            }
+
+            assert(vector->len == prefilled);
+
+            for (size_t j = 0; j < items; ++j) {
+                int random = rand() % (int) prefilled;
+
+                assert(vec_find(vector, vec_equal_function, &random) >= 0);
+            }
+
+            end = clock();
+            time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+            printf("> VECTOR, NO SORTING: filling with %12lu items, searching for %12lu items: %f s\n", prefilled, items, time_elapsed);
+
+            vec_destroy(vector);
+
+        }
+        
+        // VECTOR, SORTING
+        start = clock();
+
+        vec_t *vector = vec_with_capacity(prefilled);
+
+        for (size_t j = 0; j < prefilled; ++j) {
+            assert(vec_push(vector, vec_get(input, j), sizeof(int)) == 0);
+        }
+
+        assert(vector->len == prefilled);
+
+        vec_sort_quick(vector, vec_compare_function_qsort);
+
+        for (size_t j = 0; j < items; ++j) {
+            int random = rand() % (int) prefilled;
+
+            assert(vec_find_bsearch(vector, vec_compare_function, &random) >= 0);
+        }
+
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> VECTOR, SORTING:    filling with %12lu items, searching for %12lu items: %f s\n", prefilled, items, time_elapsed);   
+
+        vec_destroy(vector);
+
+        vec_destroy(input);
+        printf("\n");
+    }
+    printf("\n");
+
+
+}
+
+
 int main(void)
 {
     srand(time(NULL));
     
-    //benchmark_avl_insert(1000);
-    //benchmark_avl_height();
+    benchmark_avl_insert(10000);
+    benchmark_avl_height();
     benchmark_avl_find(10000);
+
+    benchmarks_search_vec_vs_avl(1000, 10000, 1);
+    benchmarks_search_vec_vs_avl(1000, 100000, 1);
+    benchmarks_search_vec_vs_avl(1000, 1000000, 1);
+
+    benchmarks_search_vec_vs_avl(10000, 10000, 1);
+    benchmarks_search_vec_vs_avl(10000, 100000, 0);
+    benchmarks_search_vec_vs_avl(10000, 1000000, 0);
+
+    benchmarks_search_vec_vs_avl(100000, 10000, 0);
+    benchmarks_search_vec_vs_avl(100000, 100000, 0);
+    benchmarks_search_vec_vs_avl(100000, 1000000, 0);
+
 
     return 0;
 

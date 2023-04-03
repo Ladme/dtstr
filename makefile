@@ -79,7 +79,7 @@ benchmarks_clinked_list: benchmarks/benchmarks_clinked_list.c src/clinked_list.o
 benchmarks_dictionary: benchmarks/benchmarks_dictionary.c src/dictionary.o libdtstr.a
 	gcc benchmarks/benchmarks_dictionary.c libdtstr.a -lm -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_dictionary
 
-benchmarks_avl_tree: benchmarks/benchmarks_avl_tree.c src/avl_tree.o libdtstr.a
+benchmarks_avl_tree: benchmarks/benchmarks_avl_tree.c src/avl_tree.o src/vector.o libdtstr.a
 	gcc benchmarks/benchmarks_avl_tree.c libdtstr.a -lm -std=c99 -pedantic -Wall -O2 -o benchmarks/benchmarks_avl_tree
 
 clean: 

@@ -21,6 +21,25 @@ static void avl_branch_destroy(avl_node_t *node)
     free(node);
 }
 
+/** @brief Updates the height label of the given AVL tree node based on the height of its children. */
+static void avl_node_update_height(avl_node_t *node)
+{
+    size_t left = (node->left == NULL) ? 0 : node->left->height + 1;
+    size_t right = (node->right == NULL) ? 0 : node->right->height + 1;
+
+    if (left == 0 && right == 0) node->height = 0;
+    else node->height = (left > right) ? left : right;
+}
+
+/** @brief Returns the balance factor of the given AVL node. */
+static int avl_node_balance(const avl_node_t *node)
+{
+    size_t left = (node->left == NULL) ? 0 : node->left->height + 1;
+    size_t right = (node->right == NULL) ? 0 : node->right->height + 1;
+    
+    return (int) right - (int) left;
+}
+
 /** @brief Create a new node of an avl tree and assign it to the provided parent. 
  * Returns pointer to the node, if successful, else returns NULL. 
  */
@@ -47,26 +66,6 @@ static avl_node_t *avl_node_create(avl_t *tree, const void *item, avl_node_t *pa
     return node;
 }
 
-/** @brief Computes the height of the longest branch of the AVL subtree rooted at the given node. */
-static size_t avl_branch_height(const avl_node_t *node)
-{
-    if (node == NULL) return 0;
-
-    size_t left_height = avl_branch_height(node->left);
-    size_t right_height = avl_branch_height(node->right);
-
-    return (left_height > right_height) ? left_height + 1 : right_height + 1;
-}
-
-/** @brief Calculates the balance factor of the given AVL node. */
-static int avl_node_balance(const avl_node_t *node)
-{
-    size_t left_height = avl_branch_height(node->left);
-    size_t right_height = avl_branch_height(node->right);
-
-    return (int) right_height - (int) left_height;
-}
-
 /** @brief Redirects pointers between parent and child nodes after rotation. */
 static void avl_rotation_parents(avl_t *tree, avl_node_t *unbalanced, avl_node_t *central)
 {
@@ -91,6 +90,9 @@ static void avl_right_rotation(avl_t *tree, avl_node_t *unbalanced)
     unbalanced->left = central->right;
     central->right = unbalanced;
     avl_rotation_parents(tree, unbalanced, central);
+
+    avl_node_update_height(unbalanced);
+    avl_node_update_height(central);
 }
 
 /** @brief Performs a left rotation of an unbalanced AVL tree node. */
@@ -101,21 +103,22 @@ static void avl_left_rotation(avl_t *tree, avl_node_t *unbalanced)
     unbalanced->right = central->left;
     central->left = unbalanced;
     avl_rotation_parents(tree, unbalanced, central);   
+
+    avl_node_update_height(unbalanced);
+    avl_node_update_height(central);
 }
 
 /** @brief Performs a right-left rotation of an unbalanced AVL tree node. */
 static void avl_rightleft_rotation(avl_t *tree, avl_node_t *unbalanced)
 {
-    avl_node_t *central = unbalanced->right;
-    avl_right_rotation(tree, central);
+    avl_right_rotation(tree, unbalanced->right);
     avl_left_rotation(tree, unbalanced);
 }
 
 /** @brief Performs a left-right rotation of an unbalanced AVL tree node. */
 static void avl_leftright_rotation(avl_t *tree, avl_node_t *unbalanced)
 {
-    avl_node_t *central = unbalanced->left;
-    avl_left_rotation(tree, central);
+    avl_left_rotation(tree, unbalanced->left);
     avl_right_rotation(tree, unbalanced);
 }
 
@@ -124,6 +127,7 @@ static void avl_rebalance(avl_t *tree, avl_node_t *node)
 {
     while (node != NULL) {
 
+        avl_node_update_height(node);
         int node_balance = avl_node_balance(node);
 
         if (node_balance > 1) {
@@ -131,7 +135,10 @@ static void avl_rebalance(avl_t *tree, avl_node_t *node)
             if (avl_node_balance(node->right) >= 0) avl_left_rotation(tree, node);
             else avl_rightleft_rotation(tree, node);
 
-            return;
+            if (node->parent != NULL) node = node->parent->parent;
+            else node = NULL;
+            
+            continue;
 
         } 
         
@@ -140,7 +147,10 @@ static void avl_rebalance(avl_t *tree, avl_node_t *node)
             if (avl_node_balance(node->left) <= 0) avl_right_rotation(tree, node);
             else avl_leftright_rotation(tree, node);
 
-            return;
+            if (node->parent != NULL) node = node->parent->parent;
+            else node = NULL;
+            
+            continue;
         } 
 
         node = node->parent;
@@ -204,7 +214,7 @@ int avl_insert(avl_t *tree, const void *item)
         return 2;
     }
 
-    avl_rebalance(tree, new_node);
+    avl_rebalance(tree, parent);
 
     return 0;
 }
@@ -231,12 +241,11 @@ avl_node_t *avl_find(const avl_t *tree, const void *target)
     return NULL;
 }
 
-// TODO: write tests for this function
 size_t avl_height(const avl_t *tree)
 {
-    if (tree == NULL) return 0;
+    if (tree == NULL || tree->root == NULL) return 0;
 
-    return avl_branch_height(tree->root);
+    return tree->root->height;
 }
 
 void avl_map_breadth(avl_t *tree, void (*function)(void *))

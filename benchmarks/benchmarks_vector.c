@@ -9,7 +9,7 @@
 
 static vec_t *vec_fill(const size_t items)
 {
-    vec_t *vector = vec_new();
+    vec_t *vector = vec_with_capacity(items);
 
     for (size_t i = 0; i < items; ++i) {
         int random = rand();

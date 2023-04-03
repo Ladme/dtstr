@@ -14,6 +14,7 @@
 
 typedef struct avl_node {
     void *data;
+    size_t height;
     struct avl_node *parent;
     struct avl_node *left;
     struct avl_node *right;
