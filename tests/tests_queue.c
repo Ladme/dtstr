@@ -6,6 +6,8 @@
 #include <time.h>
 #include "../src/queue.h"
 
+#define UNUSED(x) (void)(x)
+
 static int test_queue_destroy_null(void)
 {
     printf("%-40s", "test_queue_destroy (null) ");
@@ -72,17 +74,19 @@ static int test_queue_operations(void)
 }
 
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
+
 
 static int test_queue_map(void)
 {
     printf("%-40s", "test_queue_map ");
 
-    queue_map(NULL, multiply_by_two);
+    queue_map(NULL, multiply_by_two, NULL);
 
     queue_t *queue = queue_new();
 
@@ -90,7 +94,7 @@ static int test_queue_map(void)
         queue_en(queue, &i, sizeof(size_t));
     }
 
-    queue_map(queue, multiply_by_two);
+    queue_map(queue, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 100; ++i) {
         void *item = queue_de(queue, sizeof(size_t));

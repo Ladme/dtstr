@@ -158,7 +158,7 @@ static void avl_rebalance(avl_t *tree, avl_node_t *node)
     }
 }
 
-/** @brief Traverses all items in a node's subtree in-order (left, root, right). */
+/** @brief Traverses all nodes in a node's subtree in-order (left, root, right). */
 static void avl_node_inorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
 {
     if (node == NULL) return;
@@ -168,7 +168,7 @@ static void avl_node_inorder(avl_node_t *node, void (*function)(void *, void *),
     avl_node_inorder(node->right, function, pointer);
 }
 
-/** @brief Traverses all items in a node's subtree pre-order (root, left, right). */
+/** @brief Traverses all nodes in a node's subtree pre-order (root, left, right). */
 static void avl_node_preorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
 {
     if (node == NULL) return;
@@ -178,7 +178,7 @@ static void avl_node_preorder(avl_node_t *node, void (*function)(void *, void *)
     avl_node_preorder(node->right, function, pointer);
 }
 
-/** @brief Traverses all items in a node's subtree post-order (left, right, root). */
+/** @brief Traverses all nodes in a node's subtree post-order (left, right, root). */
 static void avl_node_postorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
 {
     if (node == NULL) return;

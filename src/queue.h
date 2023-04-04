@@ -63,9 +63,12 @@ void *queue_de(queue_t *queue, const size_t itemsize);
 /** 
  * @brief Loops through all items in queue and applies 'function' to each item.
  * 
- * @param queue     Queue to apply the function to
+ * @param list      A pointer to the queue to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Items are traversed starting from the item that is the first in queue.
  */
-void queue_map(queue_t *queue, void (*function)(void *));
+void queue_map(queue_t *queue, void (*function)(void *, void *), void *pointer);
 
 #endif /* QUEUE_H */

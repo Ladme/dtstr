@@ -35,6 +35,7 @@ void *queue_de(queue_t *queue, const size_t itemsize)
     return data;
 }
 
-void queue_map(queue_t *queue, void (*function)(void *)) {
-    dllist_map(queue, function);
+void queue_map(queue_t *queue, void (*function)(void *, void *), void *pointer) 
+{
+    dllist_map(queue, function, pointer);
 }
