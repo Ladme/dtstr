@@ -282,27 +282,27 @@ void avl_map_levelorder(avl_t *tree, void (*function)(void *, void *), void *poi
 {
     if (tree == NULL) return;
 
-    queue_t *queue = queue_new();
+    cbuf_t *queue = cbuf_new();
     void *item = NULL;
 
     avl_node_t *node = tree->root;
     while (node != NULL) {
         function(node->data, pointer);
 
-        if (node->left != NULL) queue_en(queue, &(node->left), sizeof(avl_node_t *));
-        if (node->right != NULL) queue_en(queue, &(node->right), sizeof(avl_node_t *));
+        if (node->left != NULL) cbuf_enqueue(queue, &(node->left), sizeof(avl_node_t *));
+        if (node->right != NULL) cbuf_enqueue(queue, &(node->right), sizeof(avl_node_t *));
 
         // free memory for item obtained in previous cycle
         free(item);
         
-        item = queue_de(queue, sizeof(avl_node_t *));
+        item = cbuf_dequeue(queue, sizeof(avl_node_t *));
         if (item == NULL) node = NULL;
         else node = *(avl_node_t **) item;
     }
 
     // free last item
     free(item);
-    queue_destroy(queue);
+    cbuf_destroy(queue);
 }
 
 void avl_map_inorder(avl_t *tree, void (*function)(void *, void *), void *pointer)

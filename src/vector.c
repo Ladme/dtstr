@@ -30,7 +30,10 @@ static int vec_reallocate(vec_t **vector)
 {
     (*vector)->capacity *= 2;
     void **new_items = realloc((*vector)->items, (*vector)->capacity * sizeof(void *));
-    if (new_items == NULL) return 1;
+    if (new_items == NULL) {
+        vec_destroy(*vector);
+        return 1;
+    }
 
     (*vector)->items = new_items;
     memset((*vector)->items + (*vector)->len, 0, sizeof(void *) * (*vector)->capacity / 2);
@@ -61,7 +64,10 @@ vec_t *vec_with_capacity(const size_t base_capacity)
     if (vector == NULL) return NULL;
 
     vector->items = calloc(base_capacity, sizeof(void *));
-    if (vector->items == NULL) return NULL;
+    if (vector->items == NULL) {
+        free(vector);
+        return NULL;
+    }
 
     vector->capacity = base_capacity;
     vector->base_capacity = base_capacity;
@@ -110,7 +116,7 @@ int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const siz
     if (index < 0 || index > vector->len) return 2;
     if (index == vector->len) return vec_push(vector, item, itemsize);
 
-    if (vector->len >= vector->capacity) if (vec_reallocate(&vector) == 1) return 1;
+    if (vector->len >= vector->capacity) if (vec_reallocate(&vector) != 0) return 1;
 
     // move all items located at index or further
     memcpy(vector->items + index + 1, vector->items + index, sizeof(void *) * (vector->len - index));

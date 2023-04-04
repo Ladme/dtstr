@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "queue.h"
+#include "cbuffer.h"
 #include "vector.h"
 
 typedef struct avl_node {

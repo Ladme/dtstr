@@ -61,6 +61,7 @@ tests/tests_clinked_list
 tests/tests_dictionary
 tests/tests_queue
 tests/tests_avl_tree
+tests/tests_cbuffer
 
 # Ignore compiled benchmarks
 benchmarks/benchmarks_vector
@@ -70,6 +71,7 @@ benchmarks/benchmarks_clinked_list
 benchmarks/benchmarks_dictionary
 benchmarks/benchmarks_queue
 benchmarks/benchmarks_avl_tree
+benchmarks/benchmarks_cbuffer
 
 # Ignore local helper scripts
 run_benchmarks.sh

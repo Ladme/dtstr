@@ -2,6 +2,7 @@
 // Copyright (c) 2023 Ladislav Bartos
 
 // Implementation of queue using doubly linked list.
+// Dynamic circular buffer (see cbuffer.h) will probably be faster in most applications.
 
 #ifndef QUEUE_H
 #define QUEUE_H

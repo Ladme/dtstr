@@ -36,8 +36,8 @@ static size_t compute_branch_height(const avl_node_t *node)
 
 inline static void avl_print_int(const avl_t *tree)
 {
-    queue_t *queue = queue_new();
-    queue_t *levels = queue_new();
+    cbuf_t *queue = cbuf_new();
+    cbuf_t *levels = cbuf_new();
 
     avl_node_t *node = tree->root;
     void *item = NULL;
@@ -53,28 +53,28 @@ inline static void avl_print_int(const avl_t *tree)
 
         if (node->left != NULL) {
             int level = parent_level + 1;
-            queue_en(queue, &(node->left), sizeof(avl_node_t *));
-            queue_en(levels, &level, sizeof(int));
+            cbuf_enqueue(queue, &(node->left), sizeof(avl_node_t *));
+            cbuf_enqueue(levels, &level, sizeof(int));
         }
         if (node->right != NULL) {
             int level = parent_level + 1;
-            queue_en(queue, &(node->right), sizeof(avl_node_t *));
-            queue_en(levels, &level, sizeof(int));
+            cbuf_enqueue(queue, &(node->right), sizeof(avl_node_t *));
+            cbuf_enqueue(levels, &level, sizeof(int));
         }
 
         free(item);
-        item = queue_de(queue, sizeof(avl_node_t *));
+        item = cbuf_dequeue(queue, sizeof(avl_node_t *));
         if (item == NULL) node = NULL;
         else node = *(avl_node_t **) item;
 
-        void *p_parent_level = queue_de(levels, sizeof(int *));
+        void *p_parent_level = cbuf_dequeue(levels, sizeof(int *));
         parent_level = *(int *) p_parent_level;
         free(p_parent_level);
     }
 
     free(item);
-    queue_destroy(queue);
-    queue_destroy(levels);
+    cbuf_destroy(queue);
+    cbuf_destroy(levels);
 }
 
 static int test_avl_destroy_null(void)
