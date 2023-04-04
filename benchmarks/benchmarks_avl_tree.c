@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "../src/avl_tree.h"
 
+#define UNUSED(x) (void)(x)
+
 static int avl_compare_ints(const void *x, const void *y)
 {
     return (*(int *) x - *(int *) y);
@@ -119,6 +121,68 @@ static void benchmark_avl_find(const size_t items)
         printf("> prefilled with %12lu items, searching for %12lu items: %f s\n", prefilled, items, time_elapsed);
 
         avl_destroy(tree);
+    }
+    printf("\n");
+}
+
+static void multiply_by_two(void *item, void *unused)
+{
+    UNUSED(unused);
+    int *integer = (int *) item;
+    *integer *= 2;
+}
+
+static void benchmark_avl_map(const size_t repeats)
+{
+    printf("%s\n", "benchmark_avl_map [O(n)]");
+
+   for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 10000;
+        avl_t *tree = avl_fill(prefilled);
+
+        // level-order
+        clock_t start = clock();
+        for (size_t j = 0; j < repeats; ++j) {
+            
+            avl_map_levelorder(tree, multiply_by_two, NULL);
+        }
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("> LEVEL-ORDER: prefilled with %12lu items, mapping repeats %lu times: %f s\n", prefilled, repeats, time_elapsed);
+
+        // pre-order
+        start = clock();
+        for (size_t j = 0; j < repeats; ++j) {
+            
+            avl_map_preorder(tree, multiply_by_two, NULL);
+        }
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("> PRE-ORDER:   prefilled with %12lu items, mapping repeats %lu times: %f s\n", prefilled, repeats, time_elapsed);
+
+        // in-order
+        start = clock();
+        for (size_t j = 0; j < repeats; ++j) {
+            
+            avl_map_inorder(tree, multiply_by_two, NULL);
+        }
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("> IN-ORDER:    prefilled with %12lu items, mapping repeats %lu times: %f s\n", prefilled, repeats, time_elapsed);
+
+        // post-order
+        start = clock();
+        for (size_t j = 0; j < repeats; ++j) {
+            
+            avl_map_postorder(tree, multiply_by_two, NULL);
+        }
+        end = clock();
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("> POST-ORDER:  prefilled with %12lu items, mapping repeats %lu times: %f s\n", prefilled, repeats, time_elapsed);
+
+        avl_destroy(tree);
+        printf("\n");
     }
     printf("\n");
 }
@@ -245,8 +309,6 @@ static void benchmarks_search_vec_vs_avl(const size_t fill_factor, const size_t 
         printf("\n");
     }
     printf("\n");
-
-
 }
 
 
@@ -257,6 +319,8 @@ int main(void)
     benchmark_avl_insert(10000);
     benchmark_avl_height();
     benchmark_avl_find(10000);
+
+    benchmark_avl_map(20);
 
     benchmarks_search_vec_vs_avl(1000, 10000, 1);
     benchmarks_search_vec_vs_avl(1000, 100000, 1);

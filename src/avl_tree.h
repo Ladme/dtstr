@@ -96,32 +96,61 @@ size_t avl_height(const avl_t *tree);
 
 
 /** 
- * @brief Traverses all items in AVL tree breadth-first and applies `function` to each item.
+ * @brief Traverses all items in AVL tree in level-order (breadth-first) fashion and applies `function` to each item.
  * 
  * @param tree      Tree to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
  * 
- * @note - Note that modifying the values stored in an AVL tree using the avl_map_breadth function can disrupt the balance of the tree.
- * @note - The avl_map_breadth function utilizes level-order (breadth-first) traversal over the nodes in the tree.
+ * @note - Note that modifying the values stored in an AVL tree using the function can disrupt the balance of the tree.
+ * @note - The avl_map_levelorder functions utilizes level-order (breadth-first) traversal over the nodes in the tree.
  *         Starting from the root node, the specified `function` is applied to each node in the tree's levels. 
- *         Nodes at the same level are processed from left to right, ensuring that each node is visited before moving on to the next level.
+ *         Nodes at the same level are processed from left to right.
  */
-void avl_map_breadth(avl_t *tree, void (*function)(void *));
+void avl_map_levelorder(avl_t *tree, void (*function)(void *, void *), void *pointer);
 
 
 /** 
- * @brief Traverses all items in AVL tree depth-first and applies `function` to each item.
+ * @brief Traverses all items in AVL tree in in-order (left-root-right) fashion and applies `function` to each item.
  * 
  * @param tree      Tree to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
  * 
- * @note - Note that modifying the values stored in an AVL tree using the avl_map_depth function can disrupt the balance of the tree.
- * @note - The avl_map_depth function performs a depth-first traversal over the nodes of the tree,
- *         starting from the root node, and applies the specified `function` to each node of the tree in a specific order.
- *         The function is first applied to each node in the left-most branch of the tree, followed by the second left-most branch and so on,
- *         until the right-most branch is processed last.
+ * @note - Note that modifying the values stored in an AVL tree using the function can disrupt the balance of the tree.
+ * @note - The avl_map_inorder function utilizes in-order (depth-first) traversal over the nodes in the tree.
+ *         Starting from the leftmost child of the root node, the specified `function` is applied to each node in the tree.
+ * @note - The left subtree is visited first, then the root node, and finally the right subtree.
  */
-void avl_map_depth(avl_t *tree, void (*function)(void *));
+void avl_map_inorder(avl_t *tree, void (*function)(void *, void *), void *pointer);
+
+
+/** 
+ * @brief Traverses all items in AVL tree in pre-order (root-left-right) fashion and applies `function` to each item.
+ * 
+ * @param tree      Tree to apply the function to
+ * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Note that modifying the values stored in an AVL tree using the function can disrupt the balance of the tree.
+ * @note - The avl_map_preorder function applies the specified `function` to each node in the tree's root-left-right order.
+ * @note - The root node is visited first, followed by the left subtree, and then the right subtree.
+ */
+void avl_map_preorder(avl_t *tree, void (*function)(void *, void *), void *pointer);
+
+
+/** 
+ * @brief Traverses all items in AVL tree in post-order (left-right-root) fashion and applies `function` to each item.
+ * 
+ * @param tree      Tree to apply the function to
+ * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Note that modifying the values stored in an AVL tree using the function can disrupt the balance of the tree.
+ * @note - The avl_map_postorder function applies the specified `function` to each node in the tree's left-right-root order.
+ * @note - The left subtree is visited first, followed by the right subtree, and then the root node.
+ */
+void avl_map_postorder(avl_t *tree, void (*function)(void *, void *), void *pointer);
 
 
 /** 
@@ -129,10 +158,11 @@ void avl_map_depth(avl_t *tree, void (*function)(void *));
  * 
  * @param tree      Tree to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
  * 
  * @note - Note that modifying the values stored in an AVL tree using the avl_map function can disrupt the balance of the tree.
  */
-void avl_map(avl_t *tree, void (*function)(void *));
+void avl_map(avl_t *tree, void (*function)(void *, void *), void *pointer);
 
 
 

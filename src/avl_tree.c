@@ -158,6 +158,36 @@ static void avl_rebalance(avl_t *tree, avl_node_t *node)
     }
 }
 
+/** @brief Traverses all items in a node's subtree in-order (left, root, right). */
+static void avl_node_inorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
+{
+    if (node == NULL) return;
+
+    avl_node_inorder(node->left, function, pointer);
+    function(node->data, pointer);
+    avl_node_inorder(node->right, function, pointer);
+}
+
+/** @brief Traverses all items in a node's subtree pre-order (root, left, right). */
+static void avl_node_preorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
+{
+    if (node == NULL) return;
+
+    function(node->data, pointer);
+    avl_node_preorder(node->left, function, pointer);
+    avl_node_preorder(node->right, function, pointer);
+}
+
+/** @brief Traverses all items in a node's subtree post-order (left, right, root). */
+static void avl_node_postorder(avl_node_t *node, void (*function)(void *, void *), void *pointer)
+{
+    if (node == NULL) return;
+
+    avl_node_postorder(node->left, function, pointer);
+    avl_node_postorder(node->right, function, pointer);
+    function(node->data, pointer);
+}
+
 /* *************************************************************************** */
 /*                   PUBLIC FUNCTIONS ASSOCIATED WITH AVL_T                    */
 /* *************************************************************************** */
@@ -248,7 +278,7 @@ size_t avl_height(const avl_t *tree)
     return tree->root->height;
 }
 
-void avl_map_breadth(avl_t *tree, void (*function)(void *))
+void avl_map_levelorder(avl_t *tree, void (*function)(void *, void *), void *pointer)
 {
     if (tree == NULL) return;
 
@@ -257,7 +287,7 @@ void avl_map_breadth(avl_t *tree, void (*function)(void *))
 
     avl_node_t *node = tree->root;
     while (node != NULL) {
-        function(node->data);
+        function(node->data, pointer);
 
         if (node->left != NULL) queue_en(queue, &(node->left), sizeof(avl_node_t *));
         if (node->right != NULL) queue_en(queue, &(node->right), sizeof(avl_node_t *));
@@ -275,34 +305,28 @@ void avl_map_breadth(avl_t *tree, void (*function)(void *))
     queue_destroy(queue);
 }
 
-void avl_map_depth(avl_t *tree, void (*function)(void *))
+void avl_map_inorder(avl_t *tree, void (*function)(void *, void *), void *pointer)
 {
     if (tree == NULL) return;
 
-    vec_t *stack = vec_new();
-    void *item = NULL;
-
-    avl_node_t *node = tree->root;
-    while (node != NULL) {
-        function(node->data);
-
-        if (node->right != NULL) vec_push(stack, &(node->right), sizeof(avl_node_t *));
-        if (node->left != NULL) vec_push(stack, &(node->left), sizeof(avl_node_t *));
-        
-        // free memory for item obtained in previous cycle
-        free(item);
-        
-        item = vec_pop(stack);
-        if (item == NULL) node = NULL;
-        else node = *(avl_node_t **) item;
-    }
-
-    // free last item
-    free(item);
-    vec_destroy(stack);
+    avl_node_inorder(tree->root, function, pointer);
 }
 
-void avl_map(avl_t *tree, void (*function)(void *))
+void avl_map_preorder(avl_t *tree, void (*function)(void *, void *), void *pointer)
 {
-    avl_map_breadth(tree, function);
+    if (tree == NULL) return;
+
+    avl_node_preorder(tree->root, function, pointer);
+}
+
+void avl_map_postorder(avl_t *tree, void (*function)(void *, void *), void *pointer)
+{
+    if (tree == NULL) return;
+
+    avl_node_postorder(tree->root, function, pointer);
+}
+
+void avl_map(avl_t *tree, void (*function)(void *, void *), void *pointer)
+{
+    avl_map_postorder(tree, function, pointer);
 }

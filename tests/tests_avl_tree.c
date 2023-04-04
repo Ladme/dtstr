@@ -6,6 +6,8 @@
 #include <time.h>
 #include "../src/avl_tree.h"
 
+#define UNUSED(x) (void)(x)
+
 static int avl_compare_ints(const void *x, const void *y)
 {
     return (*(int *) x - *(int *) y);
@@ -853,79 +855,151 @@ static int test_avl_insert(void)
 
 }
 
-
-static void multiply_by_two(void *item)
+static void extract_int(void *item, void *pointer2vector)
 {
-    int *ptr = (int *) item;
-    *ptr *= 2;
+    vec_t *vector = (vec_t *) pointer2vector;
+
+    vec_push(vector, item, sizeof(int));
 }
 
-/*static void print_int(void *item)
+static void print_int(void *item, void *empty_pointer)
 {
-    int value = *(int *) item;
-    printf("%d ", value);
+    UNUSED(empty_pointer);
+    printf("%d ", *(int *) item);
 }
 
-static int test_avl_map_breadth_depth(void)
+static avl_t *construct_tree(const int *data)
 {
-    printf("%-40s", "test_avl_map_breadth_depth ");
-
-    avl_map_breadth(NULL, print_int);
-    avl_map_depth(NULL, print_int);
-
     avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
 
-    int data[] = {5, 3, 4, 6, 7, 2, 9, 0, 1, 7};
+    for (size_t i = 0; i < 7; ++i) {
+        assert(avl_insert(tree, &data[i]) == 0);
+    }
+    
+    return tree;
+}
 
-    for (size_t i = 0; i < 9; ++i) {
-        avl_insert(tree, &data[i]);
+static int test_avl_map_levelorder(void)
+{
+    printf("%-40s", "test_avl_map_levelorder ");
+
+    int input[] = {2, 4, 1, 3, 5, 0, 7};
+    int expected[] = {2, 1, 4, 0, 3, 5, 7};
+
+    avl_t *tree = construct_tree(input);
+    vec_t *vector = vec_new();
+
+    //avl_map_levelorder(tree, print_int, NULL);
+    avl_map_levelorder(tree, extract_int, vector);
+
+    for (size_t i = 0; i < 7; ++i) {
+        assert(*(int *) vec_get(vector, i) == expected[i]);
     }
 
-    printf("\n");
-    avl_map_breadth(tree, print_int);
-    printf("\n");
-    avl_map_depth(tree, print_int);
-    printf("\n");
-
     avl_destroy(tree);
-
+    vec_destroy(vector);
     printf("OK\n");
     return 0;
-}*/
+}
 
-/*static int test_avl_map(void)
+static int test_avl_map_inorder(void)
+{
+    printf("%-40s", "test_avl_map_inorder ");
+
+    int input[] = {2, 4, 1, 3, 5, 0, 7};
+    int expected[] = {0, 1, 2, 3, 4, 5, 7};
+
+    avl_t *tree = construct_tree(input);
+    vec_t *vector = vec_new();
+
+    //avl_map_inorder(tree, print_int, NULL);
+    avl_map_inorder(tree, extract_int, vector);
+
+    for (size_t i = 0; i < 7; ++i) {
+        assert(*(int *) vec_get(vector, i) == expected[i]);
+    }
+
+    avl_destroy(tree);
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_map_preorder(void)
+{
+    printf("%-40s", "test_avl_map_preorder ");
+
+    int input[] = {2, 4, 1, 3, 5, 0, 7};
+    int expected[] = {2, 1, 0, 4, 3, 5, 7};
+
+    avl_t *tree = construct_tree(input);
+    vec_t *vector = vec_new();
+
+    //avl_map_preorder(tree, print_int, NULL);
+    avl_map_preorder(tree, extract_int, vector);
+
+    for (size_t i = 0; i < 7; ++i) {
+        assert(*(int *) vec_get(vector, i) == expected[i]);
+    }
+
+    avl_destroy(tree);
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_avl_map_postorder(void)
+{
+    printf("%-40s", "test_avl_map_postorder ");
+
+    int input[] = {2, 4, 1, 3, 5, 0, 7};
+    int expected[] = {0, 1, 3, 7, 5, 4, 2};
+
+    avl_t *tree = construct_tree(input);
+    vec_t *vector = vec_new();
+
+    //avl_map_postorder(tree, print_int, NULL);
+    avl_map_postorder(tree, extract_int, vector);
+
+    for (size_t i = 0; i < 7; ++i) {
+        assert(*(int *) vec_get(vector, i) == expected[i]);
+    }
+
+    avl_destroy(tree);
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;
+}
+
+static int test_equality_function(const void *data, const void *target)
+{
+    return *((int *) data) == *((int *) target);
+}
+
+static int test_avl_map(void)
 {
     printf("%-40s", "test_avl_map ");
 
-    avl_map(NULL, multiply_by_two);
+    int input[] = {2, 4, 1, 3, 5, 0, 7};
 
-    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    avl_t *tree = construct_tree(input);
+    vec_t *vector = vec_new();
 
-    int data[] = {5, 3, 4, 6, 7, 2, 9, 0, 1, 7};
+    //avl_map(tree, print_int, NULL);
+    avl_map(tree, extract_int, vector);
 
-    for (size_t i = 0; i < 9; ++i) {
-        avl_insert(tree, &data[i]);
+    // here we just check whether the input ints are present in the vector
+    for (size_t i = 0; i < 7; ++i) {
+        assert(vec_find(vector, test_equality_function, &input[i]) >= 0);
     }
 
-    avl_map(tree, multiply_by_two);
-
-    assert(*(int *) tree->root->data == 10);
-    assert(*(int *) tree->root->left->data == 6);
-    assert(*(int *) tree->root->left->right->data == 8);
-    assert(*(int *) tree->root->right->data == 12);
-    assert(*(int *) tree->root->right->right->data == 14);
-    assert(*(int *) tree->root->left->left->data == 4);
-    assert(*(int *) tree->root->right->right->right->data == 18);
-    assert(*(int *) tree->root->left->left->left->data == 0);
-    assert(*(int *) tree->root->left->left->left->right->data == 2);
-
-    //avl_print_int(tree);
-
     avl_destroy(tree);
-
+    vec_destroy(vector);
     printf("OK\n");
     return 0;
-}*/
+}
+
+
 
 int main(void)
 {
@@ -938,10 +1012,11 @@ int main(void)
 
     test_avl_find();
 
-    //test_avl_map_breadth_depth();
-    //test_avl_map();
-
-
+    test_avl_map_levelorder();
+    test_avl_map_inorder();
+    test_avl_map_preorder();
+    test_avl_map_postorder();
+    test_avl_map();
 
     return 0;
 }
