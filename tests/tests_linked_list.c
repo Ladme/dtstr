@@ -6,6 +6,8 @@
 #include <time.h>
 #include "../src/linked_list.h"
 
+#define UNUSED(x) (void)(x)
+
 inline static void print_sizet_list(const llist_t *list, const size_t len)
 {
     for (size_t i = 0; i < len; ++i) {
@@ -760,8 +762,9 @@ static int test_llist_find(void)
     return 0;
 }
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
@@ -770,7 +773,7 @@ static int test_llist_map(void)
 {
     printf("%-40s", "test_llist_map ");
 
-    llist_map(NULL, multiply_by_two);
+    llist_map(NULL, multiply_by_two, NULL);
 
     llist_t *list = llist_new();
 
@@ -778,7 +781,7 @@ static int test_llist_map(void)
         llist_push_last(list, &i, sizeof(size_t));
     }
 
-    llist_map(list, multiply_by_two);
+    llist_map(list, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 100; ++i) {
         assert( *(size_t *) llist_get(list, i) == i * 2);

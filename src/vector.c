@@ -267,10 +267,10 @@ long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, con
 }
 
 
-void vec_map(vec_t *vector, void (*function)(void *))
+void vec_map(vec_t *vector, void (*function)(void *, void *), void *pointer)
 {
     if (vector == NULL) return;
-    for (size_t i = 0; i < vector->len; ++i) function(vector->items[i]);
+    for (size_t i = 0; i < vector->len; ++i) function(vector->items[i], pointer);
 }
 
 

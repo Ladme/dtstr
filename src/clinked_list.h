@@ -265,7 +265,10 @@ cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(const void *, c
  * 
  * @param list      A pointer to the circular doubly linked list to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Items are traversed starting from the head of the circular doubly linked list and going in clockwise direction.
  */
-void cllist_map(cllist_t *list, void (*function)(void *));
+void cllist_map(cllist_t *list, void (*function)(void *, void *), void *pointer);
 
 #endif /* CLINKED_LIST_H */

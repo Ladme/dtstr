@@ -5,16 +5,19 @@
 #include <stdio.h>
 #include "../src/dictionary.h"
 
+#define UNUSED(x) (void)(x)
 
-static void print_sizet(void *item)
+static void print_sizet(void *item, void *unused)
 {
+    UNUSED(unused);
+
     dict_entry_t *entry = *(dict_entry_t **) item;
     printf("%s: %ld, ", entry->key, *(size_t *) entry->value);
 }
 
 static inline void dict_print_sizet(dict_t *dict)
 {
-    dict_map_entries(dict, print_sizet);
+    dict_map_entries(dict, print_sizet, NULL);
     printf("\n");
 }
 
@@ -492,8 +495,9 @@ static int test_dict_values(void)
     return 0;
 }
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
@@ -502,7 +506,7 @@ static int test_dict_map(void)
 {
     printf("%-40s", "test_dict_map ");
 
-    dict_map(NULL, multiply_by_two);
+    dict_map(NULL, multiply_by_two, NULL);
 
     dict_t *dict = dict_new();
 
@@ -515,7 +519,7 @@ static int test_dict_map(void)
         dict_set(dict, keys[i], &values[i], sizeof(size_t));
     }
 
-    dict_map(dict, multiply_by_two);
+    dict_map(dict, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 10; ++i) {
         assert( *(size_t *) dict_get(dict, keys[i]) == values[i] * 2);
@@ -529,8 +533,10 @@ static int test_dict_map(void)
     return 0;
 }
 
-static void multiply_by_two_from_entry(void *item)
+static void multiply_by_two_from_entry(void *item, void *unused)
 {
+    UNUSED(unused);
+
     dict_entry_t *entry = *(dict_entry_t **) item;
     size_t *val_ptr = (size_t *) entry->value;
     *val_ptr *= 2;
@@ -540,7 +546,7 @@ static int test_dict_map_entries(void)
 {
     printf("%-40s", "test_dict_map_entries ");
 
-    dict_map(NULL, multiply_by_two_from_entry);
+    dict_map(NULL, multiply_by_two_from_entry, NULL);
 
     dict_t *dict = dict_new();
 
@@ -553,7 +559,7 @@ static int test_dict_map_entries(void)
         dict_set(dict, keys[i], &values[i], sizeof(size_t));
     }
 
-    dict_map_entries(dict, multiply_by_two_from_entry);
+    dict_map_entries(dict, multiply_by_two_from_entry, NULL);
 
     for (size_t i = 0; i < 10; ++i) {
         assert( *(size_t *) dict_get(dict, keys[i]) == values[i] * 2);

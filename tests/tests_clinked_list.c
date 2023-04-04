@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "../src/clinked_list.h"
 
+#define UNUSED(x) (void)(x)
+
 inline static void print_sizet_list(const cllist_t *list)
 {
     for (size_t i = 0; i < list->len; ++i) {
@@ -753,8 +755,9 @@ static int test_cllist_find(void)
     return 0;
 }
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
@@ -763,7 +766,7 @@ static int test_cllist_map(void)
 {
     printf("%-40s", "test_cllist_map ");
 
-    cllist_map(NULL, multiply_by_two);
+    cllist_map(NULL, multiply_by_two, NULL);
 
     cllist_t *list = cllist_new();
 
@@ -771,7 +774,7 @@ static int test_cllist_map(void)
         cllist_push_last(list, &i, sizeof(size_t));
     }
 
-    cllist_map(list, multiply_by_two);
+    cllist_map(list, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 100; ++i) {
         assert( *(size_t *) cllist_get(list, i) == i * 2);

@@ -229,7 +229,10 @@ dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(const void *, c
  * 
  * @param list      Doubly linked list to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Items are traversed starting from the head of the doubly linked list.
  */
-void dllist_map(dllist_t *list, void (*function)(void *));
+void dllist_map(dllist_t *list, void (*function)(void *, void *), void *pointer);
 
 #endif /* DLINKED_LIST_H */

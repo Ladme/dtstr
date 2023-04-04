@@ -164,8 +164,11 @@ vec_t *dict_values(const dict_t *dict);
  * 
  * @param dict      Dictionary to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - The order in which the entries are traversed is not defined.
  */
-void dict_map(dict_t *dict, void (*function)(void *));
+void dict_map(dict_t *dict, void (*function)(void *, void *), void *pointer);
 
 
 /** 
@@ -173,7 +176,10 @@ void dict_map(dict_t *dict, void (*function)(void *));
  * 
  * @param dict      Dictionary to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - The order in which the entries are traversed is not defined.
  */
-void dict_map_entries(dict_t *dict, void (*function)(void *));
+void dict_map_entries(dict_t *dict, void (*function)(void *, void *), void *pointer);
 
 #endif /* DICTIONARY_H */

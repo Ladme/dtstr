@@ -247,8 +247,11 @@ node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, cons
  * 
  * @param list      Linked list to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Items are traversed starting from the head of the linked list.
  */
-void llist_map(llist_t *list, void (*function)(void *));
+void llist_map(llist_t *list, void (*function)(void *, void *), void *pointer);
 
 
 #endif /* LINKED_LIST_H */

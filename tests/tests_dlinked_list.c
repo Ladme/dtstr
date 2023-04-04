@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "../src/dlinked_list.h"
 
+#define UNUSED(x) (void)(x)
+
 inline static void print_sizet_list(const dllist_t *list)
 {
     for (size_t i = 0; i < list->len; ++i) {
@@ -623,8 +625,9 @@ static int test_dllist_find(void)
     return 0;
 }
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
@@ -633,7 +636,7 @@ static int test_dllist_map(void)
 {
     printf("%-40s", "test_dllist_map ");
 
-    dllist_map(NULL, multiply_by_two);
+    dllist_map(NULL, multiply_by_two, NULL);
 
     dllist_t *list = dllist_new();
 
@@ -641,7 +644,7 @@ static int test_dllist_map(void)
         dllist_push_last(list, &i, sizeof(size_t));
     }
 
-    dllist_map(list, multiply_by_two);
+    dllist_map(list, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 100; ++i) {
         assert( *(size_t *) dllist_get(list, i) == i * 2);

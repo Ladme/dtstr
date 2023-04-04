@@ -296,8 +296,11 @@ long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, con
  * 
  * @param vector    Vector to apply the function to
  * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Items are traversed starting from index 0.
  */
-void vec_map(vec_t *vector, void (*function)(void *));
+void vec_map(vec_t *vector, void (*function)(void *, void *), void *pointer);
 
 
 /**

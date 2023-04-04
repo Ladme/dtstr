@@ -2,6 +2,7 @@
 // Copyright (c) 2023 Ladislav Bartos
 
 #include "dictionary.h"
+#define UNUSED(x) (void)(x)
 
 /* *************************************************************************** */
 /*                  PRIVATE FUNCTIONS ASSOCIATED WITH DICT_T                   */
@@ -56,8 +57,10 @@ static dict_entry_t *dict_entry_new(const char *key, const void *value, const si
 }
 
 /*! @brief Frees memory allocated for dictionary entry. */
-static void dict_entry_destroy(void *item)
+static void dict_entry_destroy(void *item, void *unused)
 {
+    UNUSED(unused);
+
     if (item == NULL) return;
     dict_entry_t *entry = *(dict_entry_t **) item;
     free(entry->value);
@@ -106,7 +109,7 @@ static dict_entry_t *dict_get_entry(const dict_t *dict, const char *key)
  * Returns zero if successful, else returns non-zero. */
 static int dict_node_entry_destroy(dllist_t *list, dnode_t *node)
 {
-    dict_entry_destroy(node->data);
+    dict_entry_destroy(node->data, NULL);
     return dllist_remove_node(list, node);
 }
 
@@ -235,7 +238,7 @@ void dict_destroy(dict_t *dict)
 
         if (dict->items[i] == NULL) continue;
 
-        dllist_map(dict->items[i], dict_entry_destroy);
+        dllist_map(dict->items[i], dict_entry_destroy, NULL);
         dllist_destroy(dict->items[i]);
     }
 
@@ -378,7 +381,7 @@ vec_t *dict_values(const dict_t *dict)
     return values;
 }
 
-void dict_map(dict_t *dict, void (*function)(void *))
+void dict_map(dict_t *dict, void (*function)(void *, void *), void *pointer)
 {
     if (dict == NULL) return;
 
@@ -388,17 +391,17 @@ void dict_map(dict_t *dict, void (*function)(void *))
         dnode_t *node = dict->items[i]->head;
         while (node != NULL) {
 
-            if (node->data != NULL) function((*(dict_entry_t **) node->data)->value);            
+            if (node->data != NULL) function((*(dict_entry_t **) node->data)->value, pointer);            
             node = node->next;
         }
     }
 }
 
-void dict_map_entries(dict_t *dict, void (*function)(void *))
+void dict_map_entries(dict_t *dict, void (*function)(void *, void *), void *pointer)
 {
     if (dict == NULL) return;
 
     for (size_t i = 0; i < dict->allocated; ++i) {
-        dllist_map(dict->items[i], function);
+        dllist_map(dict->items[i], function, pointer);
     }
 }

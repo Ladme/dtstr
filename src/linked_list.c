@@ -249,14 +249,14 @@ node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, cons
     return NULL;
 }
 
-void llist_map(llist_t *list, void (*function)(void *))
+void llist_map(llist_t *list, void (*function)(void *, void *), void *pointer)
 {
     if (list == NULL) return;
 
     node_t *node = list->head;
 
     while (node != NULL) {
-        function(node->data);
+        function(node->data, pointer);
         node = node->next;
     }
 }

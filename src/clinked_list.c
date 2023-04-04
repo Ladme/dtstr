@@ -263,14 +263,14 @@ cnode_t *cllist_find(const cllist_t *list, int (*equal_function)(const void *, c
 }
 
 
-void cllist_map(cllist_t *list, void (*function)(void *))
+void cllist_map(cllist_t *list, void (*function)(void *, void *), void *pointer)
 {
     if (list == NULL) return;
 
     cnode_t *node = list->head;
 
     for (size_t i = 0; i < list->len; ++i) {
-        function(node->data);
+        function(node->data, pointer);
         node = node->next;
     }
 }

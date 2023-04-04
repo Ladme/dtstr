@@ -6,14 +6,17 @@
 #include <time.h>
 #include "../src/vector.h"
 
-static void print_sizet(void *item)
+#define UNUSED(x) (void)(x)
+
+static void print_sizet(void *item, void *unused)
 {
+    UNUSED(unused);
     printf("%ld ", *(size_t *) item);
 }
 
 inline static void print_sizet_vec(vec_t *vector)
 {
-    vec_map(vector, print_sizet);
+    vec_map(vector, print_sizet, NULL);
     printf("\n");
 }
 
@@ -1017,8 +1020,9 @@ static int test_vec_find_min_max_complex(void)
 }
 
 
-static void multiply_by_two(void *item)
+static void multiply_by_two(void *item, void *unused)
 {
+    UNUSED(unused);
     size_t *ptr = (size_t *) item;
     *ptr *= 2;
 }
@@ -1027,7 +1031,7 @@ static int test_vec_map(void)
 {
     printf("%-40s", "test_vec_map ");
 
-    vec_map(NULL, multiply_by_two);
+    vec_map(NULL, multiply_by_two, NULL);
 
     vec_t *vector = vec_new();
 
@@ -1035,7 +1039,7 @@ static int test_vec_map(void)
         vec_push(vector, &i, sizeof(size_t));
     }
 
-    vec_map(vector, multiply_by_two);
+    vec_map(vector, multiply_by_two, NULL);
 
     for (size_t i = 0; i < vector->len; ++i) {
         assert( *(size_t *) vec_get(vector, i) == i * 2);
