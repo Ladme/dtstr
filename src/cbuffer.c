@@ -122,15 +122,13 @@ int cbuf_enqueue(cbuf_t *buffer, const void *item, const size_t itemsize)
     return 0;
 }
 
-void *cbuf_dequeue(cbuf_t *buffer, const size_t itemsize)
+void *cbuf_dequeue(cbuf_t *buffer)
 {
     if (buffer == NULL || buffer->len == 0) return NULL;
 
-    void *data = malloc(itemsize);
-    memcpy(data, buffer->items[buffer->tail], itemsize);
+    void *data = buffer->items[buffer->tail];
 
     // remove the item
-    free(buffer->items[buffer->tail]);
     buffer->items[buffer->tail] = NULL;
 
     // move the tail pointer

@@ -63,11 +63,11 @@ inline static void avl_print_int(const avl_t *tree)
         }
 
         free(item);
-        item = cbuf_dequeue(queue, sizeof(avl_node_t *));
+        item = cbuf_dequeue(queue);
         if (item == NULL) node = NULL;
         else node = *(avl_node_t **) item;
 
-        void *p_parent_level = cbuf_dequeue(levels, sizeof(int *));
+        void *p_parent_level = cbuf_dequeue(levels);
         parent_level = *(int *) p_parent_level;
         free(p_parent_level);
     }

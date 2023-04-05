@@ -139,7 +139,7 @@ static void benchmark_cbuf_dequeue(void)
         clock_t start = clock();
 
         for (size_t j = 0; j < items; ++j) {
-            free(cbuf_dequeue(queue, sizeof(int)));
+            free(cbuf_dequeue(queue));
         }
 
         clock_t end = clock();

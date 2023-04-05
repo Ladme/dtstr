@@ -84,7 +84,7 @@ static int test_cbuf_dequeue(void)
     }
 
     for (int i = 0; i < 130; ++i) {
-        void *data = cbuf_dequeue(buffer, sizeof(int));
+        void *data = cbuf_dequeue(buffer);
         assert(data);
         assert(*(int *) data == i);
         free(data);
@@ -141,7 +141,7 @@ static int test_cbuf_enqueue_dequeue(void)
     assert(buffer->tail == 0);
 
     for (int i = 0; i < 60; ++i) {
-        void *data = cbuf_dequeue(buffer, sizeof(int));
+        void *data = cbuf_dequeue(buffer);
         assert(data);
         assert(*(int *) data == i);
         free(data);
@@ -174,7 +174,7 @@ static int test_cbuf_enqueue_dequeue(void)
 
     // remove all data, keeping only the last 20 items
     for (int i = 0; i < 236; ++i) {
-        void *data = cbuf_dequeue(buffer, sizeof(int));
+        void *data = cbuf_dequeue(buffer);
         assert(data);
         free(data);
     }
@@ -209,7 +209,7 @@ static int test_cbuf_with_capacity(void)
     }
 
     for (int i = 0; i < 64; ++i) {
-        void *item = cbuf_dequeue(buffer, sizeof(int));
+        void *item = cbuf_dequeue(buffer);
         assert(item);
         free(item);
     }
@@ -235,7 +235,7 @@ static int test_cbuf_with_capacity(void)
     assert(buffer->base_capacity == 1);
 
     for (int i = 0; i < 64; ++i) {
-        void *item = cbuf_dequeue(buffer, sizeof(int));
+        void *item = cbuf_dequeue(buffer);
         assert(item);
         free(item);
     }

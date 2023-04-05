@@ -528,6 +528,55 @@ static int test_vec_push_pop_preallocated(void)
     return 0;
 }
 
+struct test_heterogeneous {
+    long b;
+    void *random_data;
+};
+
+static int test_vec_heterogeneous(void)
+{
+    printf("%-40s", "test_vec_heterogeneous ");
+
+    vec_t *vector = vec_new();
+
+    size_t item1 = 500384;
+    int item2 = -9742;
+    char item3 = 'w';
+    char *item4 = "something";
+    struct test_heterogeneous item5 = { .b = 872, .random_data = &item1};
+
+    vec_push(vector, &item1, sizeof(vec_t *));
+    vec_push(vector, &item2, sizeof(int));
+    vec_push(vector, &item3, 1);
+    vec_push(vector, item4, strlen(item4) + 1);
+    vec_push(vector, &item5, sizeof(struct test_heterogeneous));
+
+    void *item = vec_get(vector, 0);
+    assert(*(size_t *) item == item1);
+
+    item = vec_pop(vector);
+    assert(((struct test_heterogeneous *) item)->b == item5.b);
+    assert(((struct test_heterogeneous *) item)->random_data == &item1);
+    free(item);
+
+    item = vec_pop(vector);
+    assert(strcmp((char *) item, item4) == 0);
+    free(item);
+
+    item = vec_pop(vector);
+    assert(*(char *) item == item3);
+    free(item);
+
+    item = vec_pop(vector);
+    assert(*(int *) item == item2);
+    free(item);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 static int test_filter_function(const void *data)
 {
@@ -1702,6 +1751,8 @@ int main(void)
     test_vec_remove();
     test_vec_remove_all();
     test_vec_push_pop_preallocated();
+
+    test_vec_heterogeneous();
 
     test_vec_filter_mut();
     test_vec_filter_mut_large();

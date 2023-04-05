@@ -295,7 +295,7 @@ void avl_map_levelorder(avl_t *tree, void (*function)(void *, void *), void *poi
         // free memory for item obtained in previous cycle
         free(item);
         
-        item = cbuf_dequeue(queue, sizeof(avl_node_t *));
+        item = cbuf_dequeue(queue);
         if (item == NULL) node = NULL;
         else node = *(avl_node_t **) item;
     }

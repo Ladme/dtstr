@@ -77,7 +77,6 @@ int cbuf_enqueue(cbuf_t *buffer, const void *item, const size_t itemsize);
  * @brief Dequeues an item from circular buffer.
  *
  * @param buffer    Circular buffer from which an item should be dequeued
- * @param itemsize  Size of the requested item
  * 
  * @note - The caller is responsible for deallocating memory for the dequeued item.
  *
@@ -85,7 +84,7 @@ int cbuf_enqueue(cbuf_t *buffer, const void *item, const size_t itemsize);
  * 
  * @return Void pointer to the dequeued item. NULL if not successful.
  */
-void *cbuf_dequeue(cbuf_t *buffer, const size_t itemsize);
+void *cbuf_dequeue(cbuf_t *buffer);
 
 
 /**
