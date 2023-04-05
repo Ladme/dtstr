@@ -92,8 +92,9 @@ static int test_cbuf_dequeue(void)
 
     //print_int_buffer(buffer);
     assert(buffer->len == 0);
-    assert(buffer->head == 130);
-    assert(buffer->tail == 130);
+    assert(buffer->capacity == CBUF_DEFAULT_CAPACITY);
+    assert(buffer->head == 8);
+    assert(buffer->tail == 8);
 
     cbuf_destroy(buffer);
 
@@ -141,7 +142,7 @@ static int test_cbuf_enqueue_dequeue(void)
         assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
     }
 
-    print_int_buffer(buffer);
+    //print_int_buffer(buffer);
     assert(buffer->head == buffer->tail);
     assert(buffer->head == 60);
     assert(buffer->capacity == 256);
@@ -154,12 +155,12 @@ static int test_cbuf_enqueue_dequeue(void)
         free(data);
     }
 
-    assert(buffer->capacity == 256);
+    assert(buffer->capacity == 64);
     assert(buffer->len == 20);
-    assert(buffer->head == 60);
-    assert(buffer->tail == 40);
+    assert(buffer->head == 32);
+    assert(buffer->tail == 12);
 
-    print_int_buffer(buffer);
+    //print_int_buffer(buffer);
 
     cbuf_destroy(buffer);
 
