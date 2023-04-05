@@ -9,27 +9,39 @@
 #define UNUSED(x) (void)(x)
 
 /*! @brief Reallocates memory for circular buffer. Returns 0, if successful. Else return non-zero. */
-static int cbuf_reallocate(cbuf_t **buffer)
+static int cbuf_reallocate(cbuf_t *buffer)
 {
-    (*buffer)->capacity *= 2;
+    buffer->capacity *= 2;
 
-    void **new_items = realloc((*buffer)->items, (*buffer)->capacity * sizeof(void *));
+    void **new_items = realloc(buffer->items, buffer->capacity * sizeof(void *));
     if (new_items == NULL) {
-        cbuf_destroy(*buffer);
+        cbuf_destroy(buffer);
         return 1;
     }
 
-    (*buffer)->items = new_items;
+    buffer->items = new_items;
     // move items that are positioned in front of the tail pointer to the end of the array
-    memcpy((*buffer)->items + (*buffer)->len, (*buffer)->items, (*buffer)->tail * sizeof(void *));
-    memset((*buffer)->items, 0, (*buffer)->tail * sizeof(void *));
-    memset((*buffer)->items + (*buffer)->tail + (*buffer)->len, 0, (((*buffer)->capacity / 2) - (*buffer)->tail) * sizeof(void *));
+    memcpy(buffer->items + buffer->len, buffer->items, buffer->tail * sizeof(void *));
+    memset(buffer->items, 0, buffer->tail * sizeof(void *));
+    memset(buffer->items + buffer->tail + buffer->len, 0, ((buffer->capacity / 2) - buffer->tail) * sizeof(void *));
 
     // move head to the new empty position
-    (*buffer)->head += (*buffer)->len;
+    buffer->head += buffer->len;
 
     return 0;
 }
+
+/*! @brief Shrinks the circular buffer in capacity by half. Returns 0, if successful. Else returns non-zero. */
+/*static int cbuf_shrink(cbuf_t *buffer)
+{
+    vector->capacity /= 2;
+    void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
+    if (new_items == NULL) return 1;
+
+    vector->items = new_items;
+
+    return 0;
+}*/
 
 static void cbuf_item_free(void *item, void *unused)
 {
@@ -79,7 +91,7 @@ int cbuf_enqueue(cbuf_t *buffer, const void *item, const size_t itemsize)
 {
     if (buffer == NULL) return 99;
 
-    if (buffer->len >= buffer->capacity) if (cbuf_reallocate(&buffer) != 0) return 1;
+    if (buffer->len >= buffer->capacity) if (cbuf_reallocate(buffer) != 0) return 1;
 
     buffer->items[buffer->head] = malloc(itemsize);
     memcpy(buffer->items[buffer->head], item, itemsize);
