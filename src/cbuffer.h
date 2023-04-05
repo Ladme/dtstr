@@ -1,7 +1,9 @@
 // Released under MIT License.
 // Copyright (c) 2023 Ladislav Bartos
 
-// Implementation of dynamic circular buffer. Can be used as queue.
+// Implementation of dynamic circular buffer. 
+// Can be used as queue and is usually faster than the linked-list based queue (see queue.h), 
+// especially if you preallocate memory for the buffer with `cbuf_with_capacity`.
 
 #ifndef CBUFFER_H
 #define CBUFFER_H

@@ -78,7 +78,6 @@ cbuf_t *cbuf_new(void)
     return cbuf_with_capacity(CBUF_DEFAULT_CAPACITY);
 }
 
-// TODO: test this function specifically
 cbuf_t *cbuf_with_capacity(const size_t base_capacity)
 {
     cbuf_t *buffer = calloc(1, sizeof(cbuf_t));
