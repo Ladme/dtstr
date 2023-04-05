@@ -87,7 +87,7 @@ void vec_destroy(vec_t *vector)
     free(vector);
 }
 
-void *vec_get(const vec_t *const vector, const size_t index) 
+void *vec_get(const vec_t *vector, const size_t index) 
 {
     if (vector == NULL) return NULL;
 
@@ -97,7 +97,7 @@ void *vec_get(const vec_t *const vector, const size_t index)
 }
 
 
-int vec_push(vec_t *vector, void *const item, const size_t itemsize) 
+int vec_push(vec_t *vector, const void *item, const size_t itemsize) 
 {
     if (vector == NULL) return 99;
 
@@ -110,7 +110,7 @@ int vec_push(vec_t *vector, void *const item, const size_t itemsize)
     return 0;
 }
 
-int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const size_t index)
+int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const size_t index)
 {
     if (vector == NULL) return 99;
     if (index < 0 || index > vector->len) return 2;
@@ -271,7 +271,6 @@ long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, con
 
     return min_index;
 }
-
 
 void vec_map(vec_t *vector, void (*function)(void *, void *), void *pointer)
 {

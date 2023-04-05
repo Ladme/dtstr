@@ -102,10 +102,7 @@ int llist_push_last(llist_t *list, const void *data, const size_t datasize)
         return 0;
     }
 
-    while (target->next != NULL) {
-        target = target->next;
-    }
-
+    while (target->next != NULL) target = target->next;
     target->next = node;
 
     return 0;
@@ -167,12 +164,7 @@ size_t llist_len(const llist_t *list)
     if (list == NULL) return 0;
 
     size_t len = 0;
-    node_t *head = list->head;
-
-    while (head != NULL) {
-        ++len;
-        head = head->next;
-    }
+    for (node_t *node = list->head; node != NULL; node = node->next) ++len;
 
     return len;
 }
@@ -240,10 +232,8 @@ node_t *llist_find(const llist_t *list, int (*equal_function)(const void *, cons
 {
     if (list == NULL) return NULL;
 
-    node_t *node = list->head;
-    while (node != NULL) {
+    for (node_t *node = list->head; node != NULL; node = node->next) {
         if (equal_function(node->data, target)) return node;
-        node = node->next;
     }
 
     return NULL;
@@ -253,10 +243,7 @@ void llist_map(llist_t *list, void (*function)(void *, void *), void *pointer)
 {
     if (list == NULL) return;
 
-    node_t *node = list->head;
-
-    while (node != NULL) {
+    for (node_t *node = list->head; node != NULL; node = node->next) {
         function(node->data, pointer);
-        node = node->next;
     }
 }

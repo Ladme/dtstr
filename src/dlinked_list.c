@@ -248,10 +248,8 @@ dnode_t *dllist_find(const dllist_t *list, int (*equal_function)(const void *, c
 {
     if (list == NULL) return NULL;
 
-    dnode_t *node = list->head;
-    while (node != NULL) {
+    for (dnode_t *node = list->head; node != NULL; node = node->next) {
         if (equal_function(node->data, target)) return node;
-        node = node->next;
     }
 
     return NULL;
@@ -261,10 +259,7 @@ void dllist_map(dllist_t *list, void (*function)(void *, void *), void *pointer)
 {
     if (list == NULL) return;
 
-    dnode_t *node = list->head;
-
-    while (node != NULL) {
+    for (dnode_t *node = list->head; node != NULL; node = node->next) {
         function(node->data, pointer);
-        node = node->next;
     }
 }

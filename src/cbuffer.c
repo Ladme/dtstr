@@ -111,10 +111,13 @@ int cbuf_enqueue(cbuf_t *buffer, const void *item, const size_t itemsize)
 
     if (buffer->len >= buffer->capacity) if (cbuf_reallocate(buffer) != 0) return 1;
 
+    // add the item
     buffer->items[buffer->head] = malloc(itemsize);
     memcpy(buffer->items[buffer->head], item, itemsize);
-    ++(buffer->len);
+
+    // move the head pointer
     buffer->head = (buffer->head + 1) % buffer->capacity;
+    ++(buffer->len);
 
     return 0;
 }

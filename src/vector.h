@@ -63,7 +63,7 @@ void vec_destroy(vec_t *vector);
  * 
  * @return Pointer to the item stored at the specified index. NULL if index is out-of-bounds or if the vector does not exist.
  */
-void *vec_get(const vec_t *const vector, const size_t index);
+void *vec_get(const vec_t *vector, const size_t index);
 
 
 /** 
@@ -79,7 +79,7 @@ void *vec_get(const vec_t *const vector, const size_t index);
  * 
  * @return 0 if successful, 1 if memory for the items field could not be reallocated, and 99 if the vector does not exist.
  */
-int vec_push(vec_t *vector, void *const item, const size_t itemsize);
+int vec_push(vec_t *vector, const void *item, const size_t itemsize);
 
 
 /**
@@ -100,7 +100,7 @@ int vec_push(vec_t *vector, void *const item, const size_t itemsize);
  * - 2 if index is out of bounds.
  * - 99 if the vector does not exist.
  */
-int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const size_t index);
+int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const size_t index);
 
 
 /** 
