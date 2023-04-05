@@ -35,6 +35,13 @@ void *queue_de(queue_t *queue, const size_t itemsize)
     return data;
 }
 
+void *queue_peek(const queue_t *queue)
+{
+    if (queue == NULL || queue->head == NULL) return NULL;
+
+    return queue->head->data;
+}
+
 void queue_map(queue_t *queue, void (*function)(void *, void *), void *pointer) 
 {
     dllist_map(queue, function, pointer);

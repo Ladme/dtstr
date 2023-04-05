@@ -142,6 +142,13 @@ void *cbuf_dequeue(cbuf_t *buffer, const size_t itemsize)
     return data;
 }
 
+void *cbuf_peek(const cbuf_t *buffer)
+{
+    if (buffer == NULL || buffer->len == 0) return NULL;
+
+    return buffer->items[buffer->tail];
+}
+
 
 void cbuf_map(cbuf_t *buffer, void (*function)(void *, void *), void *pointer)
 {

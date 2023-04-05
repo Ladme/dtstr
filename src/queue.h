@@ -39,7 +39,7 @@ void queue_destroy(queue_t *queue);
  *
  * @note - Data provided using the 'item' pointer is copied to the queue. You can therefore freely deallocate the original data.
  *
- * @note - Asymptotic complexity is constant, O(1).
+ * @note - Asymptotic complexity: Constant, O(1).
  *
  * @return Zero if successful, else non-zero.
  */
@@ -49,16 +49,30 @@ int queue_en(queue_t *queue, const void *item, const size_t itemsize);
 /**
  * @brief Dequeues an item from queue.
  *
- * @note - The caller is responsible for deallocating memory for the dequeued item.
- *
- * @note - Asymptotic Complexity is constant, O(1).
- *
  * @param queue     Queue from which an item should be dequeued
  * @param itemsize  Size of the requested item
+ * 
+ * @note - The caller is responsible for deallocating memory for the dequeued item.
+ *
+ * @note - Asymptotic Complexity: Constant, O(1).
  * 
  * @return Void pointer to the dequeued item. NULL if not successful.
  */
 void *queue_de(queue_t *queue, const size_t itemsize);
+
+
+/**
+ * @brief Returns the item at the head of the queue. Does not modify the queue.
+ *
+ * @param queue     Queue to peek at
+ *
+ * @note - The returned pointer is no longer valid once the parent queue is destroyed.
+ * 
+ * @note - Asymptotic Complexity: Constant, O(1).
+ * 
+ * @return Void pointer to the first item in queue. NULL if not successful.
+ */
+void *queue_peek(const queue_t *queue);
 
 
 /** 

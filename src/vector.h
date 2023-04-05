@@ -54,12 +54,12 @@ void vec_destroy(vec_t *vector);
 /**
  * @brief Returns a pointer to the item stored at the specified index of the vector.
  * 
+ * @param vector    The vector to operate on
+ * @param index     The index of the item to retrieve
+ * 
  * @note - The returned pointer is no longer valid once the parent vector is destroyed.
  * 
  * @note - Asymptotic Complexity: Constant, O(1)
- * 
- * @param vector    The vector to operate on
- * @param index     The index of the item to retrieve
  * 
  * @return Pointer to the item stored at the specified index. NULL if index is out-of-bounds or if the vector does not exist.
  */
@@ -69,13 +69,13 @@ void *vec_get(const vec_t *const vector, const size_t index);
 /** 
  * @brief Adds a new item to the end of the vector.
  * 
- * @note - Data provided using the `item` pointer is copied to a new memory location. You can therefore safely deallocate the original item.
- *
- * @note - Asymptotic Complexity: Constant, O(1)
- * 
  * @param vector    The vector to which to add the item.
  * @param item      The item to add.
  * @param itemsize  The size of the item to add.
+ * 
+ * @note - Data provided using the `item` pointer is copied to a new memory location. You can therefore safely deallocate the original item.
+ *
+ * @note - Asymptotic Complexity: Constant, O(1)
  * 
  * @return 0 if successful, 1 if memory for the items field could not be reallocated, and 99 if the vector does not exist.
  */
@@ -85,14 +85,14 @@ int vec_push(vec_t *vector, void *const item, const size_t itemsize);
 /**
  * @brief Adds a new item at target index of the vector.
  * 
- * @note - Data provided using the `item` pointer is copied to new memory location. You can therefore freely deallocate the original item.
- * 
- * @note - Asymptotic Complexity: Linear, O(n)
- * 
  * @param vector    Pointer to the vector to use.
  * @param item      Pointer to the item to add.
  * @param itemsize  The size of the item to add.
  * @param index     The position to which the new item should be added.
+ * 
+ * @note - Data provided using the `item` pointer is copied to new memory location. You can therefore freely deallocate the original item.
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n)
  * 
  * @return 
  * - 0 if successful. 
@@ -106,11 +106,11 @@ int vec_insert(vec_t *vector, void *const item, const size_t itemsize, const siz
 /** 
  * @brief Removes the last item from the vector and returns it.
  * 
+ * @param vector    The vector to use.
+ * 
  * @note - The caller is responsible for deallocating memory for the popped item.
  * 
  * @note - Asymptotic Complexity: Constant, O(1)
- * 
- * @param vector    The vector to use.
  * 
  * @return The last item from the vector, if successful. NULL if the vector is NULL or if there are no items.
  */
@@ -120,12 +120,12 @@ void *vec_pop(vec_t *vector);
 /**
  * @brief Removes the element located at the target index and returns it.
  * 
+ * @param vector    The vector to use.
+ * @param index     Index of the item to be removed.
+ * 
  * @note - The caller is responsible for deallocating memory for the removed item.
  * 
  * @note - Asymptotic Complexity: Linear, O(n).
- * 
- * @param vector    The vector to use.
- * @param index     Index of the item to be removed.
  * 
  * @return The element that was removed from the vector, if successful. NULL if the vector is NULL or if the index is out of bounds.
  */

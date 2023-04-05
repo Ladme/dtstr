@@ -50,6 +50,12 @@ static int test_queue_operations(void)
     }
 
     for (size_t i = 0; i < 100; ++i) {
+        void *p_item = queue_peek(queue);
+        assert(p_item);
+        assert(*(size_t *) p_item == 0);
+    }
+
+    for (size_t i = 0; i < 100; ++i) {
         void *p_item = queue_de(queue, sizeof(size_t));
         assert(p_item);
         assert(*(size_t *) p_item == i);
@@ -58,6 +64,12 @@ static int test_queue_operations(void)
 
     for (size_t i = 0; i < 100; ++i) {
         assert(queue_en(queue, &i, sizeof(size_t)) == 0);
+    }
+
+    for (size_t i = 0; i < 100; ++i) {
+        void *p_item = queue_peek(queue);
+        assert(p_item);
+        assert(*(size_t *) p_item == 100);
     }
 
     for (size_t i = 0; i < 100; ++i) {

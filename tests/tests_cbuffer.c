@@ -102,6 +102,30 @@ static int test_cbuf_dequeue(void)
     return 0;
 }
 
+static int test_cbuf_peek(void)
+{
+    printf("%-40s", "test_cbuf_peek ");
+
+    cbuf_t *buffer = cbuf_new();
+
+    for (int i = 0; i < 130; ++i) {
+        assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
+    }
+
+    for (int i = 0; i < 130; ++i) {
+        void *data = cbuf_peek(buffer);
+        assert(data);
+        assert(*(int *) data == 0);
+    }
+
+    assert(buffer->len == 130);
+
+    cbuf_destroy(buffer);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_cbuf_enqueue_dequeue(void)
 {
     printf("%-40s", "test_cbuf_enqueue_dequeue ");
@@ -166,7 +190,64 @@ static int test_cbuf_enqueue_dequeue(void)
 
     printf("OK\n");
     return 0;
+}
 
+static int test_cbuf_with_capacity(void) 
+{
+    printf("%-40s", "test_cbuf_with_capacity ");
+
+    // large base capacity
+    cbuf_t *buffer = cbuf_with_capacity(64);
+
+    assert(buffer);
+    assert(buffer->len == 0);
+    assert(buffer->capacity == 64);
+    assert(buffer->base_capacity == 64);
+
+    for (int i = 0; i < 64; ++i) {
+        assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
+    }
+
+    for (int i = 0; i < 64; ++i) {
+        void *item = cbuf_dequeue(buffer, sizeof(int));
+        assert(item);
+        free(item);
+    }
+
+    assert(buffer->capacity == 64);
+
+    cbuf_destroy(buffer);
+
+    // smaller base capacity
+    buffer = cbuf_with_capacity(1);
+
+    assert(buffer);
+    assert(buffer->len == 0);
+    assert(buffer->capacity == 1);
+    assert(buffer->base_capacity == 1);
+
+    for (int i = 0; i < 64; ++i) {
+        assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
+    }
+
+    assert(buffer->len == 64);
+    assert(buffer->capacity == 64);
+    assert(buffer->base_capacity == 1);
+
+    for (int i = 0; i < 64; ++i) {
+        void *item = cbuf_dequeue(buffer, sizeof(int));
+        assert(item);
+        free(item);
+    }
+
+    assert(buffer->len == 0);
+    assert(buffer->capacity == 1);
+    assert(buffer->base_capacity == 1);
+
+    cbuf_destroy(buffer);
+
+    printf("OK\n");
+    return 0;
 }
 
 int main(void) 
@@ -176,7 +257,10 @@ int main(void)
     test_cbuf_new();
     test_cbuf_enqueue();
     test_cbuf_dequeue();    
+    test_cbuf_peek();
     test_cbuf_enqueue_dequeue();
+
+    test_cbuf_with_capacity();
 
     return 0;
 }

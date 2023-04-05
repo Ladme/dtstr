@@ -69,9 +69,8 @@ benchmarks/benchmarks_linked_list
 benchmarks/benchmarks_dlinked_list
 benchmarks/benchmarks_clinked_list
 benchmarks/benchmarks_dictionary
-benchmarks/benchmarks_queue
+benchmarks/benchmarks_queue_cbuffer
 benchmarks/benchmarks_avl_tree
-benchmarks/benchmarks_cbuffer
 
 # Ignore local helper scripts
 run_benchmarks.sh
