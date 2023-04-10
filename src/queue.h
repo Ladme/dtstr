@@ -50,7 +50,6 @@ int queue_en(queue_t *queue, const void *item, const size_t itemsize);
  * @brief Dequeues an item from queue.
  *
  * @param queue     Queue from which an item should be dequeued
- * @param itemsize  Size of the requested item
  * 
  * @note - The caller is responsible for deallocating memory for the dequeued item.
  *
@@ -58,7 +57,7 @@ int queue_en(queue_t *queue, const void *item, const size_t itemsize);
  * 
  * @return Void pointer to the dequeued item. NULL if not successful.
  */
-void *queue_de(queue_t *queue, const size_t itemsize);
+void *queue_de(queue_t *queue);
 
 
 /**

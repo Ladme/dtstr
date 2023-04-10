@@ -108,7 +108,7 @@ static void benchmark_queue_dequeue(void)
         clock_t start = clock();
 
         for (size_t j = 0; j < items; ++j) {
-            free(queue_de(queue, sizeof(int)));
+            free(queue_de(queue));
         }
 
         clock_t end = clock();

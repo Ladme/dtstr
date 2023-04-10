@@ -43,7 +43,7 @@ static int test_queue_operations(void)
 
     queue_t *queue = queue_new();
 
-    assert(queue_de(queue, sizeof(size_t)) == NULL);
+    assert(queue_de(queue) == NULL);
 
     for (size_t i = 0; i < 1000; ++i) {
         assert(queue_en(queue, &i, sizeof(size_t)) == 0);
@@ -56,7 +56,7 @@ static int test_queue_operations(void)
     }
 
     for (size_t i = 0; i < 100; ++i) {
-        void *p_item = queue_de(queue, sizeof(size_t));
+        void *p_item = queue_de(queue);
         assert(p_item);
         assert(*(size_t *) p_item == i);
         free(p_item);
@@ -73,7 +73,7 @@ static int test_queue_operations(void)
     }
 
     for (size_t i = 0; i < 100; ++i) {
-        void *p_item = queue_de(queue, sizeof(size_t));
+        void *p_item = queue_de(queue);
         assert(p_item);
         assert(*(size_t *) p_item == i + 100);
         free(p_item);
@@ -109,7 +109,7 @@ static int test_queue_map(void)
     queue_map(queue, multiply_by_two, NULL);
 
     for (size_t i = 0; i < 100; ++i) {
-        void *item = queue_de(queue, sizeof(size_t));
+        void *item = queue_de(queue);
         assert( *(size_t *) item == i * 2);
         free(item);
     }

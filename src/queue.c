@@ -22,7 +22,7 @@ int queue_en(queue_t *queue, const void *item, const size_t itemsize)
     return dllist_push_last(queue, item, itemsize);
 }
 
-void *queue_de(queue_t *queue, const size_t itemsize)
+void *queue_de(queue_t *queue)
 {
     if (queue == NULL || queue->head == NULL) return NULL;
 
