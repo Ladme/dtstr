@@ -1,5 +1,5 @@
-structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/cbuffer.o src/queue.o src/avl_tree.o
-	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/cbuffer.o src/queue.o src/avl_tree.o
+structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o
+	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o
 	
 vector: src/vector.c src/vector.h
 	gcc -c src/vector.c -std=c99 -pedantic -Wall -O2 -o src/vector.o
@@ -20,6 +20,9 @@ clinked_list: src/clinked_list.c src/clinked_list.h
 dictionary: src/dictionary.c src/dictionary.h src/linked_list.c src/linked_list.h
 	gcc -c src/dictionary.c -std=c99 -pedantic -Wall -O2 -o src/dictionary.o
 
+alist: src/alist.c src/alist.h
+	gcc -c src/alist.c -std=c99 -pedantic -Wall -O2 -o src/alist.o
+
 cbuffer: src/cbuffer.c src/cbuffer.h
 	gcc -c src/cbuffer.c -std=c99 -pedantic -Wall -O2 -o src/cbuffer.o
 
@@ -29,12 +32,13 @@ queue: src/queue.c src/queue.h src/dlinked_list.c src/dlinked_list.h
 avl_tree: src/avl_tree.c src/avl_tree.h src/queue.c src/queue.h
 	gcc -c src/avl_tree.c -std=c99 -pedantic -Wall -O2 -o src/avl_tree.o
 
-tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c libdtstr.a
+tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c tests/tests_alist.c libdtstr.a
 	make tests_vector
 	make tests_linked_list
 	make tests_dlinked_list
 	make tests_clinked_list
 	make tests_dictionary
+	make tests_alist
 	make tests_cbuffer
 	make tests_queue
 	make tests_avl_tree
@@ -53,6 +57,9 @@ tests_clinked_list: tests/tests_clinked_list.c src/clinked_list.o libdtstr.a
 
 tests_dictionary: tests/tests_dictionary.c src/dictionary.o libdtstr.a
 	gcc tests/tests_dictionary.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_dictionary
+
+tests_alist: tests/tests_alist.c src/alist.o libdtstr.a
+	gcc tests/tests_alist.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_alist
 
 tests_cbuffer: tests/tests_cbuffer.c src/cbuffer.o libdtstr.a
 	gcc tests/tests_cbuffer.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_cbuffer

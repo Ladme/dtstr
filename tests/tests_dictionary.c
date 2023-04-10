@@ -282,6 +282,9 @@ static int test_dict_del(void)
     for (int i = 9; i >= 0; --i) {
         assert(dict_del(dict, keys[i]) == 0);
         assert(dict_len(dict) == i);
+        for (int j = 0; j < i; ++j) {
+            assert(*(size_t *) dict_get(dict, keys[j]) == values[j]);
+        }
     }
 
     assert(dict->available == 32);
@@ -546,7 +549,7 @@ static int test_dict_map_entries(void)
 {
     printf("%-40s", "test_dict_map_entries ");
 
-    dict_map(NULL, multiply_by_two_from_entry, NULL);
+    dict_map_entries(NULL, multiply_by_two_from_entry, NULL);
 
     dict_t *dict = dict_new();
 

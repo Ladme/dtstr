@@ -94,6 +94,8 @@ int dict_set(dict_t *dict, const char *key, const void *value, const size_t valu
  * @param dict  Dictionary to search in
  * @param key   Key to search for
  * 
+ * @note - The returned pointer is no longer valid once the parent dictionary is destroyed.
+ * 
  * @return 
  * Void pointer to the value associated with target key. 
  * NULL if the key is not present in the dictionary or the dictionary does not exist.
