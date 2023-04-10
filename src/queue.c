@@ -27,10 +27,17 @@ void *queue_de(queue_t *queue, const size_t itemsize)
     if (queue == NULL || queue->head == NULL) return NULL;
 
     dnode_t *node = queue->head;
-    void *data = malloc(itemsize);
-    memcpy(data, node->data, itemsize);
+    void *data = node->data;
 
-    dllist_remove_node(queue, node);
+    queue->head = node->next;
+
+    if (node->next != NULL) {
+        node->next->previous = node->previous;
+    } else {
+        queue->tail = node->previous;
+    }
+
+    free(node);
 
     return data;
 }
