@@ -784,6 +784,38 @@ static int test_avl_height(void)
     return 0;
 }
 
+static int test_avl_len(void)
+{
+    srand(24347348);
+
+    printf("%-40s", "test_avl_len ");
+
+    assert(avl_len(NULL) == 0);
+
+    avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
+    assert(avl_len(tree) == 0);
+
+    vec_t *data = vec_with_capacity(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(data, &i, sizeof(int));
+    }
+
+    vec_shuffle(data);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(avl_insert(tree, vec_get(data, i)) == 0);
+    }
+
+    assert(avl_len(tree) == 1000);
+
+    vec_destroy(data);
+    avl_destroy(tree);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_avl_find(void)
 {
     srand(94378348);
@@ -1009,6 +1041,7 @@ int main(void)
 
     test_avl_insert();
     test_avl_height();
+    test_avl_len();
 
     test_avl_find();
 

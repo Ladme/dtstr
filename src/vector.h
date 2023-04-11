@@ -133,6 +133,20 @@ void *vec_remove(vec_t *vector, const size_t index);
 
 
 /** 
+ * @brief Returns the number of items in vector.
+ *
+ * @param vector  Concerned vector.
+ * 
+ * @note - Asymptotic Complexity: Constant, O(1)
+ * 
+ * @return Number of items in vector. If vector is NULL, returns 0.
+ */
+inline size_t vec_len(const vec_t *vector) 
+{ 
+    return (vector == NULL) ? 0 : vector->len; 
+}
+
+/** 
  * @brief Removes all items from vector that do not fulfill a condition. Modifies the vector.
  * 
  * @param vector            The vector which should be filtered

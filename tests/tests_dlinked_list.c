@@ -375,6 +375,28 @@ static int test_dllist_insert(void)
 }
 
 
+static int test_dllist_len(void)
+{
+    printf("%-40s", "test_dllist_len ");
+
+    assert(dllist_len(NULL) == 0);
+
+    dllist_t *list = dllist_new();
+
+    assert(dllist_len(list) == 0);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(dllist_push_last(list, &i, sizeof(size_t)) == 0);
+        assert(dllist_len(list) == i + 1);
+    }
+
+    dllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 static int test_dllist_remove_node(void)
 {
     printf("%-40s", "test_dllist_remove_node ");
@@ -670,6 +692,7 @@ int main(void)
     test_dllist_insert_after_node();
     test_dllist_insert_before_node();
     test_dllist_insert();
+    test_dllist_len();
 
     test_dllist_remove_node();
     test_dllist_remove();

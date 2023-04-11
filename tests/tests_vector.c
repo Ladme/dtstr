@@ -528,6 +528,29 @@ static int test_vec_push_pop_preallocated(void)
     return 0;
 }
 
+static int test_vec_len(void)
+{
+    printf("%-40s", "test_vec_len ");
+
+    assert(vec_len(NULL) == 0);
+
+    vec_t *vector = vec_new();
+
+    assert(vec_len(vector) == 0);
+
+    int test_array[130] = {0};
+    for (size_t i = 0; i < 130; ++i) {
+        test_array[i] = i;
+        assert(vec_push(vector, &test_array[i], sizeof(int)) == 0);
+        assert(vec_len(vector) == i + 1);
+    }
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 struct test_heterogeneous {
     long b;
     void *random_data;
@@ -1751,6 +1774,7 @@ int main(void)
     test_vec_remove();
     test_vec_remove_all();
     test_vec_push_pop_preallocated();
+    test_vec_len();
 
     test_vec_heterogeneous();
 

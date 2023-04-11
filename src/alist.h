@@ -41,7 +41,7 @@ alist_t *alist_new(void);
 
 
 /**
- * @brief Creates a new `alist_t` structure and preallocates space for a specified number of items.
+ * @brief Creates a new `alist_t` structure and preallocates space for a specified number of entries.
  *
  * @param base_capacity     The initial capacity of the association list
  * 
@@ -107,6 +107,21 @@ void *alist_get(const alist_t *list, const char *key);
  * 99, if association list does not exist.
  */
 int alist_del(alist_t *list, const char *key);
+
+
+/** 
+ * @brief Returns the number of key-value pairs in dictionary.
+ *
+ * @param list  Concerned association list
+ * 
+ * @note - Asymptotic Complexity: Constant, O(1)
+ * 
+ * @return Number of key-value pairs in the association list. If list is NULL, returns 0.
+ */
+inline size_t alist_len(const alist_t *list) 
+{ 
+    return (list == NULL) ? 0 : list->len; 
+}
 
 
 /** 

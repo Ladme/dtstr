@@ -75,6 +75,21 @@ void *queue_peek(const queue_t *queue);
 
 
 /** 
+ * @brief Calculates the number of items in queue.
+ * 
+ * @param queue      Concerned queue.
+ * 
+ * @note Asymptotic Complexity: Constant, O(1)
+ *
+ * @return The length of the doubly linked list. 0 if the list does not exist.
+ */
+inline size_t queue_len(const queue_t *queue)
+{
+    return (queue == NULL) ? 0 : queue->len; 
+}
+
+
+/** 
  * @brief Loops through all items in queue and applies 'function' to each item.
  * 
  * @param list      A pointer to the queue to apply the function to

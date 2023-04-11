@@ -131,7 +131,7 @@ int dllist_insert_before_node(dllist_t *list, const void *data, const size_t dat
  * @param list      A pointer to the doubly linked list to which the node should be added.
  * @param data      A pointer to the data to include in the node.
  * @param datasize  The size of the data to include.
- * @param index  Index of the new node.
+ * @param index     Index of the new node.
  * 
  * @note - Data provided using the 'data' pointer is copied to the target node. You can therefore freely deallocate the original data.
  * 
@@ -146,6 +146,21 @@ int dllist_insert_before_node(dllist_t *list, const void *data, const size_t dat
  * @return 0 if successful. 1 if new node could not be created. 2 if the index is out of bounds. 99 if the doubly linked list does not exist.
  */
 int dllist_insert(dllist_t *list, const void *data, const size_t datasize, const size_t index);
+
+
+/** 
+ * @brief Calculates the length of the doubly linked list, i.e. number of nodes.
+ * 
+ * @param list      Doubly linked list which length should be calculated
+ * 
+ * @note Asymptotic Complexity: Constant, O(1)
+ *
+ * @return The length of the doubly linked list. 0 if the list does not exist.
+ */
+inline size_t dllist_len(const dllist_t *list)
+{
+    return (list == NULL) ? 0 : list->len; 
+}
 
 
 /** 

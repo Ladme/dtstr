@@ -188,6 +188,15 @@ static void avl_node_postorder(avl_node_t *node, void (*function)(void *, void *
     function(node->data, pointer);
 }
 
+/** @brief Function to be used with a map function to count the number of nodes in a tree. */
+static void avl_node_count(void *node, void *counter)
+{
+    if (node == NULL) return;
+
+    size_t *count = (size_t *) counter;
+    ++(*count);
+}
+
 /* *************************************************************************** */
 /*                   PUBLIC FUNCTIONS ASSOCIATED WITH AVL_T                    */
 /* *************************************************************************** */
@@ -276,6 +285,14 @@ size_t avl_height(const avl_t *tree)
     if (tree == NULL || tree->root == NULL) return 0;
 
     return tree->root->height;
+}
+
+size_t avl_len(avl_t *tree)
+{
+    size_t count = 0;
+    avl_map(tree, avl_node_count, &count);
+
+    return count;
 }
 
 void avl_map_levelorder(avl_t *tree, void (*function)(void *, void *), void *pointer)

@@ -126,6 +126,23 @@ static int test_cbuf_peek(void)
     return 0;
 }
 
+static int test_cbuf_len(void)
+{
+    printf("%-40s", "test_cbuf_len ");
+
+    cbuf_t *buffer = cbuf_new();
+
+    for (int i = 0; i < 130; ++i) {
+        assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
+        assert(cbuf_len(buffer) == i + 1);
+    }
+
+    cbuf_destroy(buffer);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_cbuf_enqueue_dequeue(void)
 {
     printf("%-40s", "test_cbuf_enqueue_dequeue ");
@@ -258,6 +275,7 @@ int main(void)
     test_cbuf_enqueue();
     test_cbuf_dequeue();    
     test_cbuf_peek();
+    test_cbuf_len();
     test_cbuf_enqueue_dequeue();
 
     test_cbuf_with_capacity();

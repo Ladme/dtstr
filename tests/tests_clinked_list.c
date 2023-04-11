@@ -320,6 +320,27 @@ static int test_cllist_insert(void)
     return 0;
 }
 
+static int test_cllist_len(void)
+{
+    printf("%-40s", "test_cllist_len ");
+
+    assert(cllist_len(NULL) == 0);
+
+    cllist_t *list = cllist_new();
+
+    assert(cllist_len(list) == 0);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(cllist_push_last(list, &i, sizeof(size_t)) == 0);
+        assert(cllist_len(list) == i + 1);
+    }
+
+    cllist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_cllist_get(void)
 {
     printf("%-40s", "test_cllist_get ");
@@ -796,6 +817,7 @@ int main(void)
     test_cllist_push_first();
     test_cllist_push_last();
     test_cllist_insert();
+    test_cllist_len();
 
     test_cllist_get();
 

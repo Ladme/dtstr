@@ -85,6 +85,27 @@ static int test_queue_operations(void)
     return 0;
 }
 
+static int test_queue_len(void)
+{
+    printf("%-40s", "test_queue_len ");
+
+    assert(queue_len(NULL) == 0);
+
+    queue_t *queue = queue_new();
+
+    assert(queue_len(queue) == 0);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(queue_en(queue, &i, sizeof(size_t)) == 0);
+        assert(queue_len(queue) == i + 1);
+    }
+
+    queue_destroy(queue);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 static void multiply_by_two(void *item, void *unused)
 {
@@ -127,6 +148,7 @@ int main(void)
     test_queue_new();
 
     test_queue_operations();
+    test_queue_len();
 
     test_queue_map();
 

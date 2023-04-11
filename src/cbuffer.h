@@ -102,6 +102,21 @@ void *cbuf_peek(const cbuf_t *buffer);
 
 
 /** 
+ * @brief Returns the number of items in circular buffer.
+ *
+ * @param buffer  Concerned buffer.
+ * 
+ * @note - Asymptotic Complexity: Constant, O(1)
+ * 
+ * @return Number of items in circular buffer. If buffer is NULL, returns 0.
+ */
+inline size_t cbuf_len(const cbuf_t *buffer) 
+{ 
+    return (buffer == NULL) ? 0 : buffer->len; 
+}
+
+
+/** 
  * @brief Loops through all items in circular buffer and applies 'function' to each item.
  * 
  * @param list      A pointer to the buffer to apply the function to

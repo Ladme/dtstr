@@ -218,6 +218,31 @@ static int test_alist_set_del_preallocated(void)
     return 0;
 }
 
+static int test_alist_len(void) 
+{
+    printf("%-40s", "test_alist_len ");
+
+    assert(alist_len(NULL) == 0);
+
+    alist_t *list = alist_new();
+
+    assert(alist_len(list) == 0);
+
+    for (size_t i = 0; i < 128; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(alist_set(list, key, &i, sizeof(size_t)) == 0);
+        assert(alist_len(list) == i + 1);
+    }
+
+    alist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
+
 static void multiply_by_two(void *item, void *unused)
 {
     UNUSED(unused);
@@ -303,6 +328,8 @@ int main(void)
     test_alist_del();
     test_alist_set_del_large();
     test_alist_set_del_preallocated();
+
+    test_alist_len();
 
     test_alist_map();
     test_alist_map_entries();

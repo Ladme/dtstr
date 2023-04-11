@@ -150,6 +150,21 @@ int cllist_push_last(cllist_t *list, const void *data, const size_t datasize);
 int cllist_insert(cllist_t *list, const void *data, const size_t datasize, const size_t index);
 
 
+/** 
+ * @brief Calculates the length of the circular doubly linked list, i.e. number of nodes.
+ * 
+ * @param list      Circular doubly linked list which length should be calculated
+ * 
+ * @note Asymptotic Complexity: Constant, O(1)
+ *
+ * @return The length of the circular doubly linked list. 0 if the list does not exist.
+ */
+inline size_t cllist_len(const cllist_t *list)
+{
+    return (list == NULL) ? 0 : list->len; 
+}
+
+
 /**
  * @brief Returns a pointer to the data of the Nth node of the circular doubly linked list. The circular doubly linked list is 0-indexed.
  *

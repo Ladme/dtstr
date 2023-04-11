@@ -96,6 +96,18 @@ size_t avl_height(const avl_t *tree);
 
 
 /** 
+ * @brief Returns the number of nodes in an AVL tree.
+ *
+ * @param tree      Tree to calculate the length of.
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n)
+ * 
+ * @return Number of nodes in the AVL tree. If tree is NULL, returns 0.
+ */
+size_t avl_len(avl_t *tree);
+
+
+/** 
  * @brief Traverses all items in AVL tree in level-order (breadth-first) fashion and applies `function` to each item.
  * 
  * @param tree      Tree to apply the function to
