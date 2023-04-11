@@ -3,6 +3,11 @@
 
 // Implementation of vector-based association list.
 // Behaves like a dictionary but the key-value pairs are stored in a vector.
+// Performance compared to dict_t:
+//   > setting items:  alist_t is faster than dict_t if the number of items is < 200
+//                     if both structures are preallocated, then alist_t is only faster if the number of items is < 50
+//   > getting items:  alist_t is faster than dict_t if the number of items is < 20
+//   > deleting items: alist_t is faster than dict_t if the number of items is < 600
 
 #ifndef ALIST_H
 #define ALIST_H
@@ -92,6 +97,8 @@ void *alist_get(const alist_t *list, const char *key);
  *  
  * @param list  Concerned association list
  * @param key   Key to search for
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n)
  * 
  * @return 
  * 0, if entry successfully removed.

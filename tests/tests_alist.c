@@ -168,10 +168,55 @@ static int test_alist_set_del_large(void)
     return 0;
 }
 
+static int test_alist_set_del_preallocated(void) 
+{
+    printf("%-40s", "test_alist_with_capacity ");
 
-// TODO: test_alist_with_capacity
-// TODO: test_alist_set_del_preallocated
+    alist_t *list = alist_with_capacity(64);
 
+    assert(list);
+    assert(list->len == 0);
+    assert(list->capacity == 64);
+    assert(list->base_capacity == 64);
+
+    for (size_t i = 0; i < 64; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(alist_set(list, key, &i, sizeof(size_t)) == 0);
+    }
+
+    assert(list->capacity == 64);
+    assert(list->base_capacity == 64);
+
+    for (size_t i = 64; i < 1000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(alist_set(list, key, &i, sizeof(size_t)) == 0);
+    }
+
+    assert(list->capacity == 1024);
+    assert(list->base_capacity == 64);
+
+    for (size_t i = 0; i < 1000; ++i) {
+
+        char key[20] = "";
+        sprintf(key, "key%lu", i);
+
+        assert(alist_del(list, key) == 0);
+    }
+
+    assert(list->capacity == 64);
+    assert(list->base_capacity == 64);
+
+    alist_destroy(list);
+
+    printf("OK\n");
+    return 0;
+}
 
 static void multiply_by_two(void *item, void *unused)
 {
@@ -257,6 +302,7 @@ int main(void)
     test_alist_get();
     test_alist_del();
     test_alist_set_del_large();
+    test_alist_set_del_preallocated();
 
     test_alist_map();
     test_alist_map_entries();

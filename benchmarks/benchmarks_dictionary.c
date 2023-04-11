@@ -7,6 +7,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "../src/dictionary.h"
+#include "../src/alist.h"
 
 
 static dict_t *dict_fill(const size_t items)
@@ -248,6 +249,232 @@ static void benchmarks_dict_set_preallocated(void)
     }
 }
 
+
+static void benchmarks_dict_vs_alist_set(void)
+{
+    printf("%s\n", "benchmark_set (dict vs. alist)");
+
+    size_t items[] = {10, 50, 100, 200, 300, 400, 500, 1000, 10000};
+
+    for (size_t j = 0; j < 9; ++j) {
+
+        clock_t start = clock();
+        dict_t *dict = dict_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        clock_t end = clock();
+
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> DICTIONARY: setting %12lu items: %f s\n", items[j], time_elapsed);
+
+        dict_destroy(dict);
+
+        // ***
+
+        start = clock();
+        alist_t *list = alist_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            alist_set(list, key, &i, sizeof(size_t));
+        }
+
+        end = clock();
+
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> ALIST:      setting %12lu items: %f s\n", items[j], time_elapsed);
+
+        alist_destroy(list);
+
+        printf("\n");
+    }
+}
+
+static void benchmarks_dict_vs_alist_set_preallocated(void)
+{
+    printf("%s\n", "benchmark_set (dict vs. alist) [preallocated]");
+
+    size_t items[] = {10, 50, 100, 200, 300, 400, 500, 1000, 10000};
+
+    for (size_t j = 0; j < 9; ++j) {
+
+        clock_t start = clock();
+        dict_t *dict = dict_with_capacity(items[j]);
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        clock_t end = clock();
+
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> DICTIONARY: setting %12lu items: %f s\n", items[j], time_elapsed);
+
+        dict_destroy(dict);
+
+        // ***
+
+        start = clock();
+        alist_t *list = alist_with_capacity(items[j]);
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            alist_set(list, key, &i, sizeof(size_t));
+        }
+
+        end = clock();
+
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> ALIST:      setting %12lu items: %f s\n", items[j], time_elapsed);
+
+        alist_destroy(list);
+
+        printf("\n");
+    }
+}
+
+static void benchmarks_dict_vs_alist_get(const size_t get)
+{
+    printf("%s\n", "benchmark_get (dict vs. alist)");
+
+    size_t items[] = {10, 20, 30, 40, 50, 100, 200, 500, 1000, 10000};
+
+    for (size_t j = 0; j < 10; ++j) {
+
+        dict_t *dict = dict_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < get; ++i) {
+            size_t random = rand() % items[j];
+
+            char key[40] = "";
+            sprintf(key, "key%lu", random);
+            dict_get(dict, key);
+        }
+
+        clock_t end = clock();
+
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> DICTIONARY: getting %12lu items from %12lu items: %f s\n", get, items[j], time_elapsed);
+
+        dict_destroy(dict);
+
+        // ***
+
+        alist_t *list = alist_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            alist_set(list, key, &i, sizeof(size_t));
+        }
+
+        start = clock();
+
+        for (size_t i = 0; i < get; ++i) {
+            size_t random = rand() % items[j];
+
+            char key[40] = "";
+            sprintf(key, "key%lu", random);
+            alist_get(list, key);
+        }
+
+        end = clock();
+
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> ALIST:      getting %12lu items from %12lu items: %f s\n", get, items[j], time_elapsed);
+
+        alist_destroy(list);
+
+        printf("\n");
+    }
+}
+
+static void benchmarks_dict_vs_alist_del(void)
+{
+    printf("%s\n", "benchmark_del (dict vs. alist)");
+
+    size_t items[] = {10, 50, 100, 200, 500, 600, 700, 800, 900, 1000, 10000};
+
+    for (size_t j = 0; j < 10; ++j) {
+
+        dict_t *dict = dict_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            dict_set(dict, key, &i, sizeof(size_t));
+        }
+
+        clock_t start = clock();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[40] = "";
+            sprintf(key, "key%lu", i);
+            assert(dict_del(dict, key) == 0);
+        }
+
+        clock_t end = clock();
+
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> DICTIONARY: deleting %12lu items: %f s\n", items[j], time_elapsed);
+
+        dict_destroy(dict);
+
+        // ***
+
+        alist_t *list = alist_new();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[20] = "";
+            sprintf(key, "key%lu", i);
+            alist_set(list, key, &i, sizeof(size_t));
+        }
+
+        start = clock();
+
+        for (size_t i = 0; i < items[j]; ++i) {
+            char key[40] = "";
+            sprintf(key, "key%lu", i);
+            assert(alist_del(list, key) == 0);
+        }
+
+        end = clock();
+
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> ALIST:      deleting %12lu items: %f s\n", items[j], time_elapsed);
+
+        alist_destroy(list);
+
+        printf("\n");
+    }
+}
+
+
 int main(void)
 {
     srand(time(NULL));
@@ -259,5 +486,9 @@ int main(void)
     benchmark_dict_set_del(10);
 
     benchmarks_dict_set_preallocated();
+    benchmarks_dict_vs_alist_set();
+    benchmarks_dict_vs_alist_set_preallocated();
+    benchmarks_dict_vs_alist_get(1000);
+    benchmarks_dict_vs_alist_del();
 
 }
