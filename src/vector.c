@@ -8,7 +8,7 @@
 /* *************************************************************************** */
 
 /*! @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
-static inline int vec_check_shrink(vec_t *vector)
+inline static int vec_check_shrink(vec_t *vector)
 {
     return (vector->capacity > vector->base_capacity) && (vector->len <= vector->capacity / 4);
 }
@@ -101,11 +101,11 @@ int vec_push(vec_t *vector, const void *item, const size_t itemsize)
 {
     if (vector == NULL) return 99;
 
-    if (vector->len >= vector->capacity) if (vec_reallocate(vector) == 1) return 1;
+    if (vector->len >= vector->capacity && vec_reallocate(vector)) return 1;
     
     vector->items[vector->len] = malloc(itemsize);
     memcpy(vector->items[vector->len], item, itemsize);
-    vector->len++;
+    ++(vector->len);
 
     return 0;
 }
