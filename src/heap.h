@@ -122,7 +122,7 @@ void *heap_peek(const heap_t *heap);
  *
  * @@note - The caller is responsible for deallocating memory for the popped item.
  * 
- * @note - Asymptotic Complexity: Constant, O(1).
+ * @note - Asymptotic Complexity: Logarithmic, O(log n).
  * 
  * @return Void pointer to the minimum/maximum of the heap. NULL if the heap is NULL or if there are no items.
  */
