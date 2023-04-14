@@ -196,7 +196,7 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
 
 
 /** 
- * @brief Searches for an item in the vector and returns its index.
+ * @brief Searches for an item in the vector and returns pointer to the item.
  * 
  * @param vector            The vector to search in
  * @param equal_function    The function pointer defining how the items should be compared
@@ -204,8 +204,8 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  * 
  * @note
  * - This function has a linear time complexity. If you plan to perform multiple searches in the same vector, 
- * it might be better to first sort the array using vec_sort_quick or vec_sort_quicknaive and then search it 
- * using vec_find_bsearch for a faster search.
+ * it might be better to first sort the vector using `vec_sort_quick` or `vec_sort_quicknaive` and then search it 
+ * using `vec_find_bsearch` for a faster search.
  * 
  * @note
  * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
@@ -215,19 +215,21 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  * The equality function should return a value greater than 0 (true) if the two compared items match each other.
  * The equality function should return 0 (false) if the two compared items do not match each other.
  * 
- * @note - If the input vector is NULL, the function returns -99.
+ * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
  * 
- * @note - If no corresponding item is found in the vector, the function returns -1.
+ * @note - The function always returns pointer to the first matching item in the vector (with the lowest index).
  * 
- * @note - The function always returns the index of the first matching item in the vector (with the lowest index).
+ * @note - The returned pointer is no longer valid once the parent vector is destroyed.
  * 
- * @return The index of the first matching item. Negative value, if unsuccessful.
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return Void pointer to the first matching item. NULL if unsuccessful.
  */
-long vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
+void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
 
 
 /** 
- * @brief Searches for item in vector that is SORTED in ASCENDING order and returns its index. Uses binary search.
+ * @brief Searches for an item in vector that is SORTED in ASCENDING order and returns pointer to the item. Uses binary search.
  * 
  * @param vector            Vector to search in
  * @param compare_function  Function pointer defining how the items should be compared
@@ -242,17 +244,17 @@ long vec_find(const vec_t *vector, int (*equal_function)(const void *, const voi
  * It should return 0, if the compared items have the same value.
  * It should return <0, if the first of the two compared items is smaller.
  * 
- * @note - If 'vector' is NULL, -99 is returned.
+ * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
  * 
- * @note - If no corresponding item has been found, -1 is returned.
+ * @note - The function always returns pointer to the first matching item in the vector (with the lowest index).
  * 
- * @note - The function always returns the index of the first matching item in the vector (with the lowest index).
+ * @note - The returned pointer is no longer valid once the parent vector is destroyed.
  * 
  * @note - Asymptotic Complexity: Logarithmic, O(log n).
  * 
- * @return Index of the first matching item. Negative value, if unsuccessful.
+ * @return Void pointer to the first matching item. NULL if unsuccessful.
  */
-long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target);
+void *vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target);
 
 
 /**

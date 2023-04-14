@@ -861,12 +861,12 @@ static int test_vec_find(void)
     size_t search[] = {9, 1, 5, 3, 19};
 
     // search in non-existent vector
-    assert(vec_find(NULL, test_equality_function, (void *) &search[0]) == -99);
+    assert(vec_find(NULL, test_equality_function, (void *) &search[0]) == NULL);
 
     vec_t *vector = vec_new();
 
     // search in an empty vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == -1);
+    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == NULL);
 
     size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
 
@@ -875,14 +875,14 @@ static int test_vec_find(void)
     }
 
     // find item at the beginning of vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == 0);
+    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == vector->items[0]);
     // find item at the end of vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[1]) == 9);
+    assert(vec_find(vector, test_equality_function, (void *) &search[1]) == vector->items[9]);
     // find first of many items
-    assert(vec_find(vector, test_equality_function, (void *) &search[2]) == 4);
-    assert(vec_find(vector, test_equality_function, (void *) &search[3]) == 1);
+    assert(vec_find(vector, test_equality_function, (void *) &search[2]) == vector->items[4]);
+    assert(vec_find(vector, test_equality_function, (void *) &search[3]) == vector->items[1]);
     // search for non-existent item
-    assert(vec_find(vector, test_equality_function, (void *) &search[4]) == -1);
+    assert(vec_find(vector, test_equality_function, (void *) &search[4]) == NULL);
 
     vec_destroy(vector);
 
@@ -902,12 +902,12 @@ static int test_vec_find_bsearch(void)
     size_t search[] = {0, 9, 5, 3, 19};
 
     // search in non-existent vector
-    assert(vec_find_bsearch(NULL, test_comparison_function, (void *) &search[0]) == -99);
+    assert(vec_find_bsearch(NULL, test_comparison_function, (void *) &search[0]) == NULL);
 
     vec_t *vector = vec_new();
 
     // search in an empty vector
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == -1);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == NULL);
 
     size_t data[] = {0, 1, 2, 3, 3, 4, 5, 5, 6, 9};
 
@@ -916,14 +916,14 @@ static int test_vec_find_bsearch(void)
     }
 
     // find item at the beginning of vector
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == 0);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == vector->items[0]);
     // find item at the end of vector
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[1]) == 9);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[1]) == vector->items[9]);
     // find first of many items
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[2]) == 6);
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[3]) == 3);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[2]) == vector->items[6]);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[3]) == vector->items[3]);
     // search for non-existent item
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[4]) == -1);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[4]) == NULL);
 
     vec_destroy(vector);
 
@@ -1154,7 +1154,7 @@ static int test_vec_shuffle(void)
     // and that the vector is NOT sorted
     short sorted = 1;
     for (size_t i = 0; i < 200; ++i) {
-        assert(vec_find(vector, test_equality_function, &i) >= 0);
+        assert(vec_find(vector, test_equality_function, &i));
         if (i >= 1 && vec_get(vector, i) > vec_get(vector, i - 1)) sorted = 0;
     }
 
@@ -1696,10 +1696,10 @@ static int test_vec_sort_and_find(void)
     // sort the vector
     vec_sort_quicknaive(vector, test_comparison_function);
 
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == 9);
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[1]) == 1);
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[2]) == 6);
-    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[3]) == 3);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[0]) == vector->items[9]);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[1]) == vector->items[1]);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[2]) == vector->items[6]);
+    assert(vec_find_bsearch(vector, test_comparison_function, (void *) &search[3]) == vector->items[3]);
 
     vec_destroy(vector);
 
@@ -1726,7 +1726,7 @@ static int test_vec_shuffle_and_sort(void)
     // and that the vector is NOT sorted
     short sorted = 1;
     for (size_t i = 0; i < 200; ++i) {
-        assert(vec_find(vector, test_equality_function, &i) >= 0);
+        assert(vec_find(vector, test_equality_function, &i));
         if (i >= 1 && vector->items[i] > vector->items[i - 1]) sorted = 0;
     }
 

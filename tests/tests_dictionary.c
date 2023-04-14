@@ -426,7 +426,7 @@ static int test_dict_keys(void)
 
     // check that the original keys are actually present in the vector
     for (size_t i = 0; i < 10; ++i) {
-        assert(vec_find(vec, test_eq_string, keys[i]) >= 0);
+        assert(vec_find(vec, test_eq_string, keys[i]));
     }
 
     vec_destroy(vec);
@@ -480,7 +480,7 @@ static int test_dict_values(void)
 
     // check that the original values are actually present in the vector
     for (size_t i = 0; i < 10; ++i) {
-        assert(vec_find(vec, test_eq_sizet, &values[i]) >= 0);
+        assert(vec_find(vec, test_eq_sizet, &values[i]));
     }
 
     vec_destroy(vec);
@@ -490,7 +490,7 @@ static int test_dict_values(void)
     assert(dict_set(dict, "array", &value, sizeof(size_t)) == 0);
     vec = dict_values(dict);
     assert(vec->len == 10);
-    assert(vec_find(vec, test_eq_sizet, &value) >= 0);
+    assert(vec_find(vec, test_eq_sizet, &value));
     vec_destroy(vec);
 
     dict_destroy(dict);

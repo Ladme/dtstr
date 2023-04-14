@@ -267,7 +267,7 @@ static void benchmarks_search_vec_vs_avl(const size_t fill_factor, const size_t 
             for (size_t j = 0; j < items; ++j) {
                 int random = rand() % (int) prefilled;
 
-                assert(vec_find(vector, vec_equal_function, &random) >= 0);
+                assert(vec_find(vector, vec_equal_function, &random));
             }
 
             end = clock();
@@ -295,7 +295,7 @@ static void benchmarks_search_vec_vs_avl(const size_t fill_factor, const size_t 
         for (size_t j = 0; j < items; ++j) {
             int random = rand() % (int) prefilled;
 
-            assert(vec_find_bsearch(vector, vec_compare_function, &random) >= 0);
+            assert(vec_find_bsearch(vector, vec_compare_function, &random));
         }
 
         end = clock();

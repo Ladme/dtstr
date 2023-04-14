@@ -1022,7 +1022,7 @@ static int test_avl_map(void)
 
     // here we just check whether the input ints are present in the vector
     for (size_t i = 0; i < 7; ++i) {
-        assert(vec_find(vector, test_equality_function, &input[i]) >= 0);
+        assert(vec_find(vector, test_equality_function, &input[i]));
     }
 
     avl_destroy(tree);

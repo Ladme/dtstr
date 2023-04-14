@@ -204,23 +204,23 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
 }
 
 
-long vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target)
+void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target)
 {
-    if (vector == NULL) return -99;
+    if (vector == NULL) return NULL;
     
     for (size_t i = 0; i < vector->len; ++i) {
 
         void *item = vector->items[i];
-        if (equal_function(item, target)) return (long) i;
+        if (equal_function(item, target)) return item;
     }
 
-    return -1;
+    return NULL;
 }
 
 
-long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target)
+void *vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target)
 {
-    if (vector == NULL) return -99;
+    if (vector == NULL) return NULL;
 
     size_t first = 0;
     size_t last = vector->len - 1;
@@ -235,10 +235,10 @@ long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *,
         // rescan to make sure that this is the first occurence of the searched item
         else if (first != middle) last = middle;
         // the target is in the middle
-        else return (long) middle;
+        else return vector->items[middle];
     }
 
-    return -1;
+    return NULL;
 }
 
 void *vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *))
