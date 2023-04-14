@@ -110,9 +110,35 @@ inline size_t heap_len(const heap_t *heap)
  * 
  * @note - Asymptotic Complexity: Constant, O(1).
  * 
- * @return Void pointer to the minimum/maximum of the heap. NULL if not successful.
+ * @return Void pointer to the minimum/maximum of the heap. NULL if the heap is NULL or if there are no items.
  */
 void *heap_peek(const heap_t *heap);
 
+
+/**
+ * @brief Removes the minimum/maximum of the heap and returns it.
+ * 
+ * @param heap      Heap to pop
+ *
+ * @@note - The caller is responsible for deallocating memory for the popped item.
+ * 
+ * @note - Asymptotic Complexity: Constant, O(1).
+ * 
+ * @return Void pointer to the minimum/maximum of the heap. NULL if the heap is NULL or if there are no items.
+ */
+void *heap_pop(heap_t *heap);
+
+
+/** 
+ * @brief Loops through all nodes in heap and applies 'function' to each node.
+ * 
+ * @param heap      Heap to apply the function to
+ * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - Nodes are traversed in level-order.
+ * @note - Note that modifying the values stored in a heap using the function can disrupt the balance of the heap.
+ */
+void heap_map(heap_t *heap, void (*function)(void *, void *), void *pointer);
 
 #endif /* HEAP_H */

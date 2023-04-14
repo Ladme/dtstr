@@ -27,6 +27,18 @@ static int max_heap_compare_ints(const void *x, const void *y)
     return (*(int *) y - *(int *) x);
 }
 
+static void assert_heap_balance(const heap_t *heap)
+{
+    // check that all children of all nodes are of correct size
+    for (size_t j = 0; j < heap->len; ++j) {
+        size_t left = (2 * j) + 1;
+        size_t right = (2 * j) + 2;
+
+        if (left < heap->len) assert(heap->compare_function(heap->items[left], heap->items[j]) >= 0);
+        if (right < heap->len) assert(heap->compare_function(heap->items[right], heap->items[j]) >= 0);
+    }
+}
+
 static int test_heap_destroy_null(void)
 {
     printf("%-40s", "test_heap_destroy (null) ");
@@ -227,15 +239,7 @@ static int test_heap_insert_min_large(void)
         
         heap_insert(heap, &r_int);
         
-        // check that all children of all nodes are larger or the same size
-        for (size_t j = 0; j < heap->len; ++j) {
-            size_t left = (2 * j) + 1;
-            size_t right = (2 * j) + 2;
-
-            if (left < heap->len) assert(heap->compare_function(heap->items[left], heap->items[j]) >= 0);
-            if (right < heap->len) assert(heap->compare_function(heap->items[right], heap->items[j]) >= 0);
-        }
-
+        assert_heap_balance(heap);
     }
 
     assert(heap->capacity == 1024);
@@ -261,14 +265,7 @@ static int test_heap_insert_max_large(void)
         
         heap_insert(heap, &r_int);
         
-        // check that all children of all nodes are larger or the same size
-        for (size_t j = 0; j < heap->len; ++j) {
-            size_t left = (2 * j) + 1;
-            size_t right = (2 * j) + 2;
-
-            if (left < heap->len) assert(heap->compare_function(heap->items[left], heap->items[j]) >= 0);
-            if (right < heap->len) assert(heap->compare_function(heap->items[right], heap->items[j]) >= 0);
-        }
+        assert_heap_balance(heap);
     }
 
     assert(heap->capacity == 1024);
@@ -316,6 +313,8 @@ static int test_heap_peek_min(void)
     heap_t *heap = heap_new(sizeof(int), min_heap_compare_ints);
     vec_t *vector = vec_new();
 
+    assert(heap_peek(heap) == NULL);
+
     for (size_t i = 0; i < 1000; ++i) {
         int r_int = rand() % 1000; 
         
@@ -343,6 +342,8 @@ static int test_heap_peek_max(void)
     heap_t *heap = heap_new(sizeof(int), max_heap_compare_ints);
     vec_t *vector = vec_new();
 
+    assert(heap_peek(heap) == NULL);
+
     for (size_t i = 0; i < 1000; ++i) {
         int r_int = rand() % 1000; 
         
@@ -353,6 +354,263 @@ static int test_heap_peek_max(void)
     assert(*(int *) heap_peek(heap) == *(int *) vec_find_max(vector, min_heap_compare_ints));
     heap_destroy(heap);
     vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_heap_pop_min(void)
+{
+    printf("%-40s", "test_heap_pop (min) ");
+
+    assert(heap_pop(NULL) == NULL);
+
+    heap_t *heap = heap_new(sizeof(int), min_heap_compare_ints);
+
+    assert(heap_pop(heap) == NULL);
+
+    int data[] = {7, 5, 6, 8, 5, 2, 3, 2, 0, 9};
+
+    for (size_t i = 0; i < 10; ++i) {
+        heap_insert(heap, &data[i]);
+    }
+
+    assert_heap_balance(heap);
+
+    void *item = heap_pop(heap);
+    assert(*(int *) item == 0);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 2);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 2);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 3);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 5);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 5);
+    assert_heap_balance(heap);
+    free(item);
+    
+    item = heap_pop(heap);
+    assert(*(int *) item == 6);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 7);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 8);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 9);
+    assert_heap_balance(heap);
+    free(item);
+
+    heap_destroy(heap);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_heap_pop_max(void)
+{
+    printf("%-40s", "test_heap_pop (max) ");
+
+    assert(heap_pop(NULL) == NULL);
+
+    heap_t *heap = heap_new(sizeof(int), max_heap_compare_ints);
+
+    assert(heap_pop(heap) == NULL);
+
+    int data[] = {7, 5, 8, 6, 5, 9, 3, 6, 10, 0};
+
+    for (size_t i = 0; i < 10; ++i) {
+        heap_insert(heap, &data[i]);
+    }
+
+    assert_heap_balance(heap);
+
+    void *item = heap_pop(heap);
+    assert(*(int *) item == 10);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 9);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 8);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 7);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 6);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 6);
+    assert_heap_balance(heap);
+    free(item);
+    
+    item = heap_pop(heap);
+    assert(*(int *) item == 5);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 5);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 3);
+    assert_heap_balance(heap);
+    free(item);
+
+    item = heap_pop(heap);
+    assert(*(int *) item == 0);
+    assert_heap_balance(heap);
+    free(item);
+
+    heap_destroy(heap);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_heap_pop_min_large(void)
+{
+    printf("%-40s", "test_heap_pop (min, large) ");
+
+    srand(2478340);
+
+    heap_t *heap = heap_new(sizeof(int), min_heap_compare_ints);
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 1000; ++i) {
+        int r_int = rand() % 1000; 
+        
+        heap_insert(heap, &r_int);
+        vec_push(vector, &r_int, sizeof(int));
+    }
+
+    assert(heap->capacity == 1024);
+
+    vec_sort_quicknaive(vector, min_heap_compare_ints);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        void *item = heap_pop(heap);
+        assert(*(int *) item == *(int *) vec_get(vector, i));
+        free(item);
+        assert_heap_balance(heap);
+    }
+
+    assert(heap->capacity == HEAP_DEFAULT_CAPACITY);
+
+    heap_destroy(heap);
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_heap_pop_max_large(void)
+{
+    printf("%-40s", "test_heap_pop (max, large) ");
+
+    srand(2478340);
+
+    heap_t *heap = heap_new(sizeof(int), max_heap_compare_ints);
+    vec_t *vector = vec_new();
+
+    for (size_t i = 0; i < 1000; ++i) {
+        int r_int = rand() % 1000; 
+        
+        heap_insert(heap, &r_int);
+        vec_push(vector, &r_int, sizeof(int));
+    }
+
+    assert(heap->capacity == 1024);
+
+    vec_sort_quicknaive(vector, max_heap_compare_ints);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        void *item = heap_pop(heap);
+        assert(*(int *) item == *(int *) vec_get(vector, i));
+        free(item);
+        assert_heap_balance(heap);
+    }
+
+    assert(heap->capacity == HEAP_DEFAULT_CAPACITY);
+
+    heap_destroy(heap);
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static void set_to_three(void *item, void *unused)
+{
+    UNUSED(unused);
+    int *ptr = (int *) item;
+    *ptr = 3;
+}
+
+static int test_heap_map(void)
+{
+    printf("%-40s", "test_heap_map ");
+
+    srand(8273846);
+
+    heap_map(NULL, set_to_three, NULL);
+
+    heap_t *heap = heap_new(sizeof(int), min_heap_compare_ints);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        int r_int = rand() % 1000; 
+        
+        heap_insert(heap, &r_int);
+    }
+
+    heap_map(heap, set_to_three, NULL);
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(*(int *) heap->items[i] == 3);
+    }
+    
+    heap_destroy(heap);
 
     printf("OK\n");
     return 0;
@@ -373,6 +631,13 @@ int main(void)
 
     test_heap_peek_min();
     test_heap_peek_max();
+    test_heap_pop_min();
+    test_heap_pop_max();
+    test_heap_pop_min_large();
+    test_heap_pop_max_large();
+
+
+    test_heap_map();
 
     return 0;
 }
