@@ -323,7 +323,7 @@ static int test_heap_peek_min(void)
         vec_push(vector, &r_int, sizeof(int));
     }
 
-    assert(*(int *) heap_peek(heap) == *(int *) vector->items[vec_find_min(vector, min_heap_compare_ints)]);
+    assert(*(int *) heap_peek(heap) == *(int *) vec_find_min(vector, min_heap_compare_ints));
     heap_destroy(heap);
     vec_destroy(vector);
 
@@ -350,7 +350,7 @@ static int test_heap_peek_max(void)
         vec_push(vector, &r_int, sizeof(int));
     }
 
-    assert(*(int *) heap_peek(heap) == *(int *) vector->items[vec_find_max(vector, min_heap_compare_ints)]);
+    assert(*(int *) heap_peek(heap) == *(int *) vec_find_max(vector, min_heap_compare_ints));
     heap_destroy(heap);
     vec_destroy(vector);
 

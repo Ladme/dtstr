@@ -256,7 +256,7 @@ long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *,
 
 
 /**
- * @brief Finds the index of the minimum item in a vector.
+ * @brief Returns pointer to the minimum item in a vector.
  * 
  * @param vector            The vector to search for the minimum item.
  * @param compare_function  The function to use to compare the items in the vector.
@@ -271,17 +271,17 @@ long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *,
  * It should return <0, if the first of the two compared items is smaller.
  * 
  * @note - If there are multiple items with the same value that is the minimum value in the vector, 
- * the function will return the index of the first occurrence of that value in the vector.
+ * the function will return pointer to the first occurrence of that value in the vector.
  * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
- * @return The index of the minimum item in the vector, or -1 if the vector is empty, or -99 if the vector is NULL.
+ * @return Pointer to the minimum item in the vector. NULL if this fails.
  */
-long vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *));
+void *vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *));
 
 
 /**
- * @brief Finds the index of the maximum item in a vector.
+ * @brief Returns pointer to the maximum item in a vector.
  * 
  * @param vector            The vector to search for the maximum item.
  * @param compare_function  The function to use to compare the items in the vector.
@@ -296,13 +296,13 @@ long vec_find_min(const vec_t *vector, int (*compare_function)(const void *, con
  * It should return <0, if the first of the two compared items is smaller.
  * 
  * @note - If there are multiple items with the same value that is the maximum value in the vector, 
- * the function will return the index of the first occurrence of that value in the vector.
+ * the function will return pointer to the first occurrence of that value in the vector.
  * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
- * @return The index of the maximum item in the vector, or -1 if the vector is empty, or -99 if the vector is NULL.
+ * @return Pointer to the maximum item in the vector. NULL if this fails.
  */
-long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, const void *));
+void *vec_find_max(const vec_t *vector, int (*compare_function)(const void *, const void *));
 
 
 /** 

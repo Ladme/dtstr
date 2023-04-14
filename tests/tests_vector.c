@@ -943,33 +943,33 @@ static int test_vec_find_min(void)
     int items[] = {5, 3, 1, 7, 6, 0, -1};
 
     // search in a non-existent vector
-    assert(vec_find_min(NULL, test_int_comparison_function) == -99);
+    assert(vec_find_min(NULL, test_int_comparison_function) == NULL);
 
     // search in an empty vector
     vec_t *vector = vec_new();
-    assert(vec_find_min(vector, test_int_comparison_function) == -1);
+    assert(vec_find_min(vector, test_int_comparison_function) == NULL);
 
     // search in a vector of length 1
     vec_push(vector, &items[0], sizeof(int));
-    assert(vec_find_min(vector, test_int_comparison_function) == 0);
+    assert(vec_find_min(vector, test_int_comparison_function) == vector->items[0]);
 
     // search for a minimum located in the middle of the vector
     for (size_t i = 1; i < 5; ++i) {
         vec_push(vector, &items[i], sizeof(int));
     }
-    assert(vec_find_min(vector, test_int_comparison_function) == 2);
+    assert(vec_find_min(vector, test_int_comparison_function) == vector->items[2]);
 
     // search for a minimum located at the start of the vector
     vec_insert(vector, &items[5], sizeof(int), 0);
-    assert(vec_find_min(vector, test_int_comparison_function) == 0);
+    assert(vec_find_min(vector, test_int_comparison_function) == vector->items[0]);
 
     // search for a minimum located at the end of the vector
     vec_push(vector, &items[6], sizeof(int));
-    assert(vec_find_min(vector, test_int_comparison_function) == 6);
+    assert(vec_find_min(vector, test_int_comparison_function) == vector->items[6]);
 
     // multiple minima in the vector
     vec_insert(vector, &items[6], sizeof(int), 2);
-    assert(vec_find_min(vector, test_int_comparison_function) == 2);
+    assert(vec_find_min(vector, test_int_comparison_function) == vector->items[2]);
 
     vec_destroy(vector);
 
@@ -984,33 +984,33 @@ static int test_vec_find_max(void)
     int items[] = {-4, -2, -1, -3, -5, 0, 7};
 
     // search in a non-existent vector
-    assert(vec_find_max(NULL, test_int_comparison_function) == -99);
+    assert(vec_find_max(NULL, test_int_comparison_function) == NULL);
 
     // search in an empty vector
     vec_t *vector = vec_new();
-    assert(vec_find_max(vector, test_int_comparison_function) == -1);
+    assert(vec_find_max(vector, test_int_comparison_function) == NULL);
 
     // search in a vector of length 1
     vec_push(vector, &items[0], sizeof(int));
-    assert(vec_find_max(vector, test_int_comparison_function) == 0);
+    assert(vec_find_max(vector, test_int_comparison_function) == vector->items[0]);
 
     // search for a maximum located in the middle of the vector
     for (size_t i = 1; i < 5; ++i) {
         vec_push(vector, &items[i], sizeof(int));
     }
-    assert(vec_find_max(vector, test_int_comparison_function) == 2);
+    assert(vec_find_max(vector, test_int_comparison_function) == vector->items[2]);
 
     // search for a maximum located at the start of the vector
     vec_insert(vector, &items[5], sizeof(int), 0);
-    assert(vec_find_max(vector, test_int_comparison_function) == 0);
+    assert(vec_find_max(vector, test_int_comparison_function) == vector->items[0]);
 
     // search for a maximum located at the end of the vector
     vec_push(vector, &items[6], sizeof(int));
-    assert(vec_find_max(vector, test_int_comparison_function) == 6);
+    assert(vec_find_max(vector, test_int_comparison_function) == vector->items[6]);
 
     // multiple maxima in the vector
     vec_insert(vector, &items[6], sizeof(int), 2);
-    assert(vec_find_max(vector, test_int_comparison_function) == 2);
+    assert(vec_find_max(vector, test_int_comparison_function) == vector->items[2]);
 
     vec_destroy(vector);
 
@@ -1049,40 +1049,40 @@ static int test_vec_find_min_max_complex(void)
     vec_push(vector, &p2, sizeof(struct person));
     vec_push(vector, &p3, sizeof(struct person));
 
-    size_t found = 0;
+    void *found = NULL;
 
     // find youngest person
     found = vec_find_min(vector, age_comparison_function);
-    assert(found == 0);
-    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Kate") == 0);
+    assert(found == vector->items[0]);
+    assert(strcmp(((struct person *) found)->name, "Kate") == 0);
     //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
 
     // add Jimmy and find new youngest person
     vec_push(vector, &p4, sizeof(struct person));
     found = vec_find_min(vector, age_comparison_function);
-    assert(found == 3);
-    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Jimmy") == 0);
+    assert(found == vector->items[3]);
+    assert(strcmp(((struct person *) found)->name, "Jimmy") == 0);
     //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
 
     // find oldest person
     found = vec_find_max(vector, age_comparison_function);
-    assert(found == 2);
-    assert(strcmp(((struct person *) vec_get(vector, found))->name, "John") == 0);
+    assert(found == vector->items[2]);
+    assert(strcmp(((struct person *) found)->name, "John") == 0);
     //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
 
     // add Rebecca to the end of the vector and find oldest person
     vec_push(vector, &p5, sizeof(struct person));
     found = vec_find_max(vector, age_comparison_function);
-    assert(found == 2);
-    assert(strcmp(((struct person *) vec_get(vector, found))->name, "John") == 0);
+    assert(found == vector->items[2]);
+    assert(strcmp(((struct person *) found)->name, "John") == 0);
     //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
 
     // move Rebecca to the front and find oldest person
     free(vec_pop(vector));
     vec_insert(vector, &p5, sizeof(struct person), 1);
     found = vec_find_max(vector, age_comparison_function);
-    assert(found == 1);
-    assert(strcmp(((struct person *) vec_get(vector, found))->name, "Rebecca") == 0);
+    assert(found == vector->items[1]);
+    assert(strcmp(((struct person *) found)->name, "Rebecca") == 0);
     //printf("%s\n", ((struct person *) vec_get(vector, found))->name);
 
     vec_destroy(vector);

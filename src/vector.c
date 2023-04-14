@@ -241,35 +241,33 @@ long vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *,
     return -1;
 }
 
-long vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *))
+void *vec_find_min(const vec_t *vector, int (*compare_function)(const void *, const void *))
 {
-    if (vector == NULL) return -99;
-    if (vector->len == 0) return -1;
+    if (vector == NULL || vector->len == 0) return NULL;
 
-    size_t min_index = 0;
+    void *min_item = vector->items[0];
     for (size_t i = 1; i < vector->len; ++i) {
 
         void *item = vector->items[i];
-        if (compare_function(vector->items[i], vector->items[min_index]) < 0) min_index = i;
+        if (compare_function(item, min_item) < 0) min_item = item;
     }
 
-    return min_index;
+    return min_item;
 }
 
 
-long vec_find_max(const vec_t *vector, int (*compare_function)(const void *, const void *))
+void *vec_find_max(const vec_t *vector, int (*compare_function)(const void *, const void *))
 {
-    if (vector == NULL) return -99;
-    if (vector->len == 0) return -1;
+    if (vector == NULL || vector->len == 0) return NULL;
 
-    size_t min_index = 0;
+    void *max_item = vector->items[0];
     for (size_t i = 1; i < vector->len; ++i) {
 
         void *item = vector->items[i];
-        if (compare_function(vector->items[i], vector->items[min_index]) > 0) min_index = i;
+        if (compare_function(item, max_item) > 0) max_item = item;
     }
 
-    return min_index;
+    return max_item;
 }
 
 void vec_map(vec_t *vector, void (*function)(void *, void *), void *pointer)
