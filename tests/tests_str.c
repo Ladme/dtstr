@@ -447,25 +447,25 @@ static int test_parse_int(void)
 
     // valid positive value
     int_option_t integer = str_parse_int(to_parse[0]);
-    assert(check_int_option(integer));
-    assert(unwrap_int_option(integer) == 72);
+    assert(int_option_check(integer));
+    assert(int_option_unwrap(integer) == 72);
 
     // valid negative value
     integer = str_parse_int(to_parse[1]);
-    assert(check_int_option(integer));
-    assert(unwrap_int_option(integer) == -5);
+    assert(int_option_check(integer));
+    assert(int_option_unwrap(integer) == -5);
 
     // value too large
     integer = str_parse_int(to_parse[2]);
-    assert(!check_int_option(integer));
+    assert(!int_option_check(integer));
 
     // float value
     integer = str_parse_int(to_parse[3]);
-    assert(!check_int_option(integer));
+    assert(!int_option_check(integer));
 
     // value contains a letter
     integer = str_parse_int(to_parse[4]);
-    assert(!check_int_option(integer));
+    assert(!int_option_check(integer));
 
     printf("OK\n");
     return 0;
@@ -479,26 +479,26 @@ static int test_parse_long(void)
 
     // valid positive value
     long_option_t value = str_parse_long(to_parse[0]);
-    assert(check_long_option(value));
-    assert(unwrap_long_option(value) == 72);
+    assert(long_option_check(value));
+    assert(long_option_unwrap(value) == 72);
 
     // valid negative value
     value = str_parse_long(to_parse[1]);
-    assert(check_long_option(value));
-    assert(unwrap_long_option(value) == -5);
+    assert(long_option_check(value));
+    assert(long_option_unwrap(value) == -5);
 
     // large positive value
     value = str_parse_long(to_parse[2]);
-    assert(check_long_option(value));
-    assert(unwrap_long_option(value) == 99273836472);
+    assert(long_option_check(value));
+    assert(long_option_unwrap(value) == 99273836472);
 
     // float value
     value = str_parse_long(to_parse[3]);
-    assert(!check_long_option(value));
+    assert(!long_option_check(value));
 
     // value contains a letter
     value = str_parse_long(to_parse[4]);
-    assert(!check_long_option(value));
+    assert(!long_option_check(value));
 
     printf("OK\n");
     return 0;
@@ -512,25 +512,25 @@ static int test_parse_sizet(void)
 
     // valid positive value
     sizet_option_t value = str_parse_sizet(to_parse[0]);
-    assert(check_sizet_option(value));
-    assert(unwrap_sizet_option(value) == 72);
+    assert(sizet_option_check(value));
+    assert(sizet_option_unwrap(value) == 72);
 
     // invalid negative value
     value = str_parse_sizet(to_parse[1]);
-    assert(!check_sizet_option(value));
+    assert(!sizet_option_check(value));
 
     // large positive value
     value = str_parse_sizet(to_parse[2]);
-    assert(check_sizet_option(value));
-    assert(unwrap_sizet_option(value) == 99273836472);
+    assert(sizet_option_check(value));
+    assert(sizet_option_unwrap(value) == 99273836472);
 
     // float value
     value = str_parse_sizet(to_parse[3]);
-    assert(!check_sizet_option(value));
+    assert(!sizet_option_check(value));
 
     // value contains a letter
     value = str_parse_sizet(to_parse[4]);
-    assert(!check_sizet_option(value));
+    assert(!sizet_option_check(value));
 
     printf("OK\n");
     return 0;
@@ -544,27 +544,27 @@ static int test_parse_float(void)
 
     // valid positive value
     float_option_t floating = str_parse_float(to_parse[0]);
-    assert(check_float_option(floating));
-    assert(unwrap_float_option(floating) == 72);
+    assert(float_option_check(floating));
+    assert(float_option_unwrap(floating) == 72);
 
     // valid large value
     floating = str_parse_float(to_parse[1]);
-    assert(check_float_option(floating));
-    assert(unwrap_float_option(floating) == 99273836472);
+    assert(float_option_check(floating));
+    assert(float_option_unwrap(floating) == 99273836472);
 
     // with decimal point (positive)
     floating = str_parse_float(to_parse[2]);
-    assert(check_float_option(floating));
-    assert(closef(unwrap_float_option(floating), 5.32, 0.00001));
+    assert(float_option_check(floating));
+    assert(closef(float_option_unwrap(floating), 5.32, 0.00001));
 
     // with decimal point (negative)
     floating = str_parse_float(to_parse[3]);
-    assert(check_float_option(floating));
-    assert(closef(unwrap_float_option(floating), -82.287654, 0.00001));
+    assert(float_option_check(floating));
+    assert(closef(float_option_unwrap(floating), -82.287654, 0.00001));
 
     // value contains a letter
     floating = str_parse_float(to_parse[4]);
-    assert(!check_float_option(floating));
+    assert(!float_option_check(floating));
 
     printf("OK\n");
     return 0;

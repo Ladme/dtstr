@@ -152,21 +152,21 @@ float_option_t str_parse_float(const char *string);
 
 
 /** @brief Extracts integer from option while ignoring validity of the option. */
-extern inline int unwrap_int_option(const int_option_t value) { return value.value; }
+extern inline int int_option_unwrap(const int_option_t value) { return value.value; }
 /** @brief Extracts long from option while ignoring validity of the option. */
-extern inline long unwrap_long_option(const long_option_t value) { return value.value; }
+extern inline long long_option_unwrap(const long_option_t value) { return value.value; }
 /** @brief Extracts size_t from option while ignoring validity of the option. */
-extern inline size_t unwrap_sizet_option(const sizet_option_t value) { return value.value; }
+extern inline size_t sizet_option_unwrap(const sizet_option_t value) { return value.value; }
 /** @brief Extracts float from option while ignoring validity of the option. */
-extern inline float unwrap_float_option(const float_option_t value) { return value.value; }
+extern inline float float_option_unwrap(const float_option_t value) { return value.value; }
 
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int check_int_option(const int_option_t value) { return value.valid; }
+extern inline int int_option_check(const int_option_t value) { return value.valid; }
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int check_long_option(const long_option_t value) { return value.valid; }
+extern inline int long_option_check(const long_option_t value) { return value.valid; }
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int check_sizet_option(const sizet_option_t value) { return value.valid; }
+extern inline int sizet_option_check(const sizet_option_t value) { return value.valid; }
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int check_float_option(const float_option_t value) { return value.valid; }
+extern inline int float_option_check(const float_option_t value) { return value.valid; }
 
 #endif /* STR_H */
