@@ -53,7 +53,7 @@ vec_t *str_split(const char *string, const char *delim);
  * 
  * @return Pointer to vector containing the substrings. NULL if parsing fails.
  */
-inline vec_t *str_splitlines(const char *string) { return str_split(string, "\n"); }
+extern inline vec_t *str_splitlines(const char *string) { return str_split(string, "\n"); }
 
 
 /** @brief Splits string by whitespace and saves the substrings into a vector.
@@ -65,7 +65,7 @@ inline vec_t *str_splitlines(const char *string) { return str_split(string, "\n"
  * 
  * @return Pointer to vector containing the substrings. NULL if parsing fails.
  */
-inline vec_t *str_splitwhite(const char *string) { return str_split(string, " \t\n\v\f\r"); }
+extern inline vec_t *str_splitwhite(const char *string) { return str_split(string, " \t\n\v\f\r"); }
 
 
 /** @brief Strips leading and trailing whitespaces from string.
