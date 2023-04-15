@@ -79,3 +79,4 @@ benchmarks/benchmarks_heap
 # Ignore local helper scripts
 run_benchmarks.sh
 run_tests.sh
+install.sh

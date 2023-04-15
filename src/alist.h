@@ -118,7 +118,7 @@ int alist_del(alist_t *list, const char *key);
  * 
  * @return Number of key-value pairs in the association list. If list is NULL, returns 0.
  */
-inline size_t alist_len(const alist_t *list) 
+extern inline size_t alist_len(const alist_t *list) 
 { 
     return (list == NULL) ? 0 : list->len; 
 }

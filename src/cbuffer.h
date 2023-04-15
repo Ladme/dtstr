@@ -110,7 +110,7 @@ void *cbuf_peek(const cbuf_t *buffer);
  * 
  * @return Number of items in circular buffer. If buffer is NULL, returns 0.
  */
-inline size_t cbuf_len(const cbuf_t *buffer) 
+extern inline size_t cbuf_len(const cbuf_t *buffer) 
 { 
     return (buffer == NULL) ? 0 : buffer->len; 
 }
