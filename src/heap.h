@@ -120,7 +120,7 @@ void *heap_peek(const heap_t *heap);
  * 
  * @param heap      Heap to pop
  *
- * @@note - The caller is responsible for deallocating memory for the popped item.
+ * @note - The caller is responsible for deallocating memory for the popped item.
  * 
  * @note - Asymptotic Complexity: Logarithmic, O(log n).
  * 

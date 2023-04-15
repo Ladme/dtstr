@@ -1,5 +1,5 @@
-structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o
-	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o
+structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o
+	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o
 	
 vector: src/vector.c src/vector.h
 	gcc -c src/vector.c -std=c99 -pedantic -Wall -O2 -o src/vector.o
@@ -35,7 +35,10 @@ avl_tree: src/avl_tree.c src/avl_tree.h src/cbuffer.c src/cbuffer.h
 heap: src/heap.c src/heap.h
 	gcc -c src/heap.c -std=c99 -pedantic -Wall -O2 -o src/heap.o
 
-tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c tests/tests_alist.c tests/tests_heap.c libdtstr.a
+str: src/str.c src/str.h src/vector.c src/vector.h
+	gcc -c src/str.c -std=c99 -pedantic -Wall -O2 -o src/str.o
+
+tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c tests/tests_alist.c tests/tests_heap.c tests/tests_str.c libdtstr.a
 	make tests_vector
 	make tests_linked_list
 	make tests_dlinked_list
@@ -46,6 +49,7 @@ tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c
 	make tests_queue
 	make tests_avl_tree
 	make tests_heap
+	make tests_str
 
 tests_vector: tests/tests_vector.c src/vector.o libdtstr.a
 	gcc tests/tests_vector.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_vector
@@ -76,6 +80,9 @@ tests_avl_tree: tests/tests_avl_tree.c src/avl_tree.o libdtstr.a
 
 tests_heap: tests/tests_heap.c src/heap.o libdtstr.a
 	gcc tests/tests_heap.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_heap
+
+tests_str: tests/tests_str.c src/str.o libdtstr.a
+	gcc tests/tests_str.c libdtstr.a -std=c99 -pedantic -Wall -O2 -g -o tests/tests_str
 
 benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c libdtstr.a
 	make benchmarks_vector

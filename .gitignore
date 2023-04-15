@@ -64,6 +64,7 @@ tests/tests_avl_tree
 tests/tests_cbuffer
 tests/tests_alist
 tests/tests_heap
+tests/tests_str
 
 # Ignore compiled benchmarks
 benchmarks/benchmarks_vector
