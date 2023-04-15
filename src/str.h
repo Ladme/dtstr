@@ -8,11 +8,24 @@
 #define STR_H
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "vector.h"
 
+/** @brief Result of parsing. Integer that can be valid, if parsing was successful, or invalid, if parsing failed. */
+typedef struct { int valid; int value; } int_option_t;
+/** @brief Result of parsing. Long that can be valid, if parsing was successful, or invalid, if parsing failed. */
+typedef struct { int valid; long value; } long_option_t;
+/** @brief Result of parsing. Size_t that can be valid, if parsing was successful, or invalid, if parsing failed. */
+typedef struct { int valid; size_t value; } sizet_option_t;
+/** @brief Result of parsing. Float that can be valid, if parsing was successful, or invalid, if parsing failed. */
+typedef struct { int valid; float value; } float_option_t;
+
+
+/** @brief Initial length of buffer for `read_line` function. */
+#define INIT_BUFFER_LEN 64
 
 /** @brief Splits string by delimiter and saves the substrings into a vector.
  * 
@@ -69,11 +82,91 @@ void str_strip(char *string);
 /** @brief Removes all white spaces from a string.
  * 
  * @param string    String to modify
- * 
- * @note
- * - This function is a slightly modified version of a function from
- * https://stackoverflow.com/questions/1726302/remove-spaces-from-a-string-in-c
  */
 void str_remwhite(char *string);
+
+
+/** @brief Reads a line of text from a given stream and returns a pointer to a dynamically allocated buffer containing the line.
+ * 
+ * @param stream    Pointer to the stream to read from
+ * 
+ * @note - This function returns NULL if an error occurred or if the end of the file was reached before any characters were read.
+ * @note - The buffer will be resized as needed, and the line will be null-terminated.
+ * @note - The caller is responsible for freeing the buffer when it is no longer needed.
+ * 
+ * @return Pointer to the buffer containing the line, or NULL.
+ */
+char *read_line(FILE *stream);
+
+
+/**
+ * Parses the given string as an integer and returns a corresponding `int_option_t` struct.
+ *
+ * @param string    The string to parse as an integer
+ * 
+ * @note - An `int_option_t` struct contains a flag indicating whether the struct contains a valid integer value, and the parsed integer value itself.
+ * @note - You can check the validity of the option using `check_int_option` and you can unwrap the value stored in the option using `unwrap_int_option`.
+ * 
+ * @return An `int_option_t` struct representing the parsed integer, or an invalid struct if the string could not be parsed.
+ */
+int_option_t str_parse_int(const char *string);
+
+
+/**
+ * Parses the given string as a long and returns a corresponding `long_option_t` struct.
+ *
+ * @param string    The string to parse as a long
+ * 
+ * @note - A `long_option_t` struct contains a flag indicating whether the struct contains a valid long value, and the parsed long value itself.
+ * @note - You can check the validity of the option using `check_long_option` and you can unwrap the value stored in the option using `unwrap_long_option`.
+ * 
+ * @return A `long_option_t` struct representing the parsed long, or an invalid struct if the string could not be parsed.
+ */
+long_option_t str_parse_long(const char *string);
+
+
+/**
+ * Parses the given string as a size_t and returns a corresponding `sizet_option_t` struct.
+ *
+ * @param string    The string to parse as a size_t
+ * 
+ * @note - A `sizet_option_t` struct contains a flag indicating whether the struct contains a valid size_t value, and the parsed size_t value itself.
+ * @note - You can check the validity of the option using `check_sizet_option` and you can unwrap the value stored in the option using `unwrap_sizet_option`.
+ * 
+ * @return A `sizet_option_t` struct representing the parsed size_t, or an invalid struct if the string could not be parsed.
+ */
+sizet_option_t str_parse_sizet(const char *string);
+
+
+/**
+ * Parses the given string as a float and returns a corresponding `float_option_t` struct.
+ *
+ * @param string    The string to parse as a float
+ * 
+ * @note - A `float_option_t` struct contains a flag indicating whether the struct contains a valid float value, and the parsed float value itself.
+ * @note - You can check the validity of the option using `check_float_option` and you can unwrap the value stored in the option using `unwrap_float_option`.
+ * 
+ * @return A `float_option_t` struct representing the parsed float, or an invalid struct if the string could not be parsed.
+ */
+float_option_t str_parse_float(const char *string);
+
+
+/** @brief Extracts integer from option while ignoring validity of the option. */
+inline int unwrap_int_option(const int_option_t value) { return value.value; }
+/** @brief Extracts long from option while ignoring validity of the option. */
+inline long unwrap_long_option(const long_option_t value) { return value.value; }
+/** @brief Extracts size_t from option while ignoring validity of the option. */
+inline size_t unwrap_sizet_option(const sizet_option_t value) { return value.value; }
+/** @brief Extracts float from option while ignoring validity of the option. */
+inline float unwrap_float_option(const float_option_t value) { return value.value; }
+
+/** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
+inline int check_int_option(const int_option_t value) { return value.valid; }
+/** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
+inline int check_long_option(const long_option_t value) { return value.valid; }
+/** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
+inline int check_sizet_option(const sizet_option_t value) { return value.valid; }
+/** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
+inline int check_float_option(const float_option_t value) { return value.valid; }
 
 #endif /* STR_H */
