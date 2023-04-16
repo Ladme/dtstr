@@ -159,6 +159,10 @@ int llist_insert_before(llist_t *list, const void *data, const size_t datasize, 
     return llist_insert_after_node(list, data, datasize, previous);
 }
 
+int llist_insert(llist_t *list, const void *data, const size_t datasize, const size_t index) {
+    return llist_insert_before(list, data, datasize, index);
+}
+
 size_t llist_len(const llist_t *list)
 {
     if (list == NULL) return 0;

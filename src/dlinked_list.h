@@ -157,10 +157,7 @@ int dllist_insert(dllist_t *list, const void *data, const size_t datasize, const
  *
  * @return The length of the doubly linked list. 0 if the list does not exist.
  */
-extern inline size_t dllist_len(const dllist_t *list)
-{
-    return (list == NULL) ? 0 : list->len; 
-}
+size_t dllist_len(const dllist_t *list);
 
 
 /** 

@@ -156,6 +156,11 @@ int cllist_insert(cllist_t *list, const void *data, const size_t datasize, const
     return cllist_insert_before_node(list, data, datasize, next);
 }
 
+size_t cllist_len(const cllist_t *list)
+{
+    return (list == NULL) ? 0 : list->len; 
+}
+
 void *cllist_get(const cllist_t *list, const size_t index)
 {
     if (list == NULL) return NULL;

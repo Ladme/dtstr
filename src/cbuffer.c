@@ -149,6 +149,11 @@ void *cbuf_peek(const cbuf_t *buffer)
     return buffer->items[buffer->tail];
 }
 
+size_t cbuf_len(const cbuf_t *buffer) 
+{ 
+    return (buffer == NULL) ? 0 : buffer->len; 
+}
+
 
 void cbuf_map(cbuf_t *buffer, void (*function)(void *, void *), void *pointer)
 {

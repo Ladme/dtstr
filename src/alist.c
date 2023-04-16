@@ -128,6 +128,11 @@ int alist_del(alist_t *list, const char *key)
     return 2;
 }
 
+size_t alist_len(const alist_t *list) 
+{ 
+    return (list == NULL) ? 0 : list->len; 
+}
+
 void alist_map(alist_t *list, void (*function)(void *, void *), void *pointer)
 {
     if (list == NULL) return;

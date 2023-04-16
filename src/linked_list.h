@@ -146,9 +146,7 @@ int llist_insert_before(llist_t *list, const void *data, const size_t datasize, 
 
 
 /** @brief Adds node to the linked list at specified index. Identical to llist_insert_before. */
-extern inline int llist_insert(llist_t *list, const void *data, const size_t datasize, const size_t index) {
-    return llist_insert_before(list, data, datasize, index);
-}
+int llist_insert(llist_t *list, const void *data, const size_t datasize, const size_t index);
 
 
 /** 

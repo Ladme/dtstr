@@ -7,28 +7,15 @@
 /*                 PRIVATE FUNCTIONS ASSOCIATED WITH VEC_T                     */
 /* *************************************************************************** */
 
-/*! @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
+/** @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
 inline static int vec_check_shrink(vec_t *vector)
 {
     return (vector->capacity > vector->base_capacity) && (vector->len <= vector->capacity / 4);
 }
 
-/*! @brief Shrinks the vector in capacity by half. Returns 0, if successful. Else returns non-zero. */
-static int vec_shrink(vec_t *vector)
+/** @brief Reallocates memory for vector based on its current capacity. Returns 0, if successful. Else return non-zero. */
+static int vec_reallocate(vec_t *vector, const size_t old_capacity)
 {
-    vector->capacity /= 2;
-    void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
-    if (new_items == NULL) return 1;
-
-    vector->items = new_items;
-
-    return 0;
-}
-
-/*! @brief Reallocates memory for vector. Returns 0, if successful. Else return non-zero. */
-static int vec_reallocate(vec_t *vector)
-{
-    vector->capacity *= 2;
     void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
     if (new_items == NULL) {
         vec_destroy(vector);
@@ -36,12 +23,31 @@ static int vec_reallocate(vec_t *vector)
     }
 
     vector->items = new_items;
-    memset(vector->items + vector->len, 0, sizeof(void *) * vector->capacity / 2);
+    if (old_capacity < vector->capacity) {
+        memset(vector->items + vector->len, 0, sizeof(void *) * (vector->capacity - old_capacity));
+    }
 
     return 0;
 }
 
-/*! @brief Swaps two items in a vector. */
+/** @brief Shrinks the vector in capacity by half. Returns 0, if successful. Else returns non-zero. */
+inline static int vec_shrink(vec_t *vector)
+{
+    const size_t old_capacity = vector->capacity;
+    vector->capacity >>= 1;
+
+    return vec_reallocate(vector, old_capacity);
+}
+
+/** @brief Expands the capacity of vector. Returns 0, if successful. Else return non-zero. */
+inline static int vec_expand(vec_t *vector)
+{
+    const size_t old_capacity = vector->capacity;
+    vector->capacity <<= 1;
+    return vec_reallocate(vector, old_capacity);
+}
+
+/** @brief Swaps two items in a vector. */
 inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 {
     void *tmp = vector->items[i];
@@ -101,7 +107,7 @@ int vec_push(vec_t *vector, const void *item, const size_t itemsize)
 {
     if (vector == NULL) return 99;
 
-    if (vector->len >= vector->capacity && vec_reallocate(vector)) return 1;
+    if (vector->len >= vector->capacity && vec_expand(vector)) return 1;
     
     vector->items[vector->len] = malloc(itemsize);
     memcpy(vector->items[vector->len], item, itemsize);
@@ -116,7 +122,7 @@ int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const siz
     if (index < 0 || index > vector->len) return 2;
     if (index == vector->len) return vec_push(vector, item, itemsize);
 
-    if (vector->len >= vector->capacity) if (vec_reallocate(vector) != 0) return 1;
+    if (vector->len >= vector->capacity) if (vec_expand(vector) != 0) return 1;
 
     // move all items located at index or further
     memcpy(vector->items + index + 1, vector->items + index, sizeof(void *) * (vector->len - index));
@@ -164,6 +170,11 @@ void *vec_remove(vec_t *vector, const size_t index)
     }
 
     return item;
+}
+
+size_t vec_len(const vec_t *vector) 
+{ 
+    return (vector == NULL) ? 0 : vector->len; 
 }
 
 

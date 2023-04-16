@@ -53,7 +53,7 @@ vec_t *str_split(const char *string, const char *delim);
  * 
  * @return Pointer to vector containing the substrings. NULL if parsing fails.
  */
-extern inline vec_t *str_splitlines(const char *string) { return str_split(string, "\n"); }
+vec_t *str_splitlines(const char *string);
 
 
 /** @brief Splits string by whitespace and saves the substrings into a vector.
@@ -65,7 +65,7 @@ extern inline vec_t *str_splitlines(const char *string) { return str_split(strin
  * 
  * @return Pointer to vector containing the substrings. NULL if parsing fails.
  */
-extern inline vec_t *str_splitwhite(const char *string) { return str_split(string, " \t\n\v\f\r"); }
+vec_t *str_splitwhite(const char *string);
 
 
 /** @brief Strips leading and trailing whitespaces from string.
@@ -152,21 +152,21 @@ float_option_t str_parse_float(const char *string);
 
 
 /** @brief Extracts integer from option while ignoring validity of the option. */
-extern inline int int_option_unwrap(const int_option_t value) { return value.value; }
+int int_option_unwrap(const int_option_t value);
 /** @brief Extracts long from option while ignoring validity of the option. */
-extern inline long long_option_unwrap(const long_option_t value) { return value.value; }
+long long_option_unwrap(const long_option_t value);
 /** @brief Extracts size_t from option while ignoring validity of the option. */
-extern inline size_t sizet_option_unwrap(const sizet_option_t value) { return value.value; }
+size_t sizet_option_unwrap(const sizet_option_t value);
 /** @brief Extracts float from option while ignoring validity of the option. */
-extern inline float float_option_unwrap(const float_option_t value) { return value.value; }
+float float_option_unwrap(const float_option_t value);
 
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int int_option_check(const int_option_t value) { return value.valid; }
+int int_option_check(const int_option_t value);
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int long_option_check(const long_option_t value) { return value.valid; }
+int long_option_check(const long_option_t value);
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int sizet_option_check(const sizet_option_t value) { return value.valid; }
+int sizet_option_check(const sizet_option_t value);
 /** @brief Checks whether the option is valid. Returns 1 if it is valid. Else returns 0. */
-extern inline int float_option_check(const float_option_t value) { return value.valid; }
+int float_option_check(const float_option_t value);
 
 #endif /* STR_H */

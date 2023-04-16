@@ -159,10 +159,7 @@ int cllist_insert(cllist_t *list, const void *data, const size_t datasize, const
  *
  * @return The length of the circular doubly linked list. 0 if the list does not exist.
  */
-extern inline size_t cllist_len(const cllist_t *list)
-{
-    return (list == NULL) ? 0 : list->len; 
-}
+size_t cllist_len(const cllist_t *list);
 
 
 /**

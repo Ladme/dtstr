@@ -161,6 +161,12 @@ int heap_insert(heap_t *heap, const void *item)
 }
 
 
+size_t heap_len(const heap_t *heap) 
+{ 
+    return (heap == NULL) ? 0 : heap->len; 
+}
+
+
 void *heap_peek(const heap_t *heap)
 {
     if (heap == NULL || heap->len == 0) return NULL;

@@ -34,6 +34,15 @@ vec_t *str_split(const char *string, const char *delim)
     return vector;
 }
 
+vec_t *str_splitlines(const char *string) 
+{ 
+    return str_split(string, "\n"); 
+}
+
+vec_t *str_splitwhite(const char *string)
+{
+    return str_split(string, " \t\n\v\f\r");
+}
 
 void str_strip(char *string)
 {
@@ -161,3 +170,14 @@ float_option_t str_parse_float(const char *string)
     if (*endptr == 0) value.valid = 1;
     return value;
 }
+
+
+int int_option_unwrap(const int_option_t value) { return value.value; }
+long long_option_unwrap(const long_option_t value) { return value.value; }
+size_t sizet_option_unwrap(const sizet_option_t value) { return value.value; }
+float float_option_unwrap(const float_option_t value) { return value.value; }
+
+int int_option_check(const int_option_t value) { return value.valid; }
+int long_option_check(const long_option_t value) { return value.valid; }
+int sizet_option_check(const sizet_option_t value) { return value.valid; }
+int float_option_check(const float_option_t value) { return value.valid; }

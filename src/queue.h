@@ -83,10 +83,7 @@ void *queue_peek(const queue_t *queue);
  *
  * @return The length of the doubly linked list. 0 if the list does not exist.
  */
-extern inline size_t queue_len(const queue_t *queue)
-{
-    return (queue == NULL) ? 0 : queue->len; 
-}
+size_t queue_len(const queue_t *queue);
 
 
 /** 

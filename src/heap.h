@@ -95,10 +95,7 @@ int heap_insert(heap_t *heap, const void *item);
  * 
  * @return Number of items in heap. If vector is NULL, returns 0.
  */
-extern inline size_t heap_len(const heap_t *heap) 
-{ 
-    return (heap == NULL) ? 0 : heap->len; 
-}
+size_t heap_len(const heap_t *heap);
 
 
 /**

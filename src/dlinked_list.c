@@ -188,6 +188,12 @@ int dllist_insert(dllist_t *list, const void *data, const size_t datasize, const
 }
 
 
+size_t dllist_len(const dllist_t *list)
+{
+    return (list == NULL) ? 0 : list->len; 
+}
+
+
 int dllist_remove_node(dllist_t *list, dnode_t *node)
 {
     if (list == NULL) return 99;

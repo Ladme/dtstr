@@ -141,10 +141,7 @@ void *vec_remove(vec_t *vector, const size_t index);
  * 
  * @return Number of items in vector. If vector is NULL, returns 0.
  */
-extern inline size_t vec_len(const vec_t *vector) 
-{ 
-    return (vector == NULL) ? 0 : vector->len; 
-}
+size_t vec_len(const vec_t *vector);
 
 /** 
  * @brief Removes all items from vector that do not fulfill a condition. Modifies the vector.
