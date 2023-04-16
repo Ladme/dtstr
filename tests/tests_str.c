@@ -429,7 +429,7 @@ static int test_read_line_load(void)
 
     fclose(input);
 
-    for (size_t i = 0; i < 50; ++i) {
+    for (int i = 0; i < 50; ++i) {
         assert(*(int *) vec_get(vector, i) == i);
     }
 

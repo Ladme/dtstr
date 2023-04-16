@@ -281,7 +281,7 @@ static int test_dict_del(void)
     // delete all keys
     for (int i = 9; i >= 0; --i) {
         assert(dict_del(dict, keys[i]) == 0);
-        assert(dict_len(dict) == i);
+        assert(dict_len(dict) == (size_t) i);
         for (int j = 0; j < i; ++j) {
             assert(*(size_t *) dict_get(dict, keys[j]) == values[j]);
         }

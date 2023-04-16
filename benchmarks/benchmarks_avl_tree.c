@@ -14,7 +14,7 @@ static int avl_compare_ints(const void *x, const void *y)
     return (*(int *) x - *(int *) y);
 }
 
-static avl_t *avl_fill(const size_t items)
+static avl_t *avl_fill(const int items)
 {
     avl_t *tree = avl_new(sizeof(int), avl_compare_ints);
 
@@ -26,7 +26,7 @@ static avl_t *avl_fill(const size_t items)
 
     vec_shuffle(vector);
 
-    for (size_t i = 0; i < items; ++i) {
+    for (int i = 0; i < items; ++i) {
         avl_insert(tree, vector->items[i]);
     }
 
@@ -188,7 +188,7 @@ static void benchmark_avl_map(const size_t repeats)
 }
 
 
-static vec_t *vec_fill(const size_t items)
+static vec_t *vec_fill(const int items)
 {
     vec_t *vector = vec_with_capacity(items);
 

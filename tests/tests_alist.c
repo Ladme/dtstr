@@ -115,7 +115,7 @@ static int test_alist_del(void)
     // delete all keys
     for (int i = 9; i >= 0; --i) {
         assert(alist_del(list, keys[i]) == 0);
-        assert(list->len == i);
+        assert(list->len == (size_t) i);
         for (int j = 0; j < i; ++j) {
             assert(*(size_t *) alist_get(list, keys[j]) == values[j]);
         }

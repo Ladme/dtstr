@@ -17,10 +17,7 @@ inline static int vec_check_shrink(vec_t *vector)
 static int vec_reallocate(vec_t *vector, const size_t old_capacity)
 {
     void **new_items = realloc(vector->items, vector->capacity * sizeof(void *));
-    if (new_items == NULL) {
-        vec_destroy(vector);
-        return 1;
-    }
+    if (new_items == NULL) return 1;
 
     vector->items = new_items;
     if (old_capacity < vector->capacity) {
@@ -120,7 +117,7 @@ void *vec_get(const vec_t *vector, const size_t index)
 {
     if (vector == NULL) return NULL;
 
-    if (index < 0 || index >= vector->len) return NULL;
+    if (index >= vector->len) return NULL;
 
     return vector->items[index];
 }

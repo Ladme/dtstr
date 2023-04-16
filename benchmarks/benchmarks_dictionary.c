@@ -10,7 +10,7 @@
 #include "../src/alist.h"
 
 
-static dict_t *dict_fill(const size_t items)
+static dict_t *dict_fill(const int items)
 {
     dict_t *dict = dict_new();
 
@@ -160,7 +160,7 @@ static void benchmark_dict_set_del(const size_t repeats)
 
         for (size_t j = 0; j < repeats; ++j) {
 
-            for (int k = 0; k < items; ++k) {
+            for (int k = 0; k < (int) items; ++k) {
                 char key[20] = "";
                 sprintf(key, "key%d", k);
 
@@ -170,7 +170,7 @@ static void benchmark_dict_set_del(const size_t repeats)
             expanding += (size_t) log2f( (float) dict->allocated / initial);
             initial = dict->allocated;
 
-            for (int k = 0; k < items; ++k) {
+            for (int k = 0; k < (int) items; ++k) {
                 int negative_k = -k;
                 char key[20] = "";
                 sprintf(key, "key%d", k);
@@ -181,7 +181,7 @@ static void benchmark_dict_set_del(const size_t repeats)
             expanding += (size_t) log2f( (float) dict->allocated / initial);
             initial = dict->allocated;
 
-            for (int k = 0; k < items; ++k) {
+            for (int k = 0; k < (int) items; ++k) {
                 char key[20] = "";
                 sprintf(key, "key%d", k);
 

@@ -134,7 +134,7 @@ static int test_cbuf_len(void)
 
     for (int i = 0; i < 130; ++i) {
         assert(cbuf_enqueue(buffer, &i, sizeof(int)) == 0);
-        assert(cbuf_len(buffer) == i + 1);
+        assert(cbuf_len(buffer) == (size_t) i + 1);
     }
 
     cbuf_destroy(buffer);

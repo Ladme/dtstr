@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include "../src/vector.h"
 
-static vec_t *vec_fill(const size_t items)
+static vec_t *vec_fill(const int items)
 {
     vec_t *vector = vec_new();
 
-    for (size_t i = 0; i < items; ++i) {
+    for (int i = 0; i < items; ++i) {
         int random = rand();
 
         vec_push(vector, &random, sizeof(int));
@@ -613,7 +613,7 @@ static void benchmark_vec_sort_quicknaive_and_find(void)
 
 int main(void)
 {
-    /*enchmark_vec_push(100000);
+    benchmark_vec_push(100000);
     benchmark_vec_get(100000);
     benchmark_vec_insert(10000);
     benchmark_vec_pop(100000);
@@ -621,12 +621,12 @@ int main(void)
     benchmark_vec_filter_mut();
     benchmark_vec_filter();
     benchmark_vec_find();
-    benchmark_vec_find_bsearch();*/
+    benchmark_vec_find_bsearch();
     benchmark_vec_slicecpy(100000, 500000);
     benchmarks_vec_push_preallocated();
 
 
-    /*benchmark_vec_sort_selection();
+    benchmark_vec_sort_selection();
     benchmark_vec_sort_bubble();
     benchmark_vec_sort_bubble_sorted();
     benchmark_vec_sort_insertion();
@@ -634,7 +634,7 @@ int main(void)
     benchmark_vec_sort_quicknaive_sorted();
     benchmark_vec_sort_quick();
     benchmark_vec_sort_quick_sorted();
-    benchmark_vec_sort_quicknaive_and_find();*/
+    benchmark_vec_sort_quicknaive_and_find();
 
     return 0;
 

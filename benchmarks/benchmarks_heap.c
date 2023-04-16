@@ -115,7 +115,7 @@ static void benchmark_heapsort(void)
 {
     printf("%s\n", "benchmark_heapsort");
 
-    for (size_t i = 1; i <= 10; ++i) {
+    for (int i = 1; i <= 10; ++i) {
 
         clock_t start = clock();
 
@@ -133,7 +133,7 @@ static void benchmark_heapsort(void)
         clock_t end = clock();
         double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-        printf("> loading and sorting %lu items: %f s\n", i * 100000, time_elapsed);
+        printf("> loading and sorting %d items: %f s\n", i * 100000, time_elapsed);
 
         heap_destroy(heap);
     }
@@ -145,7 +145,7 @@ static void benchmark_quicksort(void)
 {
     printf("%s\n", "benchmark_quicksort");
 
-    for (size_t i = 1; i <= 10; ++i) {
+    for (int i = 1; i <= 10; ++i) {
 
         clock_t start = clock();
 
@@ -161,7 +161,7 @@ static void benchmark_quicksort(void)
         clock_t end = clock();
         double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-        printf("> loading and sorting %lu items: %f s\n", i * 100000, time_elapsed);
+        printf("> loading and sorting %d items: %f s\n", i * 100000, time_elapsed);
 
         vec_destroy(vector);
     }

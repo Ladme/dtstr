@@ -217,7 +217,7 @@ static int test_vec_insert_single_gigantic(void)
     int different_value = -1;
     assert(vec_insert(vector, &different_value, sizeof(int), 76500) == 0);
 
-    for (size_t i = 0; i < 100001; ++i) {
+    for (int i = 0; i < 100001; ++i) {
         if (i == 76500) assert(*((int *) vec_get(vector, i)) == -1);
         else if (i < 76500) assert(*((int *) vec_get(vector, i)) == i);
         else assert(*((int *) vec_get(vector, i)) == i - 1);
@@ -435,7 +435,7 @@ static int test_vec_remove(void)
 
     free(removed);
 
-    for (size_t i = 5; i < 129; ++i) {
+    for (int i = 5; i < 129; ++i) {
         void *item = vec_get(vector, i);
         assert(item);
         assert(*(int *) item == i + 1);
@@ -449,13 +449,13 @@ static int test_vec_remove(void)
 
     free(removed);
 
-    for (size_t i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
         void *item = vec_get(vector, i);
         assert(item);
         assert(*(int *) item == i + 1);
     }
 
-    for (size_t i = 5; i < 128; ++i) {
+    for (int i = 5; i < 128; ++i) {
         void *item = vec_get(vector, i);
         assert(item);
         assert(*(int *) item == i + 2);
@@ -468,13 +468,13 @@ static int test_vec_remove(void)
     assert(vector->len == 127);
     free(removed);
 
-    for (size_t i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
         void *item = vec_get(vector, i);
         assert(item);
         assert(*(int *) item == i + 1);
     }
 
-    for (size_t i = 5; i < 127; ++i) {
+    for (int i = 5; i < 127; ++i) {
         void *item = vec_get(vector, i);
         assert(item);
         assert(*(int *) item == i + 2);
@@ -500,7 +500,7 @@ static int test_vec_remove_all(void)
 
     assert(vector->len == 130);
 
-    for (size_t i = 0; i < 130; ++i) {
+    for (int i = 0; i < 130; ++i) {
         void *removed = vec_remove(vector, 0);
         assert(removed);
         assert(*(int *) removed == i);
@@ -1006,14 +1006,14 @@ static int test_vec_cat(void)
     vec_destroy(vec2);
 
     // validating all concatenated vectors
-    for (size_t i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         assert(*(int *) vec_get(cat1, i) == i);
         assert(*(int *) vec_get(cat_reverse, i) == -i);
         assert(*(int *) vec_get(cat2, i) == -i);
         assert(*(int *) vec_get(cat3, i) == i);
     }
 
-    for (size_t i = 1000; i < 2000; ++i) {
+    for (int i = 1000; i < 2000; ++i) {
         assert(*(int *) vec_get(cat1, i) == -(i - 1000));
         assert(*(int *) vec_get(cat_reverse, i) == i - 1000);
     }
@@ -1032,7 +1032,7 @@ static int test_vec_cat(void)
     vec_destroy(cat3);
     vec_destroy(vec3);
 
-    for (size_t i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         assert(*(int *) vec_get(cat4, i) == i);
         assert(*(int *) vec_get(cat5, i) == i);
     }
