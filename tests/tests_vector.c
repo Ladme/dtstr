@@ -284,6 +284,36 @@ static int test_vec_push_invalid(void)
 }
 
 
+static int test_vec_set(void)
+{
+    printf("%-40s", "test_vec_set ");
+
+    int item = 666;
+
+    assert(vec_set(NULL, &item, sizeof(int), 0) == 99);
+
+    vec_t *vector = vec_new();
+
+    assert(vec_set(vector, &item, sizeof(int), 0) == 2);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vector, &i, sizeof(int)); 
+    }
+
+    for (int i = 999; i >= 0; --i) {
+        vec_set(vector, &item, sizeof(int), (size_t) i);
+        assert(*(int *) vec_get(vector, i) == item);
+    }
+
+    assert(vec_set(vector, &item, sizeof(int), 1000) == 2);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 static int test_vec_pop(void)
 {
     printf("%-40s", "test_vec_pop ");
@@ -2251,6 +2281,8 @@ int main(void)
     test_vec_insert_large();
     test_vec_insert_single_gigantic();
     test_vec_insert_invalid();
+
+    test_vec_set();
 
     test_vec_push_insert_deallocated();
 

@@ -103,6 +103,21 @@ int vec_push(vec_t *vector, const void *item, const size_t itemsize);
 int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const size_t index);
 
 
+/**
+ * @brief Set the value of an item at a specific index in a given vector.
+ *
+ * @param vector    A pointer to the vector to modify.
+ * @param item      A pointer to the value to set in the vector.
+ * @param itemsize  The size of the item to set in bytes.
+ * @param index     The index in the vector at which to set the value.
+ *
+ * @note - This function replaces the item at specific index in a given vector with the provided item.
+ * @note - The memory for the original item is deallocated.
+ * 
+ * @return 0 if the item was set successfully, 1 if there was an error allocating memory, 
+ * 2 if the index is out of range for the vector, or 99 if the vector is NULL.
+ */
+int vec_set(vec_t *vector, const void *item, const size_t itemsize, const size_t index);
 
 
 /** 

@@ -157,6 +157,20 @@ int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const siz
     return 0;
 }
 
+int vec_set(vec_t *vector, const void *item, const size_t itemsize, const size_t index)
+{
+    if (vector == NULL) return 99;
+    if (index >= vector->len) return 2;
+
+    free(vector->items[index]);
+    
+    vector->items[index] = malloc(itemsize);
+    if (vector->items == NULL) return 1;
+    memcpy(vector->items[index], item, itemsize);
+
+    return 0;
+}
+
 vec_t *vec_slicecpy(const vec_t *vector, const size_t start, const size_t end, const size_t itemsize)
 {
     if (vector == NULL) return NULL;
