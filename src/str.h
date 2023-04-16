@@ -105,7 +105,7 @@ char *read_line(FILE *stream);
  * @param string    The string to parse as an integer
  * 
  * @note - An `int_option_t` struct contains a flag indicating whether the struct contains a valid integer value, and the parsed integer value itself.
- * @note - You can check the validity of the option using `check_int_option` and you can unwrap the value stored in the option using `unwrap_int_option`.
+ * @note - You can check the validity of the option using `int_option_check` and you can unwrap the value stored in the option using `int_option_unwrap`.
  * 
  * @return An `int_option_t` struct representing the parsed integer, or an invalid struct if the string could not be parsed.
  */
@@ -118,7 +118,7 @@ int_option_t str_parse_int(const char *string);
  * @param string    The string to parse as a long
  * 
  * @note - A `long_option_t` struct contains a flag indicating whether the struct contains a valid long value, and the parsed long value itself.
- * @note - You can check the validity of the option using `check_long_option` and you can unwrap the value stored in the option using `unwrap_long_option`.
+ * @note - You can check the validity of the option using `long_option_check` and you can unwrap the value stored in the option using `long_option_unwrap`.
  * 
  * @return A `long_option_t` struct representing the parsed long, or an invalid struct if the string could not be parsed.
  */
@@ -131,7 +131,7 @@ long_option_t str_parse_long(const char *string);
  * @param string    The string to parse as a size_t
  * 
  * @note - A `sizet_option_t` struct contains a flag indicating whether the struct contains a valid size_t value, and the parsed size_t value itself.
- * @note - You can check the validity of the option using `check_sizet_option` and you can unwrap the value stored in the option using `unwrap_sizet_option`.
+ * @note - You can check the validity of the option using `sizet_option_check` and you can unwrap the value stored in the option using `sizet_option_unwrap`.
  * 
  * @return A `sizet_option_t` struct representing the parsed size_t, or an invalid struct if the string could not be parsed.
  */
@@ -144,7 +144,7 @@ sizet_option_t str_parse_sizet(const char *string);
  * @param string    The string to parse as a float
  * 
  * @note - A `float_option_t` struct contains a flag indicating whether the struct contains a valid float value, and the parsed float value itself.
- * @note - You can check the validity of the option using `check_float_option` and you can unwrap the value stored in the option using `unwrap_float_option`.
+ * @note - You can check the validity of the option using `float_option_check` and you can unwrap the value stored in the option using `float_option_unwrap`.
  * 
  * @return A `float_option_t` struct representing the parsed float, or an invalid struct if the string could not be parsed.
  */
