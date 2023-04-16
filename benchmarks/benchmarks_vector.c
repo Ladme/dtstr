@@ -351,6 +351,34 @@ static void benchmarks_vec_push_preallocated(void)
         printf("\n");
     }
 }
+
+
+static void benchmark_vec_slicecpy(const size_t slice_start, const size_t slice_end)
+{
+    printf("%s\n", "benchmark_vec_slicecpy [O(1)]");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 1000000;
+        vec_t *vector = vec_fill_sorted(prefilled);
+
+        clock_t start = clock();
+
+        vec_t *slice = vec_slicecpy(vector, slice_start, slice_end, sizeof(int));
+        assert(slice->len == 400000);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items, slicing from %lu to %lu: %f s\n", prefilled, slice_start, slice_end, time_elapsed);
+
+        vec_destroy(slice);
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
 /* *************************************************************************** */
 /*                      BENCHMARKS OF SORTING ALGORITHMS                       */
 /* *************************************************************************** */
@@ -585,7 +613,7 @@ static void benchmark_vec_sort_quicknaive_and_find(void)
 
 int main(void)
 {
-    benchmark_vec_push(100000);
+    /*enchmark_vec_push(100000);
     benchmark_vec_get(100000);
     benchmark_vec_insert(10000);
     benchmark_vec_pop(100000);
@@ -593,10 +621,12 @@ int main(void)
     benchmark_vec_filter_mut();
     benchmark_vec_filter();
     benchmark_vec_find();
-    benchmark_vec_find_bsearch();
+    benchmark_vec_find_bsearch();*/
+    benchmark_vec_slicecpy(100000, 500000);
     benchmarks_vec_push_preallocated();
 
-    benchmark_vec_sort_selection();
+
+    /*benchmark_vec_sort_selection();
     benchmark_vec_sort_bubble();
     benchmark_vec_sort_bubble_sorted();
     benchmark_vec_sort_insertion();
@@ -604,7 +634,7 @@ int main(void)
     benchmark_vec_sort_quicknaive_sorted();
     benchmark_vec_sort_quick();
     benchmark_vec_sort_quick_sorted();
-    benchmark_vec_sort_quicknaive_and_find();
+    benchmark_vec_sort_quicknaive_and_find();*/
 
     return 0;
 

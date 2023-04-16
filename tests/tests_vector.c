@@ -283,6 +283,7 @@ static int test_vec_push_invalid(void)
     return 0;
 }
 
+
 static int test_vec_pop(void)
 {
     printf("%-40s", "test_vec_pop ");
@@ -524,6 +525,491 @@ static int test_vec_push_pop_preallocated(void)
 
     vec_destroy(vector);
     
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_vec_slicecpy(void)
+{
+    printf("%-40s", "test_vec_slicecpy ");
+
+    // slice non-existent
+    assert(vec_slicecpy(NULL, 5, 20, sizeof(int)) == NULL);
+
+    vec_t *vector = vec_new();
+
+    // slice empty
+    assert(vec_slicecpy(vector, 5, 20, sizeof(int)) == NULL);
+    assert(vec_slicecpy(vector, 0, 0, sizeof(int)) == NULL);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vector, &i, sizeof(int));
+    }
+
+    // slice invalid
+    assert(vec_slicecpy(vector, 200, 1001, sizeof(int)) == NULL);
+    assert(vec_slicecpy(vector, 200, 50, sizeof(int)) == NULL);
+    assert(vec_slicecpy(vector, 1000, 1000, sizeof(int)) == NULL);
+
+    // slice from start
+    vec_t *slice = vec_slicecpy(vector, 0, 230, sizeof(int));
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 256);
+    for (int i = 0; i < 230; ++i) {
+        assert(*(int *) vec_get(slice, i) == i);
+    }
+    vec_destroy(slice);
+
+    // slice from end
+    slice = vec_slicecpy(vector, 850, 1000, sizeof(int));
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 256);
+    for (int i = 0; i < 150; ++i) {
+        assert(*(int *) vec_get(slice, i) == i + 850);
+    }
+    vec_destroy(slice);
+
+    // slice in the middle
+    slice = vec_slicecpy(vector, 200, 300, sizeof(int));
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 128);
+    for (int i = 0; i < 100; ++i) {
+        assert(*(int *) vec_get(slice, i) == i + 200);
+    }
+
+    // we pop items from slice and check whether it shrank correctly
+    for (int i = 0; i < 100; ++i) {
+        free(vec_pop(slice));
+    }
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    vec_destroy(slice);
+
+    // slice full
+    slice = vec_slicecpy(vector, 0, 1000, sizeof(int));
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 1024);
+    for (int i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(slice, i) == i);
+    }
+    vec_destroy(slice);
+    
+    // slice single element
+    slice = vec_slicecpy(vector, 0, 1, sizeof(int));
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->len == 1);
+    assert(*(int *) slice->items[0] == 0);
+    vec_destroy(slice);
+
+    slice = vec_slicecpy(vector, 999, 1000, sizeof(int));
+    // destroy the original vector so we check whether the data are actually copied to slice
+    vec_destroy(vector);
+    
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->len == 1);
+    assert(*(int *) slice->items[0] == 999);
+    vec_destroy(slice);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_slicerm(void)
+{
+    printf("%-40s", "test_vec_slicerm ");
+
+    // slice non-existent
+    assert(vec_slicerm(NULL, 5, 20) == NULL);
+
+    vec_t *vectors[6] = {NULL};
+    for (size_t i = 0; i < 6; ++i) {
+        vectors[i] = vec_new();
+    }
+
+    // slice empty
+    assert(vec_slicerm(vectors[0], 5, 20) == NULL);
+    assert(vec_slicerm(vectors[0], 0, 0) == NULL);
+
+    for (size_t j = 0; j < 6; ++j) {
+        for (int i = 0; i < 1000; ++i) {
+            vec_push(vectors[j], &i, sizeof(int));
+        }
+    }
+    
+    // slice invalid
+    assert(vec_slicerm(vectors[0], 200, 1001) == NULL);
+    assert(vec_slicerm(vectors[0], 200, 50) == NULL);
+    assert(vec_slicerm(vectors[0], 1000, 1000) == NULL);
+    assert(vectors[0]->len == 1000);
+
+    // slice from start
+    vec_t *slice = vec_slicerm(vectors[0], 0, 230);
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 256);
+    
+    for (int i = 0; i < 230; ++i) {
+        assert(*(int *) vec_get(slice, i) == i);
+    }
+
+    assert(vectors[0]->len == 770);
+    for (int i = 0; i < 770; ++i) {
+        assert(*(int *) vec_get(vectors[0], i) == i + 230);
+    }
+
+    vec_destroy(slice);
+
+    // slice from end
+    slice = vec_slicerm(vectors[1], 850, 1000);
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 256);
+    for (int i = 0; i < 150; ++i) {
+        assert(*(int *) vec_get(slice, i) == i + 850);
+    }
+
+    assert(vectors[1]->len == 850);
+    for (int i = 0; i < 850; ++i) {
+        assert(*(int *) vec_get(vectors[1], i) == i);
+    }
+
+    vec_destroy(slice);
+
+    // slice in the middle
+    slice = vec_slicerm(vectors[2], 200, 300);
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 128);
+    for (int i = 0; i < 100; ++i) {
+        assert(*(int *) vec_get(slice, i) == i + 200);
+    }
+
+    assert(vectors[2]->len == 900);
+    for (int i = 0; i < 200; ++i) {
+        assert(*(int *) vec_get(vectors[2], i) == i);
+    }
+    for (int i = 200; i < 900; ++i) {
+        assert(*(int *) vec_get(vectors[2], i) == i + 100);
+    }
+
+    // we pop items from slice and check whether it shrank correctly
+    for (int i = 0; i < 100; ++i) {
+        free(vec_pop(slice));
+    }
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    vec_destroy(slice);
+
+    // slice full
+    slice = vec_slicerm(vectors[3], 0, 1000);
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == 1024);
+    for (int i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(slice, i) == i);
+    }
+
+    assert(vectors[3]->len == 0);
+    assert(vectors[3]->capacity == VEC_DEFAULT_CAPACITY);
+    vec_destroy(slice);
+    
+    // slice single element
+    slice = vec_slicerm(vectors[4], 0, 1);
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->len == 1);
+    assert(*(int *) slice->items[0] == 0);
+
+    assert(vectors[4]->len == 999);
+    for (int i = 0; i < 999; ++i) {
+        assert(*(int *) vec_get(vectors[4], i) == i + 1);
+    }
+    vec_destroy(slice);
+
+    slice = vec_slicerm(vectors[5], 999, 1000);
+
+    assert(vectors[5]->len == 999);
+    for (int i = 0; i < 999; ++i) {
+        assert(*(int *) vec_get(vectors[5], i) == i);
+    }
+    // destroy the original vector so we check whether the data are actually copied to slice
+    vec_destroy(vectors[5]);
+    
+    assert(slice);
+    assert(slice->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    assert(slice->len == 1);
+    assert(*(int *) slice->items[0] == 999);
+    vec_destroy(slice);
+
+    for (size_t i = 0; i < 5; ++i) {
+        vec_destroy(vectors[i]);
+    }
+
+    printf("OK\n");
+    return 0;
+}
+
+
+static int test_vec_slicepop(void)
+{
+    printf("%-40s", "test_vec_slicepop ");
+
+    // slice non-existent
+    assert(vec_slicepop(NULL, 10) == NULL);
+
+    vec_t *vector1 = vec_new();
+
+    // slice empty
+    assert(vec_slicepop(vector1, 10) == NULL);
+
+    vec_t *slice = vec_slicepop(vector1, 0);
+    assert(slice->len == 0);
+    vec_destroy(slice);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vector1, &i, sizeof(int));
+    }
+
+    // slice invalid
+    assert(vec_slicepop(vector1, 1001) == NULL);
+    assert(vec_slicepop(vector1, 10000) == NULL);
+
+    // slice part
+    slice = vec_slicepop(vector1, 800);
+
+    assert(vector1->len == 200);
+    assert(vector1->capacity == 512);
+    for (int i = 0; i < 200; ++i) {
+        assert(*(int *) vec_get(vector1, i) == i);
+    }
+    vec_destroy(vector1);
+
+    assert(slice->len == 800);
+    assert(slice->capacity == 1024);
+    for (int i = 0; i < 800; ++i) {
+        assert(*(int *) vec_get(slice, i) == i + 200);
+    }
+    vec_destroy(slice);
+
+    // slice none
+    vec_t *vector2 = vec_new();
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vector2, &i, sizeof(int));
+    }
+
+    slice = vec_slicepop(vector2, 0);
+    assert(slice->len == 0);
+    assert(slice->capacity == slice->base_capacity);
+    assert(slice->capacity == VEC_DEFAULT_CAPACITY);
+    assert(vector2->len == 1000);
+    vec_destroy(slice);
+
+    // slice full
+    slice = vec_slicepop(vector2, 1000);
+    assert(slice->len == 1000);
+    for (int i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(slice, i) == i);
+    }
+    vec_destroy(slice);
+
+    assert(vector2->len == 0);
+    assert(vector2->capacity == VEC_DEFAULT_CAPACITY);
+
+    vec_destroy(vector2);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_copy(void)
+{
+    printf("%-40s", "test_vec_copy ");
+
+    // copy non-existent
+    assert(vec_copy(NULL, sizeof(int)) == NULL);
+
+    vec_t *vector = vec_new();
+
+    // copy empty
+    vec_t *copy = vec_copy(vector, sizeof(int));
+    assert(copy->len == 0);
+    assert(copy->capacity == VEC_DEFAULT_CAPACITY);
+    assert(copy->base_capacity == VEC_DEFAULT_CAPACITY);
+    assert(vector->len == 0);
+    vec_destroy(copy);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vector, &i, sizeof(int));
+    }
+
+    copy = vec_copy(vector, sizeof(int));
+    assert(copy->len == 1000);
+    assert(copy->capacity == 1024);
+    assert(copy->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(vector, i) == i);
+    }
+
+    vec_destroy(vector);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(copy, i) == i);
+    }
+
+    vec_destroy(copy);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_extend(void)
+{
+    printf("%-40s", "test_vec_extend ");
+
+    vec_t *vec1 = vec_new();
+    vec_t *vec2 = vec_new();
+
+    // extend non-existent vector
+    assert(vec_extend(NULL, vec2, sizeof(int)) == 99);
+    assert(vec_extend(NULL, NULL, sizeof(int)) == 99);
+
+    // extend empty vector with an empty vector
+    assert(vec_extend(vec1, vec2, sizeof(int)) == 0);
+    assert(vec1->len == 0);
+    assert(vec2->len == 0);
+
+    for (int i = 0; i < 1000; ++i) {
+        vec_push(vec1, &i, sizeof(int));
+    }
+
+    // extend non-empty vector with an empty vector
+    assert(vec_extend(vec1, vec2, sizeof(int)) == 0);
+    assert(vec1->len == 1000);
+    assert(vec2->len == 0);
+
+    for (int i = 1000; i < 1010; ++i) {
+        vec_push(vec2, &i, sizeof(int));
+    }
+
+    // extend vector with a small vector (no reallocation)
+    assert(vec_extend(vec1, vec2, sizeof(int)) == 0);
+    assert(vec1->len == 1010);
+    assert(vec2->len == 10);
+
+    for (int i = 0; i < 1010; ++i) {
+        assert(*(int *) vec_get(vec1, i) == i);
+    }
+
+    vec_destroy(vec2);
+
+    // extend vector with a large vector
+    vec_t *vec3 = vec_new();
+    for (int i = 1010; i < 2000; ++i) {
+        vec_push(vec3, &i, sizeof(int));
+    }
+
+    assert(vec_extend(vec1, vec3, sizeof(int)) == 0);
+    assert(vec1->len == 2000);
+    assert(vec1->capacity == 2048);
+
+    vec_destroy(vec3);
+
+    for (int i = 0; i < 2000; ++i) {
+        assert(*(int *) vec_get(vec1, i) == i);
+    }
+
+    // extend vector with non-existent vector
+    assert(vec_extend(vec1, NULL, sizeof(int)) == 0);
+    assert(vec1->len == 2000);
+
+    vec_destroy(vec1);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_cat(void)
+{
+    printf("%-40s", "test_vec_cat ");
+
+    vec_t *vec1 = vec_new();
+    vec_t *vec2 = vec_new();
+
+    // concatenating empty vectors
+    vec_t *cat0 = vec_cat(vec1, vec2, sizeof(int));
+    assert(cat0->len == 0);
+    assert(cat0->capacity == VEC_DEFAULT_CAPACITY);
+    assert(cat0->base_capacity == VEC_DEFAULT_CAPACITY);
+    vec_destroy(cat0);
+
+    for (int i = 0; i < 1000; ++i) {
+        int negative = -i;
+        vec_push(vec1, &i, sizeof(int));
+        vec_push(vec2, &negative, sizeof(int));
+    }
+
+    // cat two valid vectors
+    vec_t *cat1 = vec_cat(vec1, vec2, sizeof(int));
+    assert(cat1->len == vec1->len + vec2->len);
+
+    vec_t *cat_reverse = vec_cat(vec2, vec1, sizeof(int));
+    assert(cat_reverse->len = vec1->len + vec2->len);
+
+    // null-catting
+    assert(vec_cat(NULL, NULL, sizeof(int)) == NULL);
+    vec_t *cat2 = vec_cat(NULL, vec2, sizeof(int));
+    assert(cat2->len == vec2->len);
+    vec_t *cat3 = vec_cat(vec1, NULL, sizeof(int));
+    assert(cat3->len == vec1->len);
+
+    vec_destroy(vec1);
+    vec_destroy(vec2);
+
+    // validating all concatenated vectors
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(cat1, i) == i);
+        assert(*(int *) vec_get(cat_reverse, i) == -i);
+        assert(*(int *) vec_get(cat2, i) == -i);
+        assert(*(int *) vec_get(cat3, i) == i);
+    }
+
+    for (size_t i = 1000; i < 2000; ++i) {
+        assert(*(int *) vec_get(cat1, i) == -(i - 1000));
+        assert(*(int *) vec_get(cat_reverse, i) == i - 1000);
+    }
+
+    vec_destroy(cat1);
+    vec_destroy(cat_reverse);
+    vec_destroy(cat2);
+
+    // concatenating non-empty and empty vector
+    vec_t *vec3 = vec_new();
+    vec_t *cat4 = vec_cat(cat3, vec3, sizeof(int));
+    assert(cat4->len == cat3->len);
+    vec_t *cat5 = vec_cat(vec3, cat3, sizeof(int));
+    assert(cat5->len == cat3->len);
+
+    vec_destroy(cat3);
+    vec_destroy(vec3);
+
+    for (size_t i = 0; i < 1000; ++i) {
+        assert(*(int *) vec_get(cat4, i) == i);
+        assert(*(int *) vec_get(cat5, i) == i);
+    }
+
+    vec_destroy(cat4);
+    vec_destroy(cat5);
+
     printf("OK\n");
     return 0;
 }
@@ -1774,6 +2260,15 @@ int main(void)
     test_vec_remove();
     test_vec_remove_all();
     test_vec_push_pop_preallocated();
+
+    test_vec_slicecpy();
+    test_vec_slicerm();
+    test_vec_slicepop();
+
+    test_vec_copy();
+    test_vec_extend();
+    test_vec_cat();
+
     test_vec_len();
 
     test_vec_heterogeneous();

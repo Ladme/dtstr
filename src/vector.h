@@ -103,6 +103,8 @@ int vec_push(vec_t *vector, const void *item, const size_t itemsize);
 int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const size_t index);
 
 
+
+
 /** 
  * @brief Removes the last item from the vector and returns it.
  * 
@@ -130,6 +132,99 @@ void *vec_pop(vec_t *vector);
  * @return The element that was removed from the vector, if successful. NULL if the vector is NULL or if the index is out of bounds.
  */
 void *vec_remove(vec_t *vector, const size_t index);
+
+
+/**
+ * @brief Returns a new vector that contains a copy of a part of the provided `vector`.
+ * 
+ * @param vector        A pointer to the vector to slice and copy elements from.
+ * @param start         The index of the first element to be included in the slice.
+ * @param end           The index of the first element to be excluded from the slice.
+ * @param itemsize      The size of each element in bytes.
+ * 
+ * @note - Item located at index `start` will be included in the output vector. Item located at index `end` will not be included.
+ * @note - To slice a single item, use start = ITEM_INDEX, end = ITEM_INDEX + 1.
+ * @note - To slice the entire vector, use start = 0, end = VECTOR_LENGTH.
+ * @note - Slice-copying is only allowed for vectors that contain items of the same size.
+ * 
+ * @return Pointer to the new vector. NULL if the provided `vector` is NULL, if `start` or `end` are out of range, or if memory allocation fails.
+ */
+vec_t *vec_slicecpy(const vec_t *vector, const size_t start, const size_t end, const size_t itemsize);
+
+
+/**
+ * @brief Transfers part of `vector` to new vector.
+ * 
+ * @param vector        A pointer to the vector to slice and transfer elements from.
+ * @param start         The index of the first element to be included in the slice.
+ * @param end           The index of the first element to be excluded from the slice.
+ * 
+ * @note - Sliced items are removed from the original vector and transfered to the new vector.
+ * @note - Item located at index `start` will be included in the output vector. Item located at index `end` will not be included.
+ * @note - To slice a single item, use start = ITEM_INDEX, end = ITEM_INDEX + 1.
+ * @note - To slice the entire vector, use start = 0, end = VECTOR_LENGTH.
+ * 
+ * @return Pointer to the new vector. NULL if the provided `vector` is NULL, if `start` or `end` are out of range, or if memory allocation fails.
+ */
+vec_t *vec_slicerm(vec_t *vector, const size_t start, const size_t end);
+
+
+/**
+ * @brief Transfers `items` items from the end of `vector` to new vector.
+ * 
+ * @param vector        A pointer to the vector to slice and transfer elements from.
+ * @param items         The number of items to slice off the end of the vector.
+ * 
+ * @note - Sliced items are removed from the original vector and transfered to the new vector.
+ * @note - Number of items to slice off can not be larger than the length of the vector.
+ * @note - If the number of items to slice off is 0, an empty vector is returned. 
+ * 
+ * @return Pointer to the new vector. NULL if the provided `vector` is NULL, if the number of items to slice off is too large, or if memory allocation fails.
+ */
+vec_t *vec_slicepop(vec_t *vector, const size_t items);
+
+
+/**
+ * @brief Copies the target vector.
+ * 
+ * @param vector        A pointer to the vector to copy.
+ * @param itemsize      The size of each element in bytes.
+ * 
+ * @note - Copying is only defined for vectors that contain items of the same size.
+ * 
+ * @return Pointer to the new vector. NULL if the provided `vector` is NULL or if memory allocation fails.
+ */
+vec_t *vec_copy(const vec_t *vector, const size_t itemsize);
+
+
+/**
+ * @brief Extends a destination vector by appending the items of another vector.
+ *
+ * @param vector_dest   The destination vector to extend.
+ * @param vector_ext    The vector whose items will be appended to the destination vector.
+ * @param itemsize      The size of an individual item in `vector_ext`.
+ *
+ * @note - All items of `vector_ext` must be of the same size.
+ * 
+ * @return Returns 0 if successful, 1 if reallocation fails, or 99 if `vector_dest` is NULL.
+ */
+int vec_extend(vec_t *vector_dest, const vec_t *vector_ext, const size_t itemsize);
+
+
+/**
+ * @brief Concatenates two vectors into a new vector.
+ *
+ * @param vector1       The first vector to concatenate.
+ * @param vector2       The second vector to concatenate.
+ * @param itemsize      The size of the individual items in the vectors.
+ *
+ * @note - New vector contains all items of the first vector (maintaining their order) followed by all items of the second vector (also maintaining their order).
+ * @note - If one of the vectors is NULL, the returned vector is a copy of the non-NULL vector.
+ * @note - Concatenation is only allowed for vectors that contain items of the same size.
+ * 
+ * @return Returns pointer to new vector or NULL if both input vectors are NULL or memory allocation failed.
+ */
+vec_t *vec_cat(const vec_t *vector1, const vec_t *vector2, const size_t itemsize);
 
 
 /** 

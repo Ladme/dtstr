@@ -39,6 +39,14 @@ inline static int vec_shrink(vec_t *vector)
     return vec_reallocate(vector, old_capacity);
 }
 
+inline static int vec_shrink_multiple(vec_t *vector)
+{
+    const size_t old_capacity = vector->capacity;
+    vector->capacity = vector->base_capacity;
+    while (vector->capacity < 2 * vector->len) vector->capacity <<= 1;
+    return vec_reallocate(vector, old_capacity);
+}
+
 /** @brief Expands the capacity of vector. Returns 0, if successful. Else return non-zero. */
 inline static int vec_expand(vec_t *vector)
 {
@@ -53,6 +61,21 @@ inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
     void *tmp = vector->items[i];
     vector->items[i] = vector->items[j];
     vector->items[j] = tmp;
+}
+
+/** @brief Creates vector that fits `items` items while also having the default base capacity. 
+ * Returns pointer to vector or NULL if memory allocation fails. 
+ */
+static vec_t *vec_fit(const size_t items)
+{
+    size_t allocated = VEC_DEFAULT_CAPACITY;
+    while (allocated < items) allocated <<= 1;
+
+    vec_t *vector = vec_with_capacity(allocated);
+    if (vector == NULL) return NULL;
+    vector->base_capacity = VEC_DEFAULT_CAPACITY;
+
+    return vector;
 }
 
 /* *************************************************************************** */
@@ -132,7 +155,66 @@ int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const siz
     vector->len++;
 
     return 0;
+}
 
+vec_t *vec_slicecpy(const vec_t *vector, const size_t start, const size_t end, const size_t itemsize)
+{
+    if (vector == NULL) return NULL;
+    if (start >= vector->len || end > vector->len || end <= start) return NULL;
+
+    const size_t items = end - start;
+    vec_t *slice = vec_fit(items);
+    if (slice == NULL) return NULL;
+    slice->len = items;
+
+    for (size_t i = start; i < end; ++i) {
+        slice->items[i - start] = malloc(itemsize);
+        memcpy(slice->items[i - start], vector->items[i], itemsize);
+    }
+
+    return slice;
+}
+
+vec_t *vec_slicerm(vec_t *vector, const size_t start, const size_t end)
+{
+    if (vector == NULL) return NULL;
+    if (start >= vector->len || end > vector->len || end <= start) return NULL;
+
+    const size_t items = end - start;
+    vec_t *slice = vec_fit(items);
+    if (slice == NULL) return NULL;
+    slice->len = items;
+
+    // copy items to the slice vector
+    memcpy(slice->items, vector->items + start, items * sizeof(void *));
+
+    // remove items from the original vector by overwritting them with the following values
+    memcpy(vector->items + start, vector->items + end, (vector->len - end) * sizeof(void *));
+    vector->len -= items;
+
+    // shrink the vector to the minimum sufficient size
+    vec_shrink_multiple(vector);
+
+    return slice;
+}
+
+vec_t *vec_slicepop(vec_t *vector, const size_t items)
+{
+    if (vector == NULL) return NULL;
+    if (items > vector->len) return NULL;
+
+    vec_t *slice = vec_fit(items);
+    if (slice == NULL) return NULL;
+    slice->len = items;
+
+    // copy items to the slice vector
+    memcpy(slice->items, vector->items + vector->len - items, items * sizeof(void *));
+
+    // shrink the original vector
+    vector->len -= items;
+    vec_shrink_multiple(vector);
+
+    return slice;
 }
 
 void *vec_pop(vec_t *vector)
@@ -175,6 +257,47 @@ void *vec_remove(vec_t *vector, const size_t index)
 size_t vec_len(const vec_t *vector) 
 { 
     return (vector == NULL) ? 0 : vector->len; 
+}
+
+vec_t *vec_copy(const vec_t *vector, const size_t itemsize)
+{
+    if (vector == NULL) return NULL;
+    if (vector->len == 0) return vec_new();
+    
+    return vec_slicecpy(vector, 0, vector->len, itemsize);
+}
+
+int vec_extend(vec_t *vector_dest, const vec_t *vector_ext, const size_t itemsize)
+{
+    if (vector_dest == NULL) return 99;
+    if (vector_ext == NULL) return 0;
+
+    const size_t items = vector_dest->len + vector_ext->len;
+    const size_t old_capacity = vector_dest->capacity;
+    while (vector_dest->capacity < items) vector_dest->capacity <<= 1;
+
+    if (vec_reallocate(vector_dest, old_capacity) == 1) return 1;
+
+    for (size_t i = 0; i < vector_ext->len; ++i) {
+        vector_dest->items[i + vector_dest->len] = malloc(itemsize);
+        memcpy(vector_dest->items[i + vector_dest->len], vector_ext->items[i], itemsize);
+    }
+
+    vector_dest->len = items;
+
+    return 0;
+}
+
+vec_t *vec_cat(const vec_t *vector1, const vec_t *vector2, const size_t itemsize)
+{
+    if (vector1 == NULL && vector2 == NULL) return NULL;
+    if (vector1 == NULL) return vec_copy(vector2, itemsize);
+    if (vector2 == NULL) return vec_copy(vector1, itemsize);
+
+    vec_t *cat = vec_copy(vector1, itemsize);
+    if (vec_extend(cat, vector2, itemsize) != 0) return NULL;
+
+    return cat;
 }
 
 
