@@ -91,7 +91,7 @@ void str_remwhite(char *string);
  * @param stream    Pointer to the stream to read from
  * 
  * @note - This function returns NULL if an error occurred or if the end of the file was reached before any characters were read.
- * @note - The output `stream` does NOT contain the newline character. The newline character is removed while reading the line.
+ * @note - The output buffer does NOT contain the newline character.
  * @note - The buffer will be resized as needed, and the line will be null-terminated.
  * @note - The caller is responsible for freeing the buffer when it is no longer needed.
  * 
