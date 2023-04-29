@@ -270,6 +270,20 @@ vec_t *set_collect(set_t *set)
     return items;
 }
 
+size_t set_len(const set_t *set)
+{
+    if (set == NULL) return 0;
+
+    size_t count = 0;
+    for (size_t i = 0; i < set->allocated; ++i) {
+        if (set->items[i] == NULL) continue;
+
+        count += set->items[i]->len;
+    }
+
+    return count;
+}
+
 
 void set_map(set_t *set, void (*function)(void *, void *), void *pointer)
 {

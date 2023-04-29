@@ -16,16 +16,18 @@ typedef struct set_entry {
 } set_entry_t;
 
 typedef struct set {
-    size_t allocated;       // the number of positions for items for which memory has been allocated
-    size_t available;       // the number of positions for items that are available
-    size_t base_capacity;   // the number of positions for items that are initially allocated
+    size_t allocated;                                   // the number of positions for items for which memory has been allocated
+    size_t available;                                   // the number of positions for items that are available
+    size_t base_capacity;                               // the number of positions for items that are initially allocated
     int (*equal_function)(const void *, const void *);  // function used to compare the items in a set
-    const void* (*hashable)(const void *);  // function specifying the part of item to be used for hashing
+    const void* (*hashable)(const void *);              // function specifying the part of item to be used for hashing
     dllist_t **items;
 } set_t;
 
+
 /** @brief The number of entries that are GUARANTEED to fit into a set created by `set_new` without reallocating. */
 #define SET_DEFAULT_CAPACITY 16UL
+
 
 /** 
  * @brief Creates new `set_t` structure and allocates memory for it.
@@ -128,6 +130,7 @@ int set_add(set_t *set, const void *item, const size_t itemsize, const size_t ha
  */
 int set_contains(const set_t *set, const void *item, const size_t hashsize);
 
+
 /**
  * @brief Collects all items from set into a vector.
  *
@@ -143,6 +146,17 @@ int set_contains(const set_t *set, const void *item, const size_t hashsize);
  */
 vec_t *set_collect(set_t *set);
 
+
+/** 
+ * @brief Calculates the number of items in a set.
+ *
+ * @param set  Concerned set
+ * 
+ * @return Number of items in a set. If set is NULL, returns 0.
+ */
+size_t set_len(const set_t *set);
+
+
 /** 
  * @brief Loops through all items in a set and applies 'function' to each item.
  * 
@@ -154,6 +168,7 @@ vec_t *set_collect(set_t *set);
  * @note - Modifying the hashable parts of items in the set using this function leads to undefined behavior.
  */
 void set_map(set_t *set, void (*function)(void *, void *), void *pointer);
+
 
 /** 
  * @brief Loops through all entries in a set and applies 'function' to each entry.

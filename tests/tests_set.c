@@ -369,7 +369,31 @@ static int test_set_collect(void)
     return 0;
 }
 
-// TODO: map function
+static int test_set_len(void)
+{
+    printf("%-40s", "test_set_len ");
+
+    // len of non-existent set
+    assert(set_len(NULL) == 0);
+
+    set_t *set = set_new(equal_int, hash_full);
+
+    // len of empty set
+    assert(set_len(set) == 0);
+
+    for (int i = 0; i < 1000; ++i) {
+        assert(set_add(set, &i, sizeof(int), sizeof(int)) == 0);
+        assert(set_len(set) == (size_t) i + 1);
+    }
+
+    set_destroy(set);
+
+    printf("OK\n");
+    return 0;
+}
+
+// TODO: map function test
+
 
 int main(void) 
 {
@@ -383,6 +407,7 @@ int main(void)
 
     test_set_contains();
     test_set_collect();
+    test_set_len();
 
     return 0;
 }
