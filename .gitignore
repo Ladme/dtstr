@@ -66,6 +66,7 @@ tests/tests_alist
 tests/tests_heap
 tests/tests_str
 tests/tests_matrix
+tests/tests_set
 
 # Ignore compiled benchmarks
 benchmarks/benchmarks_vector
@@ -77,6 +78,7 @@ benchmarks/benchmarks_queue_cbuffer
 benchmarks/benchmarks_avl_tree
 benchmarks/benchmarks_heap
 benchmarks/benchmarks_matrix
+benchmarks/benchmarks_set
 
 # Ignore local helper scripts
 run_benchmarks.sh
