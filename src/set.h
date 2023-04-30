@@ -84,11 +84,11 @@ void set_destroy(set_t *set);
 
 
 /**
- * @brief Returns itself. Can be used as `hashable` in `set_new` or `set_with_capacity` if you want to use the entire item for hashing.
+ * @brief Returns the provided item. Can be used as `hashable` in `set_new` or `set_with_capacity` if you want to use the entire item for hashing.
  *
  * @param item  Item that is being added to set.
  * 
- * @return Itself.
+ * @return The provided item.
  */
 const void *hash_full(const void *item);
 

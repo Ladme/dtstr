@@ -135,8 +135,9 @@ static int set_expand(set_t *set)
     set->allocated *= 2;
     set->available = set->allocated / 2;
     set->items = realloc(set->items, set->allocated * sizeof(void *));
-    memset(set->items + prev_allocated, 0, (set->allocated - prev_allocated) * sizeof(void *));
     if (set->items == NULL) return 3;
+    memset(set->items + prev_allocated, 0, (set->allocated - prev_allocated) * sizeof(void *));
+    
 
     int return_code = set_assign_entries(set, entries);
     vec_destroy(entries);
@@ -227,11 +228,8 @@ int set_add(set_t *set, const void *item, const size_t itemsize, const size_t ha
         set->items[index] = dllist_new();
         if (set->items[index] == NULL) return 4;
         --set->available;
-    } else {
-        // check if this item already exists; if it does, do nothing
-        dnode_t *check_node = set_get_node(set->items[index], item, index, set->equal_function);
-        if (check_node != NULL) return 0;
-    }
+    // item already exists -> do nothing
+    } else if (set_get_node(set->items[index], item, index, set->equal_function) != NULL) return 0;
 
     // create new entry
     const set_entry_t *new_entry = set_entry_new(item, itemsize, hashsize);
@@ -251,9 +249,7 @@ int set_contains(const set_t *set, const void *item, const size_t hashsize)
     size_t index = set_index(set, item, hashsize);
 
     if (set->items[index] == NULL) return 0;
-
-    dnode_t *check_node = set_get_node(set->items[index], item, index, set->equal_function);
-    if (check_node == NULL) return 0;
+    if (set_get_node(set->items[index], item, index, set->equal_function) == NULL) return 0;
     
     return 1;
 }

@@ -168,8 +168,9 @@ static int dict_expand(dict_t *dict)
     dict->allocated *= 2;
     dict->available = dict->allocated / 2;
     dict->items = realloc(dict->items, dict->allocated * sizeof(void *));
-    memset(dict->items + prev_allocated, 0, (dict->allocated - prev_allocated) * sizeof(void *));
     if (dict->items == NULL) return 3;
+    memset(dict->items + prev_allocated, 0, (dict->allocated - prev_allocated) * sizeof(void *));
+    
 
     int return_code = dict_assign_entries(dict, entries);
     vec_destroy(entries);
