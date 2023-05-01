@@ -3,6 +3,9 @@
 
 // Implementation of hash-based set.
 
+#ifndef SET_H
+#define SET_H
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -179,7 +182,7 @@ size_t set_len(const set_t *set);
  *
  * @param set  Set to copy
  * 
- * @return Independent copy of the set. NULL if set is NULL or memory allocation fails at any point of the copying process.
+ * @return Independent copy of the set. NULL if set is NULL or memory allocation fails at any point during the copying.
  * 
  * @note - The order of the items in the copied set is guaranteed to be the same as in the original set.
  * @note - The base capacity of the copied set is the same as the base capacity of the original set.
@@ -188,7 +191,7 @@ set_t *set_copy(const set_t *set);
 
 
 /**
- * Checks if two sets contain the same items.
+ * @brief Checks if two sets contain the same items.
  *
  * @param set1 Pointer to the first set to compare.
  * @param set2 Pointer to the second set to compare.
@@ -289,3 +292,4 @@ void set_map(set_t *set, void (*function)(void *, void *), void *pointer);
  */
 void set_map_entries(set_t *set, void (*function)(void *, void *), void *pointer);
 
+#endif /* SET_H */
