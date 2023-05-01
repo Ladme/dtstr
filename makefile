@@ -98,7 +98,7 @@ tests_matrix: tests/tests_matrix.c src/matrix.o libdtstr.a
 tests_set: tests/tests_set.c src/set.o libdtstr.a
 	gcc tests/tests_set.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_set
 
-benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c libdtstr.a
+benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c benchmarks/benchmarks_set.c libdtstr.a
 	make benchmarks_vector
 	make benchmarks_linked_list
 	make benchmarks_dlinked_list
@@ -107,6 +107,7 @@ benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c b
 	make benchmarks_queue_cbuffer
 	make benchmarks_avl_tree
 	make benchmarks_heap
+	make benchmarks_set
 	
 benchmarks_vector: benchmarks/benchmarks_vector.c src/vector.o libdtstr.a
 	gcc benchmarks/benchmarks_vector.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_vector
@@ -131,6 +132,9 @@ benchmarks_avl_tree: benchmarks/benchmarks_avl_tree.c src/avl_tree.o src/vector.
 
 benchmarks_heap: benchmarks/benchmarks_heap.c src/heap.o libdtstr.a
 	gcc benchmarks/benchmarks_heap.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_heap
+
+benchmarks_set: benchmarks/benchmarks_set.c src/set.o libdtstr.a
+	gcc benchmarks/benchmarks_set.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_set
 
 clean: 
 	rm -f *.a *.o src/*.a src/*.o

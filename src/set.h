@@ -19,6 +19,7 @@ typedef struct set {
     size_t allocated;                                   // the number of positions for items for which memory has been allocated
     size_t available;                                   // the number of positions for items that are available
     size_t base_capacity;                               // the number of positions for items that are initially allocated
+    size_t len;                                         // the number of items in the set
     int (*equal_function)(const void *, const void *);  // function used to compare the items in a set
     const void* (*hashable)(const void *);              // function specifying the part of item to be used for hashing
     dllist_t **items;
@@ -117,6 +118,22 @@ const void *hash_full(const void *item);
 int set_add(set_t *set, const void *item, const size_t itemsize, const size_t hashsize);
 
 
+/** 
+ * @brief Removes item from a set.
+ *  
+ * @param dict  Concerned set
+ * @param key   Item to remove
+ * 
+ * @return 
+ * 0, if item successfully removed.
+ * 1, if item could not be removed.
+ * 2, if item does not exist.
+ * 3, if set could not be shrunk.
+ * 99, if set does not exist.
+ */
+int set_remove(set_t *set, const void *item, const size_t hashsize);
+
+
 /**
  * @brief Checks if an item is present in the set.
  *
@@ -134,7 +151,7 @@ int set_contains(const set_t *set, const void *item, const size_t hashsize);
 /**
  * @brief Collects all items from set into a vector.
  *
- * @param set       Set from which the items should be collected.
+ * @param set       Set from which the items should be collected
  *
  * @return Pointer to vector containing the items. NULL if vector could not be created.
  * 
@@ -142,19 +159,109 @@ int set_contains(const set_t *set, const void *item, const size_t hashsize);
  * @note - The caller is responsible for deallocating memory for the output vector by calling `vec_destroy` function.
  * @note - The items are copied into the vector. You can freely deallocate the original set 
  *         and the collected items will still be available in the vector.
- * @note - The order in which the items are collected is not defined.
+ * @note - The order in which the items are collected is arbitrary but always the same when applied to the same set that was not changed.
  */
-vec_t *set_collect(set_t *set);
+vec_t *set_collect(const set_t *set);
 
 
 /** 
- * @brief Calculates the number of items in a set.
+ * @brief Returns the number of items in a set.
  *
  * @param set  Concerned set
  * 
  * @return Number of items in a set. If set is NULL, returns 0.
  */
 size_t set_len(const set_t *set);
+
+
+/** 
+ * @brief Copies a set.
+ *
+ * @param set  Set to copy
+ * 
+ * @return Independent copy of the set. NULL if set is NULL or memory allocation fails at any point of the copying process.
+ * 
+ * @note - The order of the items in the copied set is guaranteed to be the same as in the original set.
+ * @note - The base capacity of the copied set is the same as the base capacity of the original set.
+ */
+set_t *set_copy(const set_t *set);
+
+
+/**
+ * Checks if two sets contain the same items.
+ *
+ * @param set1 Pointer to the first set to compare.
+ * @param set2 Pointer to the second set to compare.
+ *
+ * @return 1 if the sets are equal, 0 otherwise.
+ * 
+ * @note - Sets that are NULL are equal.
+ * @note - Note that both the sets must also use the same equality function to be equal.
+ */
+int set_equal(const set_t *set1, const set_t *set2);
+
+
+/**
+ * Checks if `set1` is a subset of `set2`.
+ *
+ * @param set1 Pointer to the first set to compare.
+ * @param set2 Pointer to the second set to compare.
+ *
+ * @return 1 if `set1` is a subset of `set2`, 0 otherwise.
+ * 
+ * @note - NULL set is a subset of any set (including NULL set).
+ * @note - Note that both the sets must use the same equality function to be comparable.
+ */
+int set_subset(const set_t *set1, const set_t *set2);
+
+/**
+ * @brief Returns a new set containing the union of `set1` and `set2`.
+ * 
+ * @param set1 Pointer to the first set.
+ * @param set2 Pointer to the second set.
+ *
+ * @return A new set containing the union of set1 and set2, or NULL if there was an error.
+ *
+ * @note - If one of the sets is NULL, returns a copy of the other set.
+ * @note - If both sets are NULL, returns NULL.
+ * @note - If the sets use different hash functions or equality functions, returns NULL.
+ * @note - If memory allocation fails, returns NULL.
+ * @note - The base capacity of the returned set is the same as the base capacity of the larger of the provided sets.
+ */
+set_t *set_union(const set_t *set1, const set_t *set2);
+
+
+/**
+ * @brief Returns a new set containing the intersection of `set1` and `set2`.
+ * 
+ * @param set1 Pointer to the first set.
+ * @param set2 Pointer to the second set.
+ *
+ * @return A new set containing the intersection of set1 and set2, or NULL if there was an error.
+ *
+ * @note - If any of the sets is NULL, returns NULL.
+ * @note - If the sets use different hash functions or equality functions, returns NULL.
+ * @note - If memory allocation fails, returns NULL.
+ * @note - The base capacity of the returned set is twice the SET_DEFAULT_CAPACITY.
+ */
+set_t *set_intersection(const set_t *set1, const set_t *set2);
+
+
+/**
+ * @brief Returns a new set containing the difference between `set1` and `set2` (items that are in `set1` but not in `set2`).
+ * 
+ * @param set1 Pointer to the first set.
+ * @param set2 Pointer to the second set.
+ *
+ * @return A new set containing the difference between set1 and set2, or NULL if there was an error.
+ *
+ * @note - If the first set is NULL, returns NULL.
+ * @note - If the second set is NULL, returns a copy of the first set.
+ * @note - If the sets use different hash functions or equality functions, returns NULL.
+ * @note - If memory allocation fails, returns NULL.
+ * @note - The base capacity of the returned set is twice the SET_DEFAULT_CAPACITY, unless `set2` is NULL.
+ */
+set_t *set_difference(const set_t *set1, const set_t *set2);
 
 
 /** 
