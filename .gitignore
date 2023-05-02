@@ -67,6 +67,7 @@ tests/tests_heap
 tests/tests_str
 tests/tests_matrix
 tests/tests_set
+tests/tests_graph
 
 # Ignore compiled benchmarks
 benchmarks/benchmarks_vector

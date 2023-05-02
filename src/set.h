@@ -49,7 +49,7 @@ typedef struct set {
  * @note - Destroy `set_t` structure using set_destroy function.
  * @note - Allocates space for at least `SET_DEFAULT_CAPACITY` items.
  *         This space is dynamically expanded when needed but expanding the set is a very costly operation.
- *         You may want to preallocate memory for a specific number of key-value pairs using `set_with_capacity` function.
+ *         You may want to preallocate memory for a specific number of items using `set_with_capacity` function.
  * 
  * @return Pointer to the created set_t, if successful. NULL if not successful.
  */
