@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "cbuffer.h"
+#include "set.h"
 #include "vector.h"
 
 /* ************************************************ */
@@ -154,15 +156,61 @@ vec_t *graphd_vertex_successors(const graphd_t *graph, const size_t index);
 
 
 /** 
- * @brief Loops through all vertices in graph and applies 'function' to each vertex.
+ * @brief Loops through all vertices in graph and applies `function` to each vertex.
  * 
  * @param graph     Graph to operate on
  * @param function  Function to apply
  * @param pointer   Pointer to value that the function can operate on
  * 
- * @note - Vertices are traversed starting at index 0.
+ * @note - Vertices are traversed starting at index 0, i.e. not respecting the structure of the graph.
+ * @note - All vertices are traversed, even though that are completely unreachable.
  */
 void graphd_vertex_map(graphd_t *graph, void (*function)(void *, void *), void *pointer);
 
+
+/**
+ * @brief Performs a breadth-first search of the graph starting 
+ * from the vertex specified by `index` and applies `function` to each vertex.
+ *
+ * @param graph     The graph to perform the search on.
+ * @param index     The index of the vertex to start the search from.
+ * @param function  The function to call with the vertex data and the pointer.
+ * @param pointer   The pointer to pass to the function.
+ * 
+ * @return The number of vertices visited.
+ * 
+ * @note - If graph is NULL or the index is out of range, this function does nothing and returns 0.
+ * @note - When multiple vertices are at the same distance from 
+ *         the initial vertex, the order in which they are visited is undefined.
+ * @note - The `function` must not modify the graph structure, or the behavior is undefined.
+ */
+size_t graphd_vertex_map_bfs(
+        graphd_t *graph, 
+        const size_t index, 
+        void (*function)(void *, void *), 
+        void *pointer);
+
+
+/**
+ * @brief Performs a depth-first search of the graph starting 
+ * from the vertex specified by `index` and applies `function` to each vertex.
+ *
+ * @param graph     The graph to perform the search on.
+ * @param index     The index of the vertex to start the search from.
+ * @param function  The function to call with the vertex data and the pointer.
+ * @param pointer   The pointer to pass to the function.
+ * 
+ * @return The number of vertices visited.
+ * 
+ * @note - If graph is NULL or the index is out of range, this function does nothing and returns 0.
+ * @note - When multiple vertices are at the same distance from 
+ *         the initial vertex, the order in which they are visited is undefined.
+ * @note - The `function` must not modify the graph structure, or the behavior is undefined.
+ */
+size_t graphd_vertex_map_dfs(
+        graphd_t *graph, 
+        const size_t index, 
+        void (*function)(void *, void *), 
+        void *pointer);
 
 #endif /* GRAPH_H */

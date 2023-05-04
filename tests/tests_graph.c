@@ -15,6 +15,36 @@ static void int_multiply(void *item, void *unused)
     *value *= 2;
 }
 
+static void int_extract(void *item, void *wrapped_vector)
+{
+    vec_t *vector = (vec_t *) wrapped_vector;
+
+    vec_push(vector, item, sizeof(int));
+}
+
+static graphd_t *create_graphd_representative(void)
+{
+    graphd_t *graph = graphd_new();
+
+    for (int i = 0; i < 9; ++i) {
+        graphd_vertex_add(graph, &i, sizeof(int));
+    }
+
+    graphd_edge_add(graph, 0, 1);
+    graphd_edge_add(graph, 1, 0);
+    graphd_edge_add(graph, 1, 2);
+    graphd_edge_add(graph, 2, 2);
+    graphd_edge_add(graph, 1, 4);
+    graphd_edge_add(graph, 5, 2);
+    graphd_edge_add(graph, 4, 3);
+    graphd_edge_add(graph, 4, 5);
+    graphd_edge_add(graph, 4, 7);
+    graphd_edge_add(graph, 7, 4);
+    graphd_edge_add(graph, 8, 5);
+
+    return graph;
+}
+
 
 static int test_graphd_destroy_nonexistent(void)
 {
@@ -420,6 +450,139 @@ static int test_graphd_vertex_map(void)
     return 0;
 }
 
+static int test_graphd_vertex_map_bfs(void)
+{
+    printf("%-40s", "test_graphd_vertex_map_bfs ");
+
+    vec_t *extracted = vec_new();
+
+    assert(graphd_vertex_map_bfs(NULL, 0, int_extract, extracted) == 0);
+
+    graphd_t *graph = create_graphd_representative();
+
+    // starting from vertex 1
+    assert(graphd_vertex_map_bfs(graph, 1, int_extract, extracted) == 7);
+    assert(extracted->len == 7);
+   
+    assert(*(int *) extracted->items[0] == 1);
+    assert(*(int *) extracted->items[1] == 0 || *(int *) extracted->items[1] == 2 || *(int *) extracted->items[1] == 4);
+    assert(*(int *) extracted->items[2] == 0 || *(int *) extracted->items[2] == 2 || *(int *) extracted->items[2] == 4);
+    assert(*(int *) extracted->items[3] == 0 || *(int *) extracted->items[3] == 2 || *(int *) extracted->items[3] == 4);
+
+    assert(*(int *) extracted->items[4] == 3 || *(int *) extracted->items[4] == 5 || *(int *) extracted->items[4] == 7);
+    assert(*(int *) extracted->items[5] == 3 || *(int *) extracted->items[5] == 5 || *(int *) extracted->items[5] == 7);
+    assert(*(int *) extracted->items[6] == 3 || *(int *) extracted->items[6] == 5 || *(int *) extracted->items[6] == 7);
+
+    vec_clear(extracted);
+
+    // starting from vertex 2
+    assert(graphd_vertex_map_bfs(graph, 2, int_extract, extracted) == 1);
+    assert(extracted->len == 1);
+
+    assert(*(int *) extracted->items[0] == 2);
+
+    vec_clear(extracted);
+
+    // starting from vertex 6
+    assert(graphd_vertex_map_bfs(graph, 6, int_extract, extracted) == 1);
+    assert(extracted->len == 1);
+
+    assert(*(int *) extracted->items[0] == 6);
+
+    vec_clear(extracted);
+
+    // starting from vertex 8
+    assert(graphd_vertex_map_bfs(graph, 8, int_extract, extracted) == 3);
+    assert(extracted->len == 3);
+
+    assert(*(int *) extracted->items[0] == 8);
+    assert(*(int *) extracted->items[1] == 5);
+    assert(*(int *) extracted->items[2] == 2);
+
+    vec_clear(extracted);
+
+    // starting from vertex 9 (non-existent)
+    assert(graphd_vertex_map_bfs(graph, 9, int_extract, extracted) == 0);
+    assert(extracted->len == 0);
+
+    vec_destroy(extracted);
+
+    graphd_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_graphd_vertex_map_dfs(void)
+{
+    printf("%-40s", "test_graphd_vertex_map_dfs ");
+
+    vec_t *extracted = vec_new();
+
+    assert(graphd_vertex_map_dfs(NULL, 0, int_extract, extracted) == 0);
+
+    graphd_t *graph = create_graphd_representative();
+
+    // starting from vertex 2
+    assert(graphd_vertex_map_dfs(graph, 2, int_extract, extracted) == 1);
+    assert(extracted->len == 1);
+
+    assert(*(int *) extracted->items[0] == 2);
+
+    vec_clear(extracted);
+
+    // starting from vertex 6
+    assert(graphd_vertex_map_dfs(graph, 6, int_extract, extracted) == 1);
+    assert(extracted->len == 1);
+
+    assert(*(int *) extracted->items[0] == 6);
+
+    vec_clear(extracted);
+
+    // starting from vertex 8
+    assert(graphd_vertex_map_dfs(graph, 8, int_extract, extracted) == 3);
+    assert(extracted->len == 3);
+
+    assert(*(int *) extracted->items[0] == 8);
+    assert(*(int *) extracted->items[1] == 5);
+    assert(*(int *) extracted->items[2] == 2);
+
+    vec_clear(extracted);
+
+    // starting from vertex 8 with slightly modified graph
+    graphd_edge_add(graph, 8, 7);
+    graphd_edge_remove(graph, 4, 5);
+    assert(graphd_vertex_map_dfs(graph, 8, int_extract, extracted) == 6);
+    assert(extracted->len == 6);
+
+    assert(*(int *) extracted->items[0] == 8);
+    assert(*(int *) extracted->items[1] == 7 || *(int *) extracted->items[1] == 5);
+    if (*(int *) extracted->items[1] == 7) {
+        assert(*(int *) extracted->items[2] == 4);
+        assert(*(int *) extracted->items[3] == 3);
+        assert(*(int *) extracted->items[4] == 5);
+        assert(*(int *) extracted->items[5] == 2);
+    } else {
+        assert(*(int *) extracted->items[2] == 2);
+        assert(*(int *) extracted->items[3] == 7);
+        assert(*(int *) extracted->items[4] == 4);
+        assert(*(int *) extracted->items[5] == 3);
+    }
+
+    vec_clear(extracted);
+
+    // starting from vertex 9 (non-existent)
+    assert(graphd_vertex_map_dfs(graph, 9, int_extract, extracted) == 0);
+    assert(extracted->len == 0);
+
+    vec_destroy(extracted);
+
+    graphd_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 int main(void) 
 {
@@ -437,6 +600,8 @@ int main(void)
     test_graphd_vertex_successors();
 
     test_graphd_vertex_map();
+    test_graphd_vertex_map_bfs();
+    test_graphd_vertex_map_dfs();
 
     return 0;
 }
