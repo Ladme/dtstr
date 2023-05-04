@@ -8,7 +8,7 @@
 /* *************************************************************************** */
 
 /** @brief Deallocates memory for adjacency matrix. */
-static void amatrix_destroy(char **amatrix, const size_t size)
+static void amatrix_destroy(edge_t **amatrix, const size_t size)
 {
     for (size_t i = 0; i < size; ++i) {
         free(amatrix[i]); 
@@ -21,15 +21,13 @@ static void amatrix_destroy(char **amatrix, const size_t size)
  * @brief Allocates memory for new adjacency matrix. 
  * Returns pointer to amatrix or NULL if memory allocation fails. 
  */
-static char **amatrix_new(const size_t capacity)
+static edge_t **amatrix_new(const size_t capacity)
 {
-    const size_t blocks = capacity >> 3;
-
-    char **amatrix = calloc(capacity, sizeof(char *));
+    edge_t **amatrix = calloc(capacity, sizeof(edge_t *));
     if (amatrix == NULL) return NULL;
 
     for (size_t i = 0; i < capacity; ++i) {
-        amatrix[i] = calloc(blocks, 1);
+        amatrix[i] = calloc(capacity, sizeof(edge_t));
         
         if (amatrix[i] == NULL) {
             amatrix_destroy(amatrix, i);
@@ -41,25 +39,22 @@ static char **amatrix_new(const size_t capacity)
 }
 
 /** @brief Expands adjacency matrix. Returns 0 if successful or non-zero in case of memory allocation error. */
-static int amatrix_expand(char ***amatrix, const size_t old_capacity, const size_t new_capacity)
+static int amatrix_expand(edge_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
 {
-    const size_t old_blocks = old_capacity >> 3;
-    const size_t new_blocks = new_capacity >> 3;
-
-    char **new_amatrix = realloc(*amatrix, new_capacity * sizeof(char *));
+    edge_t **new_amatrix = realloc(*amatrix, new_capacity * sizeof(edge_t *));
     if (new_amatrix == NULL) return 1;
 
     *amatrix = new_amatrix;
 
     for (size_t i = 0; i < old_capacity; ++i) {
-        char *new_row = realloc((*amatrix)[i], new_blocks);
+        edge_t *new_row = realloc((*amatrix)[i], new_capacity * sizeof(edge_t));
         if (new_row == NULL) return 2;
         (*amatrix)[i] = new_row;
-        memset((*amatrix)[i] + old_blocks, 0, new_blocks - old_blocks);
+        memset((*amatrix)[i] + old_capacity, 0, (new_capacity - old_capacity) * sizeof(edge_t));
     }
 
     for (size_t i = old_capacity; i < new_capacity; ++i) {
-        (*amatrix)[i] = calloc(new_blocks, 1);
+        (*amatrix)[i] = calloc(new_capacity, sizeof(edge_t));
         if ((*amatrix)[i] == NULL) return 3;
     }
 
@@ -69,9 +64,9 @@ static int amatrix_expand(char ***amatrix, const size_t old_capacity, const size
 /** @brief Checks whether an edge connecting isrc with itar exists. Returns 1 if it does, else returns 0.
  *  Raw function, no sanity checks performed. 
  */
-static inline int amatrix_edge_exists(char **amatrix, const size_t isrc, const size_t itar)
+static inline int edge_exists(const graphd_t *graph, const size_t isrc, const size_t itar)
 {
-    return amatrix[isrc][itar >> 3] >> (itar % 8) & 1U;
+    return graph->amatrix[isrc][itar].exists;
 }
 
 /** @brief Returns 1 if index points to valid vertex in graph. Else returns 0. */
@@ -97,28 +92,24 @@ graphd_t *graphd_new(void)
 
 graphd_t *graphd_with_capacity(const size_t capacity)
 {
-    // capacity must be divisible than 8
-    // if it is not, we increase it until it reaches a number divisible by 8
-    const size_t real_capacity = ((capacity + 7) & ~7);
-
     graphd_t *graph = calloc(1, sizeof(graphd_t));
     if (graph == NULL) return NULL;
 
-    graph->vertices = vec_with_capacity(real_capacity);
+    graph->vertices = vec_with_capacity(capacity);
     if (graph->vertices == NULL) {
         free(graph);
         return NULL;
     }
 
-    graph->amatrix = amatrix_new(real_capacity);
+    graph->amatrix = amatrix_new(capacity);
     if (graph->amatrix == NULL) {
         vec_destroy(graph->vertices);
         free(graph);
         return NULL;
     }
 
-    graph->allocated = real_capacity;
-    graph->base_capacity = real_capacity;
+    graph->allocated = capacity;
+    graph->base_capacity = capacity;
 
     return graph;
 }
@@ -154,15 +145,15 @@ void *graphd_vertex_get(const graphd_t *graph, const size_t index)
     return graph->vertices->items[index];
 }
 
-int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target)
+int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const int weight)
 {
     if (graph == NULL) return 99;
 
     // check that the indices are valid
     if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 1;
 
-    // set the bit corresponding to target edge
-    graph->amatrix[index_source][index_target >> 3] |= 1U << (index_target % 8);
+    graph->amatrix[index_source][index_target].exists = 1;
+    graph->amatrix[index_source][index_target].weight = weight;
 
     return 0;
 }
@@ -173,7 +164,7 @@ int graphd_edge_remove(graphd_t *graph, const size_t index_source, const size_t 
 
     if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 1;
 
-    graph->amatrix[index_source][index_target >> 3] &= ~(1UL << (index_target % 8));
+    graph->amatrix[index_source][index_target].exists = 0;
 
     return 0;
 }
@@ -184,7 +175,7 @@ int graphd_edge_exists(const graphd_t *graph, const size_t index_source, const s
 
     if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 0;
 
-    return amatrix_edge_exists(graph->amatrix, index_source, index_target);
+    return edge_exists(graph, index_source, index_target);
 }
 
 vec_t *graphd_vertex_successors(const graphd_t *graph, const size_t index)
@@ -195,7 +186,7 @@ vec_t *graphd_vertex_successors(const graphd_t *graph, const size_t index)
     if (successors == NULL) return NULL;
 
     for (size_t i = 0; i < graph->vertices->len; ++i) {
-        if (amatrix_edge_exists(graph->amatrix, index, i)) {
+        if (edge_exists(graph, index, i)) {
             
             if (vec_push(successors, &(graph->vertices->items[i]), sizeof(void *)) != 0) {
                 vec_destroy(successors);
@@ -235,7 +226,7 @@ size_t graphd_vertex_map_bfs(
 
         // find successors of vertex and add their indices to the queue, if not visited
         for (size_t i = 0; i < graph->vertices->len; ++i) {
-            if (amatrix_edge_exists(graph->amatrix, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
+            if (edge_exists(graph, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
                 cbuf_enqueue(queue, &i, sizeof(size_t));
                 set_add(visited, &i, sizeof(size_t), sizeof(size_t));
             } 
@@ -275,7 +266,7 @@ size_t graphd_vertex_map_dfs(
 
         // find successors of vertex and add their indices to the queue, if not visited
         for (size_t i = 0; i < graph->vertices->len; ++i) {
-            if (amatrix_edge_exists(graph->amatrix, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
+            if (edge_exists(graph, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
                 vec_push(stack, &i, sizeof(size_t));
                 set_add(visited, &i, sizeof(size_t), sizeof(size_t));
             } 

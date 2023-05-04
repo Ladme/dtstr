@@ -30,17 +30,17 @@ static graphd_t *create_graphd_representative(void)
         graphd_vertex_add(graph, &i, sizeof(int));
     }
 
-    graphd_edge_add(graph, 0, 1);
-    graphd_edge_add(graph, 1, 0);
-    graphd_edge_add(graph, 1, 2);
-    graphd_edge_add(graph, 2, 2);
-    graphd_edge_add(graph, 1, 4);
-    graphd_edge_add(graph, 5, 2);
-    graphd_edge_add(graph, 4, 3);
-    graphd_edge_add(graph, 4, 5);
-    graphd_edge_add(graph, 4, 7);
-    graphd_edge_add(graph, 7, 4);
-    graphd_edge_add(graph, 8, 5);
+    graphd_edge_add(graph, 0, 1, 1);
+    graphd_edge_add(graph, 1, 0, 1);
+    graphd_edge_add(graph, 1, 2, 1);
+    graphd_edge_add(graph, 2, 2, 1);
+    graphd_edge_add(graph, 1, 4, 1);
+    graphd_edge_add(graph, 5, 2, 1);
+    graphd_edge_add(graph, 4, 3, 1);
+    graphd_edge_add(graph, 4, 5, 1);
+    graphd_edge_add(graph, 4, 7, 1);
+    graphd_edge_add(graph, 7, 4, 1);
+    graphd_edge_add(graph, 8, 5, 1);
 
     return graph;
 }
@@ -78,33 +78,14 @@ static int test_graphd_with_capacity(void)
 {
     printf("%-40s", "test_graphd_with_capacity ");
 
-    graphd_t *graph = graphd_with_capacity(64);
+    graphd_t *graph = graphd_with_capacity(100);
 
     assert(graph->vertices->len == 0);
-    assert(graph->vertices->capacity == 64);
+    assert(graph->vertices->capacity == 100);
     assert(graph->amatrix);
-    assert(graph->allocated == 64);
-    assert(graph->base_capacity == 64);
+    assert(graph->allocated == 100);
+    assert(graph->base_capacity == 100);
     graphd_destroy(graph);
-
-    graph = graphd_with_capacity(9);
-    
-    assert(graph->vertices->len == 0);
-    assert(graph->vertices->capacity == 16);
-    assert(graph->amatrix);
-    assert(graph->allocated == 16);
-    assert(graph->base_capacity == 16);
-    graphd_destroy(graph);
-
-    graph = graphd_with_capacity(714);
-    
-    assert(graph->vertices->len == 0);
-    assert(graph->vertices->capacity == 720);
-    assert(graph->amatrix);
-    assert(graph->allocated == 720);
-    assert(graph->base_capacity == 720);
-    graphd_destroy(graph);
-
 
     printf("OK\n");
     return 0;
@@ -129,8 +110,9 @@ static int test_graphd_vertex_add(void)
     assert(graph->base_capacity == GRAPHD_DEFAULT_CAPACITY);
 
     for (int i = 0; i < 1024; ++i) {
-        for (int j = 0; j < 1024 / 8; ++j) {
-            assert(graph->amatrix[i][j] == 0);
+        for (int j = 0; j < 1024; ++j) {
+            assert(graph->amatrix[i][j].exists == 0);
+            assert(graph->amatrix[i][j].weight == 0);
         }
     }
 
@@ -168,7 +150,7 @@ static int test_graphd_edge_add(void)
 {
     printf("%-40s", "test_graphd_edge_add ");
 
-    assert(graphd_edge_add(NULL, 0, 2) == 99);
+    assert(graphd_edge_add(NULL, 0, 2, 4) == 99);
 
     graphd_t *graph = graphd_new();
 
@@ -177,55 +159,59 @@ static int test_graphd_edge_add(void)
     }
 
     for (int i = 3; i < 17; ++i) {
-        assert(graphd_edge_add(graph, 0, i) == 0);
-        assert(graphd_edge_add(graph, i, 0) == 0);
+        assert(graphd_edge_add(graph, 0, i, 1) == 0);
+        assert(graphd_edge_add(graph, i, 0, 5) == 0);
     }
 
-    assert(graphd_edge_add(graph, 3, 4) == 0);
-    assert(graphd_edge_add(graph, 10, 3) == 0);
-    assert(graphd_edge_add(graph, 5, 8) == 0);
-    assert(graphd_edge_add(graph, 1, 16) == 0);
-    assert(graphd_edge_add(graph, 7, 7) == 0);
+    assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 7) == 0);
+    assert(graphd_edge_add(graph, 5, 8, -3) == 0);
+    assert(graphd_edge_add(graph, 1, 16, 6) == 0);
+    assert(graphd_edge_add(graph, 7, 7, 0) == 0);
 
     // print edges
     /*for (int i = 0; i < 32; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            for (int k = 0; k < 8; ++k) {
-                printf("%d", !!((graph->amatrix[i][j] << k) & 0x80));
-            }
-            printf(" ");
+        for (int j = 0; j < 32; ++j) {
+            printf("%d ", graph->amatrix[i][j].exists);
+        }
+        printf("\n");
+    }
+
+    for (int i = 0; i < 32; ++i) {
+        for (int j = 0; j < 32; ++j) {
+            printf("%d ", graph->amatrix[i][j].weight);
         }
         printf("\n");
     }*/
 
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
-            if (i == 0 && j >= 3) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i >= 3 && j == 0) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 3 && j == 4) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 10 && j == 3) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 5 && j == 8) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 1 && j == 16) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 7 && j == 7) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 0);
+            if (i == 0 && j >= 3) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 1);
+            else if (i >= 3 && j == 0) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 5);
+            else if (i == 3 && j == 4) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 2);
+            else if (i == 10 && j == 3) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 7);
+            else if (i == 5 && j == 8) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == -3);
+            else if (i == 1 && j == 16) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 6);
+            else if (i == 7 && j == 7) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 0);
+            else assert(!graph->amatrix[i][j].exists);
         }
     }
 
-    assert(graphd_edge_add(graph, 0, 17) == 1);
-    assert(graphd_edge_add(graph, 25, 4) == 1);
-    assert(graphd_edge_add(graph, 17, 19) == 1);
-    assert(graphd_edge_add(graph, 23, 23) == 1);
+    assert(graphd_edge_add(graph, 0, 17, 1) == 1);
+    assert(graphd_edge_add(graph, 25, 4, 5) == 1);
+    assert(graphd_edge_add(graph, 17, 19, 0) == 1);
+    assert(graphd_edge_add(graph, 23, 23, 2) == 1);
 
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
-            if (i == 0 && j >= 3) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i >= 3 && j == 0) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 3 && j == 4) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 10 && j == 3) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 5 && j == 8) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 1 && j == 16) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else if (i == 7 && j == 7) assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 1);
-            else assert(!!((graph->amatrix[i][j / 8] << (7 - (j % 8))) & 0x80) == 0);
+            if (i == 0 && j >= 3) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 1);
+            else if (i >= 3 && j == 0) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 5);
+            else if (i == 3 && j == 4) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 2);
+            else if (i == 10 && j == 3) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 7);
+            else if (i == 5 && j == 8) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == -3);
+            else if (i == 1 && j == 16) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 6);
+            else if (i == 7 && j == 7) assert(graph->amatrix[i][j].exists && graph->amatrix[i][j].weight == 0);
+            else assert(!graph->amatrix[i][j].exists);
         }
     }
 
@@ -249,15 +235,15 @@ static int test_graphd_edge_exists(void)
     }
 
     for (int i = 3; i < 17; ++i) {
-        assert(graphd_edge_add(graph, 0, i) == 0);
-        assert(graphd_edge_add(graph, i, 0) == 0);
+        assert(graphd_edge_add(graph, 0, i, 1) == 0);
+        assert(graphd_edge_add(graph, i, 0, 5) == 0);
     }
 
-    assert(graphd_edge_add(graph, 3, 4) == 0);
-    assert(graphd_edge_add(graph, 10, 3) == 0);
-    assert(graphd_edge_add(graph, 5, 8) == 0);
-    assert(graphd_edge_add(graph, 1, 16) == 0);
-    assert(graphd_edge_add(graph, 7, 7) == 0);
+    assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 7) == 0);
+    assert(graphd_edge_add(graph, 5, 8, -3) == 0);
+    assert(graphd_edge_add(graph, 1, 16, 6) == 0);
+    assert(graphd_edge_add(graph, 7, 7, 0) == 0);
 
    for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
@@ -299,7 +285,7 @@ static int test_graphd_edge_remove(void)
     // connect all vertices
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
-            assert(graphd_edge_add(graph, i, j) == 0);
+            assert(graphd_edge_add(graph, i, j, 1) == 0);
         }
     }
 
@@ -313,17 +299,6 @@ static int test_graphd_edge_remove(void)
     assert(graphd_edge_remove(graph, 5, 8) == 0);
     assert(graphd_edge_remove(graph, 1, 16) == 0);
     assert(graphd_edge_remove(graph, 7, 7) == 0);
-
-    // print edges
-    /*for (int i = 0; i < 32; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            for (int k = 0; k < 8; ++k) {
-                printf("%d", !!((graph->amatrix[i][j] << k) & 0x80));
-            }
-            printf(" ");
-        }
-        printf("\n");
-    }*/
 
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
@@ -376,15 +351,15 @@ static int test_graphd_vertex_successors(void)
     }
 
     for (int i = 3; i < 17; ++i) {
-        assert(graphd_edge_add(graph, 0, i) == 0);
-        assert(graphd_edge_add(graph, i, 0) == 0);
+        assert(graphd_edge_add(graph, 0, i, 1) == 0);
+        assert(graphd_edge_add(graph, i, 0, 5) == 0);
     }
 
-    assert(graphd_edge_add(graph, 3, 4) == 0);
-    assert(graphd_edge_add(graph, 10, 3) == 0);
-    assert(graphd_edge_add(graph, 5, 8) == 0);
-    assert(graphd_edge_add(graph, 1, 16) == 0);
-    assert(graphd_edge_add(graph, 7, 7) == 0);
+    assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 7) == 0);
+    assert(graphd_edge_add(graph, 5, 8, -3) == 0);
+    assert(graphd_edge_add(graph, 1, 16, 6) == 0);
+    assert(graphd_edge_add(graph, 7, 7, 0) == 0);
 
     for (size_t i = 0; i < 17; ++i) {
         vec_t *successors = graphd_vertex_successors(graph, i);
@@ -550,7 +525,7 @@ static int test_graphd_vertex_map_dfs(void)
     vec_clear(extracted);
 
     // starting from vertex 8 with slightly modified graph
-    graphd_edge_add(graph, 8, 7);
+    graphd_edge_add(graph, 8, 7, 1);
     graphd_edge_remove(graph, 4, 5);
     assert(graphd_vertex_map_dfs(graph, 8, int_extract, extracted) == 6);
     assert(extracted->len == 6);

@@ -17,10 +17,15 @@
 /*              GRAPHD_T: DENSE GRAPH               */
 /* ************************************************ */
 
+typedef struct edge {
+    int exists;
+    int weight;
+} edge_t;
+
 /** @brief Structure efficiently representing dense oriented graph. */
 typedef struct graph_dense {
     vec_t *vertices;    // vector of vertices in the graph
-    char **amatrix;     // adjacency matrix
+    edge_t **amatrix;   // adjacency matrix
     size_t allocated;   // number of vertices for which space has been allocated in amatrix
     size_t base_capacity;
 } graphd_t;
@@ -49,7 +54,6 @@ graphd_t *graphd_new(void);
  * 
  * @note - Destroy `graphd_t` structure using graphd_destroy function.
  * @note - The graph will never shrink below the specified `capacity`.
- * @note - Capacity must be divisible by 8. If it is not, the capacity is automatically increased to the nearest multiple of 8.
  * 
  * @return Pointer to the created `graphd_t`, if successful. NULL if not successful.
  */
@@ -101,12 +105,13 @@ void *graphd_vertex_get(const graphd_t *graph, const size_t index);
  * @param graph         The graph to operate on
  * @param index_source  Index of the source vertex 
  * @param index_target  Index of the target vertex
+ * @param weight        Weight of the edge
  * 
  * @note - Asymptotic Complexity: Constant, O(1)
  * 
  * @return 0 if the edge was successfully added (or already exists), 1 if the indices are out of range.
  */
-int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target);
+int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const int weight);
 
 /** 
  * @brief Removes an edge connecting vertex with index `index_source` to vertex with index `index_target`. 
