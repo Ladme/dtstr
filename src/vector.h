@@ -253,6 +253,17 @@ vec_t *vec_cat(const vec_t *vector1, const vec_t *vector2, const size_t itemsize
  */
 size_t vec_len(const vec_t *vector);
 
+/**
+ * @brief Clears all elements of a vector and resets its length to zero.
+ * 
+ * @param vector    A pointer to the vector to be cleared.
+ * 
+ * @note - All pointers in the vector are set to NULL.
+ * @note - If the vector is NULL, does nothing.
+ */
+void vec_clear(vec_t *vector);
+
+
 /** 
  * @brief Removes all items from vector that do not fulfill a condition. Modifies the vector.
  * 

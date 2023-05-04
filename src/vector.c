@@ -270,6 +270,18 @@ size_t vec_len(const vec_t *vector)
     return (vector == NULL) ? 0 : vector->len; 
 }
 
+void vec_clear(vec_t *vector)
+{
+    if (vector == NULL) return;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+        free(vector->items[i]);
+        vector->items[i] = NULL;
+    }
+
+    vector->len = 0;
+}
+
 vec_t *vec_copy(const vec_t *vector, const size_t itemsize)
 {
     if (vector == NULL) return NULL;
@@ -277,6 +289,7 @@ vec_t *vec_copy(const vec_t *vector, const size_t itemsize)
     
     return vec_slicecpy(vector, 0, vector->len, itemsize);
 }
+
 
 int vec_extend(vec_t *vector_dest, const vec_t *vector_ext, const size_t itemsize)
 {

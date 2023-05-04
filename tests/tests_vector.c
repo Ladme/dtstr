@@ -1067,6 +1067,34 @@ static int test_vec_len(void)
     return 0;
 }
 
+static int test_vec_clear(void)
+{
+    printf("%-40s", "test_vec_clear ");
+
+    vec_clear(NULL);
+
+    vec_t *vector = vec_new();
+
+    for (int i = 0; i < 130; ++i) {
+        vec_push(vector, &i, sizeof(int));
+    }
+
+    assert(vector->len == 130);
+
+    vec_clear(vector);
+
+    assert(vector->len == 0);
+    for (int i = 0; i < 130; ++i) {
+        assert(vector->items[i] == NULL);
+    }
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+    
+}
+
 struct test_heterogeneous {
     long b;
     void *random_data;
@@ -2302,6 +2330,7 @@ int main(void)
     test_vec_cat();
 
     test_vec_len();
+    test_vec_clear();
 
     test_vec_heterogeneous();
 
