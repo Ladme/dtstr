@@ -1405,28 +1405,76 @@ static int test_vec_find(void)
     size_t search[] = {9, 1, 5, 3, 19};
 
     // search in non-existent vector
-    assert(vec_find(NULL, test_equality_function, (void *) &search[0]) == NULL);
+    assert(vec_find(NULL, test_equality_function, &search[0]) == NULL);
 
     vec_t *vector = vec_new();
 
     // search in an empty vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == NULL);
+    assert(vec_find(vector, test_equality_function, &search[0]) == NULL);
 
     size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
 
     for (size_t i = 0; i < 10; ++i) {
-        vec_push(vector, (void *) &data[i], sizeof(size_t));
+        vec_push(vector, &data[i], sizeof(size_t));
     }
 
     // find item at the beginning of vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[0]) == vector->items[0]);
+    assert(vec_find(vector, test_equality_function, &search[0]) == vector->items[0]);
     // find item at the end of vector
-    assert(vec_find(vector, test_equality_function, (void *) &search[1]) == vector->items[9]);
+    assert(vec_find(vector, test_equality_function, &search[1]) == vector->items[9]);
     // find first of many items
-    assert(vec_find(vector, test_equality_function, (void *) &search[2]) == vector->items[4]);
-    assert(vec_find(vector, test_equality_function, (void *) &search[3]) == vector->items[1]);
+    assert(vec_find(vector, test_equality_function, &search[2]) == vector->items[4]);
+    assert(vec_find(vector, test_equality_function, &search[3]) == vector->items[1]);
     // search for non-existent item
-    assert(vec_find(vector, test_equality_function, (void *) &search[4]) == NULL);
+    assert(vec_find(vector, test_equality_function, &search[4]) == NULL);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_find_remove(void)
+{
+    printf("%-40s", "test_vec_find_remove ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent vector
+    assert(vec_find_remove(NULL, test_equality_function, &search[0]) == NULL);
+
+    vec_t *vector = vec_new();
+
+    // search in an empty vector
+    assert(vec_find_remove(vector, test_equality_function, &search[0]) == NULL);
+
+    size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
+
+    for (size_t i = 0; i < 10; ++i) {
+        vec_push(vector, &data[i], sizeof(size_t));
+    }
+
+    // find and remove item at the beginning of vector
+    void *orig = vector->items[0];
+    void *item = vec_find_remove(vector, test_equality_function, &search[0]);
+    assert(item == orig);
+    free(item);
+    // find and remove item at the end of vector
+    orig = vector->items[8];
+    item = vec_find_remove(vector, test_equality_function, &search[1]);
+    assert(item == orig);
+    free(item);
+    // find and remove first of many items
+    orig = vector->items[3];
+    item = vec_find_remove(vector, test_equality_function, &search[2]);
+    assert(item == orig);
+    free(item);
+    orig = vector->items[0];
+    item = vec_find_remove(vector, test_equality_function, &search[3]);
+    assert(item == orig);
+    free(item);
+    // search for non-existent item
+    assert(vec_find_remove(vector, test_equality_function, &search[4]) == NULL);
 
     vec_destroy(vector);
 
@@ -2342,6 +2390,7 @@ int main(void)
     test_vec_filter_complex();
 
     test_vec_find();
+    test_vec_find_remove();
     test_vec_find_bsearch();
     test_vec_find_min();
     test_vec_find_max();

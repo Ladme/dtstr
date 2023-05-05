@@ -375,6 +375,19 @@ void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const vo
     return NULL;
 }
 
+void *vec_find_remove(vec_t *vector, int (*equal_function)(const void *, const void *), const void *target)
+{
+    if (vector == NULL) return NULL;
+
+    for (size_t i = 0; i < vector->len; ++i) {
+
+        void *item = vector->items[i];
+        if (equal_function(item, target)) return vec_remove(vector, i);
+    }
+
+    return NULL;
+}
+
 
 void *vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target)
 {

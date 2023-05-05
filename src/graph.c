@@ -7,11 +7,13 @@
 /*                  PRIVATE FUNCTIONS ASSOCIATED WITH GRAPHD_T                 */
 /* *************************************************************************** */
 
+#define UNUSED(x) (void)(x)
+
 /** @brief Deallocates memory for adjacency matrix. */
 static void amatrix_destroy(edged_t **amatrix, const size_t size)
 {
     for (size_t i = 0; i < size; ++i) {
-        free(amatrix[i]); 
+        free(amatrix[i]);
     }
 
     free(amatrix);
@@ -38,60 +40,50 @@ static edged_t **amatrix_new(const size_t capacity)
     return amatrix;
 }
 
-/** @brief Reallocates memory for adjacency matrix, expanding it or shrinking it.
- * Returns 0 if successful or non-zero in case of memory allocation error. 
- */
-static int amatrix_realloc(edged_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
+/** @brief Expands the adjacency matrix. Returns 0 if successful or non-zero in case of memory allocation error. */
+static int amatrix_expand(edged_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
 {
     if (old_capacity == new_capacity) return 0;
-
-    // shrinking matrix
-    if (new_capacity < old_capacity) {
-        // free unused rows
-        for (size_t i = new_capacity; i < old_capacity; ++i) free((*amatrix)[i]);
-    }
 
     edged_t **new_amatrix = realloc(*amatrix, new_capacity * sizeof(edged_t *));
     if (new_amatrix == NULL) return 1;
 
     *amatrix = new_amatrix;
 
-    // expanding matrix
-    if (old_capacity < new_capacity) {
-        for (size_t i = 0; i < old_capacity; ++i) {
-            edged_t *new_row = realloc((*amatrix)[i], new_capacity * sizeof(edged_t));
-            if (new_row == NULL) return 2;
-            (*amatrix)[i] = new_row;
-            memset((*amatrix)[i] + old_capacity, 0, (new_capacity - old_capacity) * sizeof(edged_t));
-        }
+    for (size_t i = 0; i < old_capacity; ++i) {
+        edged_t *new_row = realloc((*amatrix)[i], new_capacity * sizeof(edged_t));
+        if (new_row == NULL) return 2;
+        (*amatrix)[i] = new_row;
+        memset((*amatrix)[i] + old_capacity, 0, (new_capacity - old_capacity) * sizeof(edged_t));
+    }
 
-        for (size_t i = old_capacity; i < new_capacity; ++i) {
-            (*amatrix)[i] = calloc(new_capacity, sizeof(edged_t));
-            if ((*amatrix)[i] == NULL) return 3;
-        }
-    } 
-    // shrinking matrix
-    else {
-        for (size_t i = 0; i < new_capacity; ++i) {
-            edged_t *new_row = realloc((*amatrix)[i], new_capacity * sizeof(edged_t));
-            if (new_row == NULL) return 2;
-            (*amatrix)[i] = new_row;
-        }
+    for (size_t i = old_capacity; i < new_capacity; ++i) {
+        (*amatrix)[i] = calloc(new_capacity, sizeof(edged_t));
+        if ((*amatrix)[i] == NULL) return 3;
     }
 
     return 0;
 }
 
-/** @brief Expands adjacency matrix. Returns 0 if successful or non-zero in case of memory allocation error. */
-static inline int amatrix_expand(edged_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
+/** @brief Shrinks the adjacency matrix. Returns 0 if successful or non-zero in case of memory allocation error. */
+static int amatrix_shrink(edged_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
 {
-    return amatrix_realloc(amatrix, old_capacity, new_capacity);
-}
+    if (old_capacity == new_capacity) return 0;
 
-/** @brief Shrink the adjacency matrix. Returns 0 if successful or non-zero in case of memory allocation error. */
-static inline int amatrix_shrink(edged_t ***amatrix, const size_t old_capacity, const size_t new_capacity)
-{
-    return amatrix_realloc(amatrix, old_capacity, new_capacity);
+    for (size_t i = new_capacity; i < old_capacity; ++i) free((*amatrix)[i]);
+
+    edged_t **new_amatrix = realloc(*amatrix, new_capacity * sizeof(edged_t *));
+    if (new_amatrix == NULL) return 1;
+
+    *amatrix = new_amatrix;
+
+    for (size_t i = 0; i < new_capacity; ++i) {
+        edged_t *new_row = realloc((*amatrix)[i], new_capacity * sizeof(edged_t));
+        if (new_row == NULL) return 2;
+        (*amatrix)[i] = new_row;
+    }
+
+    return 0;
 }
 
 static void amatrix_remove_vertex(edged_t **amatrix, const size_t index, const size_t length)
@@ -117,7 +109,7 @@ static inline int edged_exists(const graphd_t *graph, const size_t isrc, const s
 }
 
 /** @brief Returns 1 if index points to valid vertex in graph. Else returns 0. */
-static inline int graph_index_valid(const graphd_t *graph, const size_t index)
+static inline int graphd_index_valid(const graphd_t *graph, const size_t index)
 {
     return index < graph->vertices->len;
 }
@@ -188,7 +180,7 @@ long graphd_vertex_add(graphd_t *graph, const void *vertex, const size_t vertexs
 int graphd_vertex_remove(graphd_t *graph, const size_t index)
 {
     if (graph == NULL) return 99;
-    if (!graph_index_valid(graph, index)) return 2;
+    if (!graphd_index_valid(graph, index)) return 2;
  
     void *vertex = vec_remove(graph->vertices, index);
     if (vertex == NULL) return 1;
@@ -209,7 +201,7 @@ int graphd_vertex_remove(graphd_t *graph, const size_t index)
 
 void *graphd_vertex_get(const graphd_t *graph, const size_t index)
 {
-    if (graph == NULL || !graph_index_valid(graph, index)) return NULL;
+    if (graph == NULL || !graphd_index_valid(graph, index)) return NULL;
 
     return graph->vertices->items[index];
 }
@@ -219,7 +211,7 @@ int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t ind
     if (graph == NULL) return 99;
 
     // check that the indices are valid
-    if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 1;
+    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return 1;
 
     graph->amatrix[index_source][index_target].exists = 1;
     graph->amatrix[index_source][index_target].weight = weight;
@@ -231,7 +223,7 @@ int graphd_edge_remove(graphd_t *graph, const size_t index_source, const size_t 
 {
     if (graph == NULL) return 99;
 
-    if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 1;
+    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return 1;
 
     graph->amatrix[index_source][index_target].exists = 0;
 
@@ -242,14 +234,23 @@ int graphd_edge_exists(const graphd_t *graph, const size_t index_source, const s
 {
     if (graph == NULL) return 0;
 
-    if (!graph_index_valid(graph, index_source) || !graph_index_valid(graph, index_target)) return 0;
+    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return 0;
 
     return edged_exists(graph, index_source, index_target);
 }
 
+int graphd_edge_weight(const graphd_t *graph, const size_t index_source, const size_t index_target)
+{
+    if (graph == NULL) return INT_MIN;
+    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return INT_MIN;
+    if (!edged_exists(graph, index_source, index_target)) return INT_MIN;
+
+    return graph->amatrix[index_source][index_target].weight;
+}
+
 vec_t *graphd_vertex_successors(const graphd_t *graph, const size_t index)
 {
-    if (graph == NULL || !graph_index_valid(graph, index)) return NULL;
+    if (graph == NULL || !graphd_index_valid(graph, index)) return NULL;
 
     vec_t *successors = vec_new();
     if (successors == NULL) return NULL;
@@ -280,7 +281,7 @@ size_t graphd_vertex_map_bfs(
         void (*function)(void *, void *), 
         void *pointer)
 {
-    if (graph == NULL || !graph_index_valid(graph, index)) return 0;
+    if (graph == NULL || !graphd_index_valid(graph, index)) return 0;
 
     set_t *visited = set_with_capacity(graph->vertices->len, equal_sizet, hash_full);
     cbuf_t *queue = cbuf_new();
@@ -320,7 +321,7 @@ size_t graphd_vertex_map_dfs(
         void (*function)(void *, void *), 
         void *pointer)
 {
-    if (graph == NULL || !graph_index_valid(graph, index)) return 0;
+    if (graph == NULL || !graphd_index_valid(graph, index)) return 0;
 
     set_t *visited = set_with_capacity(graph->vertices->len, equal_sizet, hash_full);
     vec_t *stack = vec_new();
@@ -336,6 +337,282 @@ size_t graphd_vertex_map_dfs(
         // find successors of vertex and add their indices to the stack, if not visited
         for (size_t i = 0; i < graph->vertices->len; ++i) {
             if (edged_exists(graph, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
+                vec_push(stack, &i, sizeof(size_t));
+                set_add(visited, &i, sizeof(size_t), sizeof(size_t));
+            } 
+        }
+
+        free(vertex);
+
+    }
+
+    size_t n_visited = visited->len;
+
+    set_destroy(visited);
+    vec_destroy(stack);
+
+    return n_visited;
+}
+
+/* *************************************************************************** */
+/*                  PRIVATE FUNCTIONS ASSOCIATED WITH GRAPHS_T                 */
+/* *************************************************************************** */
+
+void vec_destroy_for_map(void *wrapped_vec, void *unused)
+{
+    UNUSED(unused);
+
+    vec_t *vector = *(vec_t **) wrapped_vec;
+    vec_destroy(vector);
+}
+
+/** @brief Returns 1 if index points to valid vertex in graph. Else returns 0. */
+static inline int graphs_index_valid(const graphs_t *graph, const size_t index)
+{
+    return index < graph->vertices->len;
+}
+
+/** @brief Returns a pointer to target edge. Returns NULL if no such edge exists. Raw function. */
+static edges_t *edges_get(const graphs_t *graph, const size_t isrc, const size_t itar)
+{
+    void *itar_p = graph->vertices->items[itar];
+
+    vec_t *adjacency_list = *(vec_t **) graph->edges->items[isrc];
+    for (size_t i = 0; i < adjacency_list->len; ++i) {
+        edges_t *edge = (edges_t *) adjacency_list->items[i];
+        if (edge->vertex_tar == itar_p) return edge;
+    }
+
+    return NULL;
+}
+
+/** @brief Checks whether an edge connecting isrc with itar exists. Returns 1 if it does, else returns 0. */
+static inline int edges_exists(const graphs_t *graph, const size_t isrc, const size_t itar)
+{
+    return edges_get(graph, isrc, itar) != NULL ?  1 : 0;
+}
+
+/** @brief Check if target of an edge matches expected target. Compatible with vec_find_remove function. */
+static int edges_target_match(const void *edge1, const void *target)
+{
+    return ((edges_t *) edge1)->vertex_tar  == target;
+}
+
+static void extract_successors(void *item, void *wrapped_vec)
+{
+    edges_t *edge = (edges_t *) item;
+    vec_t *successors = (vec_t *) wrapped_vec;
+
+    vec_push(successors, &(edge->vertex_tar), sizeof(void *));
+}
+
+/* *************************************************************************** */
+/*                 PUBLIC FUNCTIONS ASSOCIATED WITH GRAPHS_T                   */
+/* *************************************************************************** */
+
+graphs_t *graphs_new(void)
+{
+    return graphs_with_capacity(GRAPHS_DEFAULT_CAPACITY);
+}
+
+graphs_t *graphs_with_capacity(const size_t capacity)
+{
+    graphs_t *graph = calloc(1, sizeof(graphs_t));
+    if (graph == NULL) return NULL;
+
+    graph->vertices = vec_with_capacity(capacity);
+    if (graph->vertices == NULL) {
+        free(graph);
+        return NULL;
+    }
+
+    graph->edges = vec_with_capacity(capacity);
+    if (graph->edges == NULL) {
+        vec_destroy(graph->vertices);
+        free(graph);
+        return NULL;
+    }
+
+    return graph;
+}
+
+void graphs_destroy(graphs_t *graph)
+{
+    if (graph == NULL) return;
+
+    vec_destroy(graph->vertices);
+    vec_map(graph->edges, vec_destroy_for_map, NULL);
+    vec_destroy(graph->edges);
+    free(graph);
+}
+
+long graphs_vertex_add(graphs_t *graph, const void *vertex, const size_t vertexsize)
+{
+    if (graph == NULL) return -99;
+
+    vec_t *adjacency_list = vec_with_capacity(graph->edges->base_capacity);
+    if (adjacency_list == NULL) return -1;
+
+    vec_push(graph->vertices, vertex, vertexsize);
+    vec_push(graph->edges, &adjacency_list, sizeof(vec_t *));
+
+    if (graph->vertices->len != graph->edges->len || graph->vertices->capacity != graph->edges->capacity) return -2;
+
+    return graph->vertices->len - 1;
+}
+
+void *graphs_vertex_get(const graphs_t *graph, const size_t index)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index)) return NULL;
+
+    return graph->vertices->items[index];
+}
+
+int graphs_vertex_remove(graphs_t *graph, const size_t index)
+{
+    if (graph == NULL) return 99;
+    if (!graphs_index_valid(graph, index)) return 2;
+ 
+    void *vertex = vec_remove(graph->vertices, index);
+    if (vertex == NULL) return 1;
+    free(vertex);
+
+    void *adjacency_list = vec_remove(graph->edges, index);
+    if (adjacency_list == NULL) return 3;
+    vec_destroy(*(vec_t **) adjacency_list);
+    free(adjacency_list);
+
+    for (size_t i = 0; i < graph->edges->len; ++i) {
+        vec_t *adjacent = *(vec_t **) graph->edges->items[i];
+        size_t index_copy = index;
+        free(vec_find_remove(adjacent, edges_target_match, &index_copy));
+    }
+
+    return 0;
+}
+
+int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t index_target, const int weight)
+{
+    if (graph == NULL) return 99;
+
+    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 1;
+
+    vec_t *adjacency_list = *(vec_t **) graph->edges->items[index_source];
+    edges_t edge = { .vertex_tar = graph->vertices->items[index_target], .weight = weight };
+    vec_push(adjacency_list, &edge, sizeof(edges_t));
+
+    return 0;
+}
+
+int graphs_edge_remove(graphs_t *graph, const size_t index_source, const size_t index_target)
+{
+    if (graph == NULL) return 99;
+
+    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 1;
+
+    free(vec_find_remove(*(vec_t **) graph->edges->items[index_source], edges_target_match, graph->vertices->items[index_target]));
+
+    return 0;
+}
+
+int graphs_edge_exists(const graphs_t *graph, const size_t index_source, const size_t index_target)
+{
+    if (graph == NULL) return 0;
+
+    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 0;
+
+    return edges_exists(graph, index_source, index_target);
+}
+
+int graphs_edge_weight(const graphs_t *graph, const size_t index_source, const size_t index_target)
+{
+    if (graph == NULL) return INT_MIN;
+    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return INT_MIN;
+    if (!edges_exists(graph, index_source, index_target)) return INT_MIN;
+
+    return edges_get(graph, index_source, index_target)->weight;
+}
+
+vec_t *graphs_vertex_successors(const graphs_t *graph, const size_t index)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index)) return NULL;
+
+    vec_t *successors = vec_new();
+    if (successors == NULL) return NULL;
+
+    vec_map(*(vec_t **) graph->edges->items[index], extract_successors, successors);
+
+    return successors;
+}
+
+void graphs_vertex_map(graphs_t *graph, void (*function)(void *, void *), void *pointer)
+{
+    if (graph == NULL) return;
+
+    vec_map(graph->vertices, function, pointer);
+}
+
+size_t graphs_vertex_map_bfs(
+        graphs_t *graph, 
+        const size_t index, 
+        void (*function)(void *, void *), 
+        void *pointer)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index)) return 0;
+
+    set_t *visited = set_with_capacity(graph->vertices->len, equal_sizet, hash_full);
+    cbuf_t *queue = cbuf_new();
+
+    cbuf_enqueue(queue, &index, sizeof(size_t));
+    set_add(visited, &index, sizeof(size_t), sizeof(size_t));
+
+    while (queue->len != 0) {
+
+        size_t *vertex = (size_t *) cbuf_dequeue(queue);
+        function(graph->vertices->items[*vertex], pointer);
+
+        // find successors of vertex and add their indices to the queue, if not visited
+        for (size_t i = 0; i < graph->vertices->len; ++i) {
+            if (edges_exists(graph, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
+                cbuf_enqueue(queue, &i, sizeof(size_t));
+                set_add(visited, &i, sizeof(size_t), sizeof(size_t));
+            } 
+        }
+
+        free(vertex);
+
+    }
+
+    size_t n_visited = visited->len;
+
+    set_destroy(visited);
+    cbuf_destroy(queue);
+
+    return n_visited;
+}
+
+size_t graphs_vertex_map_dfs(
+        graphs_t *graph, 
+        const size_t index, 
+        void (*function)(void *, void *), 
+        void *pointer)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index)) return 0;
+
+    set_t *visited = set_with_capacity(graph->vertices->len, equal_sizet, hash_full);
+    vec_t *stack = vec_new();
+
+    vec_push(stack, &index, sizeof(size_t));
+    set_add(visited, &index, sizeof(size_t), sizeof(size_t));
+
+    while (stack->len != 0) {
+
+        size_t *vertex = (size_t *) vec_pop(stack);
+        function(graph->vertices->items[*vertex], pointer);
+
+        // find successors of vertex and add their indices to the stack, if not visited
+        for (size_t i = 0; i < graph->vertices->len; ++i) {
+            if (edges_exists(graph, *vertex, i) && !set_contains(visited, &i, sizeof(size_t))) {
                 vec_push(stack, &i, sizeof(size_t));
                 set_add(visited, &i, sizeof(size_t), sizeof(size_t));
             } 

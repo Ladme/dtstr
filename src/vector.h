@@ -347,6 +347,34 @@ void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const vo
 
 
 /** 
+ * @brief Searches for an item in the vector and removes it. Returns a pointer to the removed item.
+ * 
+ * @param vector            The vector to search in
+ * @param equal_function    The function pointer defining how the items should be compared
+ * @param target            The pointer to the data that is being searched for in the vector
+ * 
+ * @note
+ * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
+ * The first void pointer corresponds to the pointer to the data at a particular index, and the second void 
+ * pointer is the pointer to the data that is being searched for in the vector.
+ * 
+ * The equality function should return a value greater than 0 (true) if the two compared items match each other.
+ * The equality function should return 0 (false) if the two compared items do not match each other.
+ * 
+ * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
+ * 
+ * @note - The function always removes the first matching item in the vector (with the lowest index).
+ * 
+ * @note - The caller is responsible for properly deallocating memory for the removed item.
+ * 
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return Void pointer to the removed item. NULL if no such item found or vector is NULL.
+ */
+void *vec_find_remove(vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
+
+
+/** 
  * @brief Searches for an item in vector that is SORTED in ASCENDING order and returns pointer to the item. Uses binary search.
  * 
  * @param vector            Vector to search in
