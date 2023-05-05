@@ -8,7 +8,7 @@
 /* *************************************************************************** */
 
 /** @brief Checks whether vector is sufficiently small to be shrunk. Returns 1, if that is the case. Else returns 0.*/
-inline static int vec_check_shrink(vec_t *vector)
+static inline int vec_check_shrink(vec_t *vector)
 {
     return (vector->capacity > vector->base_capacity) && (vector->len <= vector->capacity / 4);
 }
@@ -28,7 +28,7 @@ static int vec_reallocate(vec_t *vector, const size_t old_capacity)
 }
 
 /** @brief Shrinks the vector in capacity by half. Returns 0, if successful. Else returns non-zero. */
-inline static int vec_shrink(vec_t *vector)
+static inline int vec_shrink(vec_t *vector)
 {
     const size_t old_capacity = vector->capacity;
     vector->capacity >>= 1;
@@ -36,7 +36,7 @@ inline static int vec_shrink(vec_t *vector)
     return vec_reallocate(vector, old_capacity);
 }
 
-inline static int vec_shrink_multiple(vec_t *vector)
+static inline int vec_shrink_multiple(vec_t *vector)
 {
     const size_t old_capacity = vector->capacity;
     vector->capacity = vector->base_capacity;
@@ -45,7 +45,7 @@ inline static int vec_shrink_multiple(vec_t *vector)
 }
 
 /** @brief Expands the capacity of vector. Returns 0, if successful. Else return non-zero. */
-inline static int vec_expand(vec_t *vector)
+static inline int vec_expand(vec_t *vector)
 {
     const size_t old_capacity = vector->capacity;
     vector->capacity <<= 1;
@@ -53,7 +53,7 @@ inline static int vec_expand(vec_t *vector)
 }
 
 /** @brief Swaps two items in a vector. */
-inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
+static inline void vec_swap(vec_t *vector, const size_t i, const size_t j)
 {
     void *tmp = vector->items[i];
     vector->items[i] = vector->items[j];
@@ -254,7 +254,7 @@ void *vec_remove(vec_t *vector, const size_t index)
     void *item = vector->items[index];
 
     // move all items located after index
-    memcpy(vector->items + index, vector->items + index + 1, sizeof(void *) * (vector->len - index));
+    memcpy(vector->items + index, vector->items + index + 1, sizeof(void *) * (vector->len - index - 1));
     vector->items[vector->len - 1] = NULL;
     vector->len--;
 
