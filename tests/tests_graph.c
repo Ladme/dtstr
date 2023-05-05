@@ -337,6 +337,121 @@ static int test_graphd_edge_remove(void)
     return 0;
 }
 
+static int test_graphd_vertex_remove(void)
+{
+    printf("%-40s", "test_graphd_vertex_remove ");
+
+    assert(graphd_vertex_remove(NULL, 0) == 99);
+
+    graphd_t *graph = graphd_new();
+
+    for (int i = 0; i < 17; ++i) {
+        assert(graphd_vertex_add(graph, &i, sizeof(int)) == i);
+    }
+
+    for (int i = 3; i < 17; ++i) {
+        assert(graphd_edge_add(graph, 0, i, 1) == 0);
+        assert(graphd_edge_add(graph, i, 0, 5) == 0);
+    }
+
+    assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 7) == 0);
+    assert(graphd_edge_add(graph, 5, 8, -3) == 0);
+    assert(graphd_edge_add(graph, 1, 16, 6) == 0);
+    assert(graphd_edge_add(graph, 7, 7, 0) == 0);
+
+    // remove vertex with low index
+    assert(graphd_vertex_remove(graph, 0) == 0);
+    assert(graph->vertices->len == 16);
+
+    for (int i = 0; i < 16; ++i) {
+        for (int j = 0; j < 16; ++j) {
+            if (i == 2 && j == 3) assert(graphd_edge_exists(graph, 2, 3));
+            else if (i == 9 && j == 2) assert(graphd_edge_exists(graph, 9, 2));
+            else if (i == 4 && j == 7) assert(graphd_edge_exists(graph, 4, 7));
+            else if (i == 0 && j == 15) assert(graphd_edge_exists(graph, 0, 15));
+            else if (i == 6 && j == 6) assert(graphd_edge_exists(graph, 6, 6));
+            else assert(!graphd_edge_exists(graph, i, j));
+        }
+    }
+
+    // remove vertex from the middle
+    assert(graphd_vertex_remove(graph, 9) == 0);
+    assert(graph->vertices->len == 15);
+
+    for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < 15; ++j) {
+            if (i == 2 && j == 3) assert(graphd_edge_exists(graph, 2, 3));
+            else if (i == 4 && j == 7) assert(graphd_edge_exists(graph, 4, 7));
+            else if (i == 0 && j == 14) assert(graphd_edge_exists(graph, 0, 14));
+            else if (i == 6 && j == 6) assert(graphd_edge_exists(graph, 6, 6));
+            else assert(!graphd_edge_exists(graph, i, j));
+        }
+    }
+
+    // remove vertex from the end
+    assert(graphd_vertex_remove(graph, 14) == 0);
+    assert(graph->vertices->len == 14);
+
+    for (int i = 0; i < 14; ++i) {
+        for (int j = 0; j < 14; ++j) {
+            if (i == 2 && j == 3) assert(graphd_edge_exists(graph, 2, 3));
+            else if (i == 4 && j == 7) assert(graphd_edge_exists(graph, 4, 7));
+            else if (i == 6 && j == 6) assert(graphd_edge_exists(graph, 6, 6));
+            else assert(!graphd_edge_exists(graph, i, j));
+        }
+    }
+
+    // try removing non-existent vertex
+    assert(graphd_vertex_remove(graph, 14) == 2);
+    assert(graph->vertices->len == 14);
+
+    for (int i = 0; i < 14; ++i) {
+        for (int j = 0; j < 14; ++j) {
+            if (i == 2 && j == 3) assert(graphd_edge_exists(graph, 2, 3));
+            else if (i == 4 && j == 7) assert(graphd_edge_exists(graph, 4, 7));
+            else if (i == 6 && j == 6) assert(graphd_edge_exists(graph, 6, 6));
+            else assert(!graphd_edge_exists(graph, i, j));
+        }
+    }
+
+    graphd_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_graphd_vertex_remove_large(void)
+{
+    printf("%-40s", "test_graphd_vertex_remove (large) ");
+
+    graphd_t *graph = graphd_with_capacity(32);
+
+    for (int i = 0; i < 550; ++i) {
+        assert(graphd_vertex_add(graph, &i, sizeof(int)) >= 0);
+    }
+
+    for (size_t i = 0; i < 550; i += 2) {
+        for (size_t j = 0; j < 550; ++j) {
+            assert(graphd_edge_add(graph, i, j, 1) == 0);
+        }
+    }
+
+    assert(graph->allocated == 1024);
+
+    for (size_t i = 0; i < 550; i++) {
+        assert(graphd_vertex_remove(graph, 0) == 0);
+        for (size_t j = 0; j < 550 - i - 1; ++j) assert(graphd_edge_exists(graph, 0, j) == (int) (i % 2));
+    }
+
+    assert(graph->allocated == 32);
+    assert(graph->vertices->capacity == 32);
+
+    graphd_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
 
 static int test_graphd_vertex_successors(void)
 {
@@ -571,6 +686,9 @@ int main(void)
     test_graphd_edge_add();
     test_graphd_edge_exists();
     test_graphd_edge_remove();
+
+    test_graphd_vertex_remove();
+    test_graphd_vertex_remove_large();
 
     test_graphd_vertex_successors();
 

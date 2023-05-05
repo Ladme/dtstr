@@ -1,7 +1,7 @@
 // Released under MIT License.
 // Copyright (c) 2023 Ladislav Bartos
 
-// Implementations of graphs.
+// Implementations of graphs. All graphs are oriented and support integer weights for edges.
 
 #ifndef GRAPH_H
 #define GRAPH_H
@@ -17,20 +17,21 @@
 /*              GRAPHD_T: DENSE GRAPH               */
 /* ************************************************ */
 
-typedef struct edge {
+/** @brief Edge in a dense graph. */
+typedef struct edge_dense {
     int exists;
     int weight;
-} edge_t;
+} edged_t;
 
 /** @brief Structure efficiently representing dense oriented graph. */
 typedef struct graph_dense {
     vec_t *vertices;    // vector of vertices in the graph
-    edge_t **amatrix;   // adjacency matrix
+    edged_t **amatrix;   // adjacency matrix
     size_t allocated;   // number of vertices for which space has been allocated in amatrix
     size_t base_capacity;
 } graphd_t;
 
-/** @brief Default capacity used for vertices and amatrix (dense graph). Should be divisible by 8. */
+/** @brief Default capacity used for vertices and amatrix (dense graph). */
 #define GRAPHD_DEFAULT_CAPACITY 16UL
 
 
@@ -83,6 +84,20 @@ void graphd_destroy(graphd_t *graph);
  */
 long graphd_vertex_add(graphd_t *graph, const void *vertex, const size_t vertexsize);
 
+/**
+ * @brief Removes vertex from graph.
+ * 
+ * @param graph     The graph to operate on
+ * @param index     Index of the vertex to remove
+ * 
+ * @return 
+ * 0 if successfully removed. 
+ * 1 if the vertex could not be removed. 
+ * 2 if the index is out of range. 
+ * 3 if the adjacency matrix could not be shrunk.
+ * 99 if the graph does not exist.
+ */
+int graphd_vertex_remove(graphd_t *graph, const size_t index);
 
 /**
  * @brief Returns a pointer to the vertex with the specified index.
@@ -168,7 +183,7 @@ vec_t *graphd_vertex_successors(const graphd_t *graph, const size_t index);
  * @param pointer   Pointer to value that the function can operate on
  * 
  * @note - Vertices are traversed starting at index 0, i.e. not respecting the structure of the graph.
- * @note - All vertices are traversed, even though that are completely unreachable.
+ * @note - All vertices are traversed, even if completely unreachable.
  */
 void graphd_vertex_map(graphd_t *graph, void (*function)(void *, void *), void *pointer);
 
