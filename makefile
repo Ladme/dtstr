@@ -63,46 +63,46 @@ tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c
 	make tests_set
 	make tests_graph
 
-tests_vector: tests/tests_vector.c src/vector.o libdtstr.a
+tests_vector: tests/tests_vector.c src/vector.o
 	gcc tests/tests_vector.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_vector
 
-tests_linked_list: tests/tests_linked_list.c src/linked_list.o libdtstr.a
+tests_linked_list: tests/tests_linked_list.c src/linked_list.o
 	gcc tests/tests_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_linked_list
 
-tests_dlinked_list: tests/tests_dlinked_list.c src/dlinked_list.o libdtstr.a
+tests_dlinked_list: tests/tests_dlinked_list.c src/dlinked_list.o
 	gcc tests/tests_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_dlinked_list
 
-tests_clinked_list: tests/tests_clinked_list.c src/clinked_list.o libdtstr.a
+tests_clinked_list: tests/tests_clinked_list.c src/clinked_list.o
 	gcc tests/tests_clinked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_clinked_list
 
-tests_dictionary: tests/tests_dictionary.c src/dictionary.o libdtstr.a
+tests_dictionary: tests/tests_dictionary.c src/dictionary.o
 	gcc tests/tests_dictionary.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_dictionary
 
-tests_alist: tests/tests_alist.c src/alist.o libdtstr.a
+tests_alist: tests/tests_alist.c src/alist.o
 	gcc tests/tests_alist.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_alist
 
-tests_cbuffer: tests/tests_cbuffer.c src/cbuffer.o libdtstr.a
+tests_cbuffer: tests/tests_cbuffer.c src/cbuffer.o
 	gcc tests/tests_cbuffer.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_cbuffer
 
-tests_queue: tests/tests_queue.c src/queue.o src/dlinked_list.o libdtstr.a
+tests_queue: tests/tests_queue.c src/queue.o src/dlinked_list.o
 	gcc tests/tests_queue.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_queue
 
-tests_avl_tree: tests/tests_avl_tree.c src/avl_tree.o libdtstr.a
+tests_avl_tree: tests/tests_avl_tree.c src/avl_tree.o
 	gcc tests/tests_avl_tree.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_avl_tree
 
-tests_heap: tests/tests_heap.c src/heap.o libdtstr.a
+tests_heap: tests/tests_heap.c src/heap.o
 	gcc tests/tests_heap.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_heap
 
-tests_str: tests/tests_str.c src/str.o libdtstr.a
+tests_str: tests/tests_str.c src/str.o
 	gcc tests/tests_str.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_str
 
-tests_matrix: tests/tests_matrix.c src/matrix.o libdtstr.a
+tests_matrix: tests/tests_matrix.c src/matrix.o
 	gcc tests/tests_matrix.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_matrix
 
-tests_set: tests/tests_set.c src/set.o libdtstr.a
+tests_set: tests/tests_set.c src/set.o
 	gcc tests/tests_set.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_set
 
-tests_graph: tests/tests_graph.c src/graph.o libdtstr.a
+tests_graph: tests/tests_graph.c src/graph.o
 	gcc tests/tests_graph.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_graph
 
 benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c benchmarks/benchmarks_set.c libdtstr.a
@@ -116,32 +116,35 @@ benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c b
 	make benchmarks_heap
 	make benchmarks_set
 	
-benchmarks_vector: benchmarks/benchmarks_vector.c src/vector.o libdtstr.a
+benchmarks_vector: benchmarks/benchmarks_vector.c src/vector.o
 	gcc benchmarks/benchmarks_vector.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_vector
 
-benchmarks_linked_list: benchmarks/benchmarks_linked_list.c src/linked_list.o libdtstr.a
+benchmarks_linked_list: benchmarks/benchmarks_linked_list.c src/linked_list.o
 	gcc benchmarks/benchmarks_linked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_linked_list
 
-benchmarks_dlinked_list: benchmarks/benchmarks_dlinked_list.c src/dlinked_list.o libdtstr.a
+benchmarks_dlinked_list: benchmarks/benchmarks_dlinked_list.c src/dlinked_list.o
 	gcc benchmarks/benchmarks_dlinked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_dlinked_list
 
-benchmarks_clinked_list: benchmarks/benchmarks_clinked_list.c src/clinked_list.o libdtstr.a
+benchmarks_clinked_list: benchmarks/benchmarks_clinked_list.c src/clinked_list.o
 	gcc benchmarks/benchmarks_clinked_list.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_clinked_list
 
-benchmarks_dictionary: benchmarks/benchmarks_dictionary.c src/dictionary.o libdtstr.a
+benchmarks_dictionary: benchmarks/benchmarks_dictionary.c src/dictionary.o
 	gcc benchmarks/benchmarks_dictionary.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_dictionary
 
-benchmarks_queue_cbuffer: benchmarks/benchmarks_queue_cbuffer.c src/queue.o src/cbuffer.o libdtstr.a
+benchmarks_queue_cbuffer: benchmarks/benchmarks_queue_cbuffer.c src/queue.o src/cbuffer.o
 	gcc benchmarks/benchmarks_queue_cbuffer.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_queue_cbuffer
 
-benchmarks_avl_tree: benchmarks/benchmarks_avl_tree.c src/avl_tree.o src/vector.o libdtstr.a
+benchmarks_avl_tree: benchmarks/benchmarks_avl_tree.c src/avl_tree.o src/vector.o
 	gcc benchmarks/benchmarks_avl_tree.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_avl_tree
 
-benchmarks_heap: benchmarks/benchmarks_heap.c src/heap.o libdtstr.a
+benchmarks_heap: benchmarks/benchmarks_heap.c src/heap.o
 	gcc benchmarks/benchmarks_heap.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_heap
 
-benchmarks_set: benchmarks/benchmarks_set.c src/set.o libdtstr.a
+benchmarks_set: benchmarks/benchmarks_set.c src/set.o
 	gcc benchmarks/benchmarks_set.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_set
+
+benchmarks_graph: benchmarks/benchmarks_graph.c src/graph.o
+	gcc benchmarks/benchmarks_graph.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -o benchmarks/benchmarks_graph
 
 clean: 
 	rm -f *.a *.o src/*.a src/*.o

@@ -3,6 +3,38 @@
 
 // Implementations of graphs. All graphs are oriented and support integer weights for edges.
 
+/* SOME NOTES ON PERFORMANCE:
+ * (Tested on graphs with betwen 500 and 10,000 vertices.)
+ *
+ * 0) Memory             {graphs_t wins}
+ * > graphs_t usually requires much less memory than graphd_t (an order of magnitude for sparse graphs)
+ * > for graphs in which at least ~12% of all possible edges are present, graphd_t will be more memory efficient than graphs_t
+ *
+ * 1) Adding vertices    {graphs_t wins}
+ * > graphs_t is usually MUCH faster than graphd_t
+ * > graphd_t is faster than graphs_t if no memory reallocation is needed, 
+ *   i.e. if you know how many vertices the graph should fit and preallocate enough space for them
+ * 
+ * 2) Removing vertices  {graphs_t wins}
+ * > graphs_t is SEVERAL ORDERS OF MAGNITUDE faster than graphd_t for all graphs except for very small graphs (~100 vertices)
+ * 
+ * 3) Adding edges       {graphd_t wins}
+ * > graphd_t is always faster than graphs_t, especially for dense graphs
+ * > the speed difference increases with increasing density of the graph
+ * > for dense graphs, graphd_t is always at least an order of magnitude faster (often two orders of magnitude) than graphs_t
+ * 
+ * 4) Checking edges     {comparable}
+ * > for most graphs, graphd_t and graphs_t are similar in speed
+ * > for dense graphs, graphd_t tends to be faster
+ * 
+ * 5) Removing edges     {graphd_t wins}
+ * > graphd_t is slightly faster than graphs_t for most graphs
+ * 
+ * tl;dr Use graphs_t, unless...
+ * a) your graph contains a large number of edges (E > 0.1 V^2), or
+ * b) you plan to repeatedly add and remove edges from the graph AND are not limited by memory.
+ */
+
 #ifndef GRAPH_H
 #define GRAPH_H
 
