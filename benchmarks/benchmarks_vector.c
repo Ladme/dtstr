@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "../src/vector.h"
 
-static vec_t *vec_fill(const int items)
+static vec_t *vec_fill_rand(const int items)
 {
     vec_t *vector = vec_new();
 
@@ -58,7 +58,7 @@ static void benchmark_vec_push(size_t items)
     for (size_t i = 0; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -86,7 +86,7 @@ static void benchmark_vec_insert(size_t items)
     for (size_t i = 0; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -114,7 +114,7 @@ static void benchmark_vec_get(size_t items)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -142,7 +142,7 @@ static void benchmark_vec_pop(size_t items)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -168,7 +168,7 @@ static void benchmark_vec_remove(size_t items)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -202,7 +202,7 @@ static void benchmark_vec_filter_mut()
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 10000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -225,7 +225,7 @@ static void benchmark_vec_filter(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 1000000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -390,7 +390,7 @@ static void benchmark_vec_sort_selection(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 5000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -414,7 +414,7 @@ static void benchmark_vec_sort_bubble(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 5000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -462,7 +462,7 @@ static void benchmark_vec_sort_insertion(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 5000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -486,7 +486,7 @@ static void benchmark_vec_sort_quicknaive(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 
@@ -539,7 +539,7 @@ static void benchmark_vec_sort_quick(void)
     for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * 100000;
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_rand(prefilled);
 
         clock_t start = clock();
 

@@ -7,7 +7,7 @@
 /*                    PRIVATE FUNCTIONS FOR VEC_T SORTING                      */
 /* *************************************************************************** */
 
-/*! @brief Swaps two items in a vector. */
+/** @brief Swaps two items in a vector. */
 inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 {
     void *tmp = vector->items[i];
@@ -15,7 +15,23 @@ inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
     vector->items[j] = tmp;
 }
 
-/*! @brief Partitioning algorithm for quicksort. */
+/** Insertion sort applied only to a part of the vector. */
+static void sort_insertion_part(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
+{
+    for (size_t i = first; i < last + 1; ++i) {
+        size_t j = i;
+        void* current = vector->items[j];
+
+        while (j > first && compare_function(vector->items[j - 1], current) > 0) {
+            vector->items[j] = vector->items[j - 1];
+            --j;
+        }
+
+        vector->items[j] = current;
+    }
+}
+
+/** @brief Partitioning algorithm for quicksort. */
 static size_t partition(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
 {
     // we select pivot in the middle of the array to avoid worst case complexity on sorted data
@@ -37,10 +53,16 @@ static size_t partition(vec_t *vector, const size_t first, const size_t last, in
     return i;
 }
 
-/*! @brief Actual implementation of quicksort. */
+/** @brief Actual implementation of quicksort. */
 static void quicksort(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
 {
     if (first >= last || first < 0 || last > vector->len) return;
+
+    // switch to insertion sort if the segment is too small
+    if (last - first < 8) {
+        sort_insertion_part(vector, first, last, compare_function);
+        return;
+    }
 
     size_t pindex = partition(vector, first, last, compare_function);
 
@@ -100,13 +122,7 @@ int vec_sort_insertion(vec_t *vector, int (*compare_function)(const void *, cons
 {
     if (vector == NULL) return 99;
 
-    for (size_t i = 0; i < vector->len; ++i) {
-        size_t j = i;
-        while (j > 0 && compare_function(vector->items[j - 1], vector->items[j]) > 0) {
-            vec_swap(vector, j, j - 1);
-            --j;
-        }
-    }
+    sort_insertion_part(vector, 0, vector->len - 1, compare_function);
 
     return 0;
 }

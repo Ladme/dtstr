@@ -619,6 +619,8 @@ int vec_sort_insertion(vec_t *vector, int (*compare_function)(const void *, cons
  * It should returns <0, if the first of the two compared items is smaller.
  * 
  * @note - If 'vector' is NULL, 99 is returned.
+ * @note - When the length of the sorted partition decreases to <= 8 items, 
+ *         this function switches to insertion sort leading to increased performance.
  * 
  * @return 0 if successfully sorted. Else non-zero.
  */
