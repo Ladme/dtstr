@@ -61,6 +61,14 @@ static int equal_structure(const void *s1, const void *s2)
     return (structure1->value_x == structure2->value_x && structure1->hash_value == structure2->hash_value && structure1->some_char == structure2->some_char);
 }
 
+static int equal_structure_part(const void *s1, const void *s2)
+{
+    test_struct_t *structure1 = (test_struct_t *) s1;
+    test_struct_t *structure2 = (test_struct_t *) s2;
+
+    return (structure1->value_x == structure2->value_x && structure1->hash_value == structure2->hash_value);
+}
+
 static int equal_int(const void *i1, const void *i2)
 {
     return *(int *) i1 == *(int *) i2;
@@ -269,6 +277,101 @@ static int test_set_add_structures(void)
     assert(s2->hash_value == 95680988);
     assert(s3->hash_value == 666);
     assert(s1->some_char == 'c');
+    assert(s2->some_char == 'a');
+    assert(s3->some_char == 'f');
+
+    set_destroy(set);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_set_add_structures_overwrite(void)
+{
+    printf("%-40s", "test_set_add (structures, overwrite) ");
+
+    set_t *set = set_with_capacity(16, equal_structure_part, select_hash_structure);
+
+    // hashes for structure1 and structure3 clash
+    test_struct_t structure1 = {.value_x = 42.864, .hash_value = 143787373, .some_char = 'c'};
+    test_struct_t structure2 = {.value_x = 8.1243, .hash_value = 95680988, .some_char = 'a'};
+    test_struct_t structure3 = {.value_x = 666.666, .hash_value = 666, .some_char = 'f'};
+
+    assert(set_add(set, &structure1, sizeof(test_struct_t), sizeof(size_t)) == 0);
+    assert(set_add(set, &structure2, sizeof(test_struct_t), sizeof(size_t)) == 0);
+    assert(set_add(set, &structure3, sizeof(test_struct_t), sizeof(size_t)) == 0);
+
+    assert(set->len == 3);
+
+    assert(set->available == 14);
+
+    assert(set->items[21]->len == 2);
+    assert(set->items[30]->len == 1);
+    for (size_t i = 0; i < 32; ++i) {
+        if (i != 21 && i != 30) {
+            assert(set->items[i] == NULL);
+        }
+    }
+
+    // structure 4 is "identical" with structure 1 (when compared using equal_structure_part)
+    test_struct_t structure4 = {.value_x = 42.864, .hash_value = 143787373, .some_char = 'g'};
+    // this should do nothing
+    assert(set_add(set, &structure4, sizeof(test_struct_t), sizeof(size_t)) == 0);
+
+    assert(set->len == 3);
+
+    assert(set->available == 14);
+
+    assert(set->items[21]->len == 2);
+    assert(set->items[30]->len == 1);
+    for (size_t i = 0; i < 32; ++i) {
+        if (i != 21 && i != 30) {
+            assert(set->items[i] == NULL);
+        }
+    }
+
+    // check specific items
+    test_struct_t *s1 = (test_struct_t *) (*(set_entry_t **) set->items[21]->head->next->data)->item;
+    test_struct_t *s2 = (test_struct_t *) (*(set_entry_t **) set->items[30]->head->data)->item;
+    test_struct_t *s3 = (test_struct_t *) (*(set_entry_t **) set->items[21]->head->data)->item;
+
+    assert(closef(s1->value_x, 42.864, 0.0001));
+    assert(closef(s2->value_x, 8.1243, 0.0001));
+    assert(closef(s3->value_x, 666.666, 0.0001));
+    assert(s1->hash_value == 143787373);
+    assert(s2->hash_value == 95680988);
+    assert(s3->hash_value == 666);
+    assert(s1->some_char == 'c');
+    assert(s2->some_char == 'a');
+    assert(s3->some_char == 'f');
+
+    // this should overwrite structure1 with structure4
+    assert(set_add_overwrite(set, &structure4, sizeof(test_struct_t), sizeof(size_t)) == 0);
+
+    assert(set->len == 3);
+
+    assert(set->available == 14);
+
+    assert(set->items[21]->len == 2);
+    assert(set->items[30]->len == 1);
+    for (size_t i = 0; i < 32; ++i) {
+        if (i != 21 && i != 30) {
+            assert(set->items[i] == NULL);
+        }
+    }
+
+    // check specific items
+    s1 = (test_struct_t *) (*(set_entry_t **) set->items[21]->head->data)->item;
+    s2 = (test_struct_t *) (*(set_entry_t **) set->items[30]->head->data)->item;
+    s3 = (test_struct_t *) (*(set_entry_t **) set->items[21]->head->next->data)->item;
+
+    assert(closef(s1->value_x, 42.864, 0.0001));
+    assert(closef(s2->value_x, 8.1243, 0.0001));
+    assert(closef(s3->value_x, 666.666, 0.0001));
+    assert(s1->hash_value == 143787373);
+    assert(s2->hash_value == 95680988);
+    assert(s3->hash_value == 666);
+    assert(s1->some_char == 'g');
     assert(s2->some_char == 'a');
     assert(s3->some_char == 'f');
 
@@ -935,6 +1038,7 @@ int main(void)
 
     test_set_add_strings();
     test_set_add_structures();
+    test_set_add_structures_overwrite();
     test_set_add_large();
 
     test_set_contains();

@@ -263,6 +263,56 @@ static void set_difference_map(const void *wrapped_entry, void *wrapped_sets)
     }
 }
 
+/** @brief Adds an item into a set. `overwrite` specifies whether identical item should be overwritten (1), or nothing should be done (0). 
+ * Returns 0 if successful, else non-zero (see documentation of `set_add`).
+ */
+static int set_add_with_option(
+        set_t *set, 
+        const void *item, 
+        const size_t itemsize, 
+        const size_t hashsize,
+        const int overwrite)
+{
+    if (set == NULL) return 99;
+
+    size_t index = set_index(set, item, hashsize);
+
+    // expand set, if capacity is reached
+    if (set->available == 0 && set->items[index] == NULL) {
+        if (set_expand(set) != 0) return 5;
+        index = set_index(set, item, hashsize);
+    }
+
+    // check whether target position of array already contains a linked list
+    // if it does not, create it
+    if (set->items[index] == NULL) {
+        set->items[index] = dllist_new();
+        if (set->items[index] == NULL) return 4;
+        --set->available;
+    } else {
+        // check whether the item already exists
+        dnode_t *node = set_get_node(set->items[index], item, set->equal_function);
+        // if overwrite is false, do nothing
+        if (node != NULL && !overwrite) return 0;
+        // if overwrite is true, overwrite the item
+        if (node != NULL) {
+            if (set_node_entry_destroy(set->items[index], node) != 0) return 6;
+            --set->len;
+        }
+    }
+
+    // create new entry
+    const set_entry_t *new_entry = set_entry_new(item, itemsize, hashsize);
+    if (new_entry == NULL) return 1;
+
+    // add entry to linked list
+    if (dllist_push_first(set->items[index], &new_entry, sizeof(set_entry_t *)) == 1) return 3;
+
+    ++set->len;
+
+    return 0;
+}
+
 /* *************************************************************************** */
 /*                  PUBLIC FUNCTIONS ASSOCIATED WITH SET_T                     */
 /* *************************************************************************** */
@@ -323,35 +373,12 @@ const void *hash_full(const void *item)
 
 int set_add(set_t *set, const void *item, const size_t itemsize, const size_t hashsize)
 {
-    if (set == NULL) return 99;
+    return set_add_with_option(set, item, itemsize, hashsize, 0);
+}
 
-    size_t index = set_index(set, item, hashsize);
-
-    // expand set, if capacity is reached
-    if (set->available == 0 && set->items[index] == NULL) {
-        if (set_expand(set) != 0) return 5;
-        index = set_index(set, item, hashsize);
-    }
-
-    // check whether target position of array already contains a linked list
-    // if it does not, create it
-    if (set->items[index] == NULL) {
-        set->items[index] = dllist_new();
-        if (set->items[index] == NULL) return 4;
-        --set->available;
-    // item already exists -> do nothing
-    } else if (set_get_node(set->items[index], item, set->equal_function) != NULL) return 0;
-
-    // create new entry
-    const set_entry_t *new_entry = set_entry_new(item, itemsize, hashsize);
-    if (new_entry == NULL) return 1;
-
-    // add entry to linked list
-    if (dllist_push_first(set->items[index], &new_entry, sizeof(set_entry_t *)) == 1) return 3;
-
-    ++set->len;
-
-    return 0;
+int set_add_overwrite(set_t *set, const void *item, const size_t itemsize, const size_t hashsize)
+{
+    return set_add_with_option(set, item, itemsize, hashsize, 1);
 }
 
 int set_remove(set_t *set, const void *item, const size_t hashsize)

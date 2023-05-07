@@ -114,11 +114,39 @@ const void *hash_full(const void *item);
  * @note 3, if pushing into linked list failed.
  * @note 4, if new linked list could not be created.
  * @note 5, if set could not be expanded.
- * @note 99, if the dictionary does not exist (the dict pointer is NULL).
+ * @note 99, if the set does not exist (the set pointer is NULL).
  * 
  * @return Zero, if the item has been succesfully added or if the same item already exists. Else non-zero.
  */
 int set_add(set_t *set, const void *item, const size_t itemsize, const size_t hashsize);
+
+
+/** 
+ * @brief Adds item into a set. In case the item already exists, overwrites it.
+ *
+ * @param set       Set to add the item to.
+ * @param item      Item to add.
+ * @param itemsize  Size of the item to add (in bytes).
+ * @param hashsize  Size of the hashable part of the item (in bytes).
+ * 
+ * @note - If the item is already present in the set, this function removes the original item and replaces it with the new one.
+ * @note - The order of the items in the linked lists is not maintained.
+ * @note - This function is useful if the equal_function does not compare the items in their entirety.
+ * @note - If you want to use the entire item for hashing, you can use `hash_full` function as hashable.
+
+ * 
+ * @note
+ * - This function may return the following error codes:
+ * @note 1, if memory could not be allocated for new set entry.
+ * @note 3, if pushing into linked list failed.
+ * @note 4, if new linked list could not be created.
+ * @note 5, if set could not be expanded.
+ * @note 6, if the previously stored item could not be removed.
+ * @note 99, if the set does not exist (the set pointer is NULL).
+ * 
+ * @return Zero, if the item has been succesfully added. Else non-zero.
+ */
+int set_add_overwrite(set_t *set, const void *item, const size_t itemsize, const size_t hashsize);
 
 
 /** 
