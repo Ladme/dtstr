@@ -22,12 +22,9 @@ static void int_extract(void *item, void *wrapped_vector)
     vec_push(vector, item, sizeof(int));
 }
 
-static int edges_equal(const void *item1, const void *item2)
+static int compare_pointers(const void *p1, const void *p2)
 {
-    edges_t *edge1 = (edges_t *) item1;
-    edges_t *edge2 = (edges_t *) item2;
-
-    return edge1->vertex_tar == edge2->vertex_tar;
+    return p1 == p2;
 }
 
 /* ************************************************ */
@@ -177,6 +174,8 @@ static int test_graphd_edge_add(void)
     }
 
     assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, -2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 5) == 0);
     assert(graphd_edge_add(graph, 10, 3, 7) == 0);
     assert(graphd_edge_add(graph, 5, 8, -3) == 0);
     assert(graphd_edge_add(graph, 1, 16, 6) == 0);
@@ -531,6 +530,8 @@ static int test_graphd_vertex_successors(void)
     }
 
     assert(graphd_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, -2) == 0);
+    assert(graphd_edge_add(graph, 10, 3, 5) == 0);
     assert(graphd_edge_add(graph, 10, 3, 7) == 0);
     assert(graphd_edge_add(graph, 5, 8, -3) == 0);
     assert(graphd_edge_add(graph, 1, 16, 6) == 0);
@@ -822,8 +823,8 @@ static int test_graphs_vertex_add(void)
     assert(graph->vertices->capacity == 1024);
     assert(graph->edges->capacity == 1024);
     for (size_t i = 0; i < graph->edges->len; ++i) {
-        assert((*(vec_t **) vec_get(graph->edges, i))->len == 0);
-        assert((*(vec_t **) vec_get(graph->edges, i))->capacity == GRAPHS_DEFAULT_CAPACITY);
+        assert((*(set_t **) vec_get(graph->edges, i))->len == 0);
+        assert((*(set_t **) vec_get(graph->edges, i))->allocated == GRAPHS_DEFAULT_CAPACITY * 2);
     }
 
     graphs_destroy(graph);
@@ -874,6 +875,8 @@ static int test_graphs_vertex_remove(void)
     }
 
     assert(graphs_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphs_edge_add(graph, 10, 3, -2) == 0);
+    assert(graphs_edge_add(graph, 10, 3, 5) == 0);
     assert(graphs_edge_add(graph, 10, 3, 7) == 0);
     assert(graphs_edge_add(graph, 5, 8, -3) == 0);
     assert(graphs_edge_add(graph, 1, 16, 6) == 0);
@@ -991,6 +994,8 @@ static int test_graphs_vertex_successors(void)
     }
 
     assert(graphs_edge_add(graph, 3, 4, 2) == 0);
+    assert(graphs_edge_add(graph, 10, 3, -2) == 0);
+    assert(graphs_edge_add(graph, 10, 3, 5) == 0);
     assert(graphs_edge_add(graph, 10, 3, 7) == 0);
     assert(graphs_edge_add(graph, 5, 8, -3) == 0);
     assert(graphs_edge_add(graph, 1, 16, 6) == 0);
@@ -1003,7 +1008,7 @@ static int test_graphs_vertex_successors(void)
         case 0: 
             assert(vec_len(successors) == 14); 
             for (size_t j = 0; j < 14; ++j) {
-                assert(*(void **) vec_get(successors, j) == (void *) vec_get(graph->vertices, j + 3));
+                assert(vec_find(graph->vertices, compare_pointers, *(void **) vec_get(successors, j)));
             }
             break;
         case 1: assert(vec_len(successors) == 1); break;
@@ -1035,11 +1040,10 @@ static int test_graphs_vertex_successors(void)
     return 0;
 }
 
-inline static edges_t *get_edge(const vec_t *adl, void *tar)
+inline static edges_t *get_edge(const set_t *adl, void *tar)
 {
-    edges_t target = { .weight = 0, .vertex_tar = tar };
-    edges_t *edge = (edges_t *) vec_find(adl, edges_equal, &target);
-    return edge;
+    edges_t target = { .vertex_tar = tar , .weight = 0 };
+    return (edges_t *) set_get(adl, &target, sizeof(void *));
 }
 
 static int test_graphs_edge_add(void)
@@ -1065,25 +1069,33 @@ static int test_graphs_edge_add(void)
     assert(graphs_edge_add(graph, 1, 16, 6) == 0);
     assert(graphs_edge_add(graph, 7, 7, 0) == 0);
 
-    /*for (size_t i = 0; i < graph->edges->len; ++i) {
-        vec_t *adjacency_list = *(vec_t **) vec_get(graph->edges, i);
-        printf("%lu: ", i);
-        for (size_t j = 0; j < adjacency_list->len; ++j) {
-            printf("%d ", *(int *) vec_get(adjacency_list, j));
+    /*for (size_t i = 0; i < 17; ++i) {
+        set_t *adl = *(set_t **) graph->edges->items[i];
+        printf("%p [%lu]: ", graph->vertices->items[i], i);
+        for (size_t j = 0; j < adl->allocated; ++j) {
+            if (adl->items[j] == NULL) continue;
+            
+            dnode_t *node = adl->items[j]->head;
+            while (node != NULL) {
+                printf("%p-%d ", ((edges_t *) (*(set_entry_t **) node->data)->item)->vertex_tar, ((edges_t *) (*(set_entry_t **) node->data)->item)->weight);
+                node = node->next;
+            }
+
+            
         }
         printf("\n");
     }*/
 
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
-            if (i == 0 && j >= 3) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 1);
-            else if (i >= 3 && j == 0) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 5);
-            else if (i == 3 && j == 4) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 2);
-            else if (i == 10 && j == 3) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 7);
-            else if (i == 5 && j == 8) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == -3);
-            else if (i == 1 && j == 16) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 6);
-            else if (i == 7 && j == 7) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 0);
-            else assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j]) == NULL);
+            if (i == 0 && j >= 3) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 1);
+            else if (i >= 3 && j == 0) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 5);
+            else if (i == 3 && j == 4) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 2);
+            else if (i == 10 && j == 3) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 7);
+            else if (i == 5 && j == 8) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == -3);
+            else if (i == 1 && j == 16) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 6);
+            else if (i == 7 && j == 7) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 0);
+            else assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j]) == NULL);
         }
     }
 
@@ -1094,14 +1106,14 @@ static int test_graphs_edge_add(void)
 
     for (int i = 0; i < 17; ++i) {
         for (int j = 0; j < 17; ++j) {
-            if (i == 0 && j >= 3) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 1);
-            else if (i >= 3 && j == 0) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 5);
-            else if (i == 3 && j == 4) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 2);
-            else if (i == 10 && j == 3) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 7);
-            else if (i == 5 && j == 8) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == -3);
-            else if (i == 1 && j == 16) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 6);
-            else if (i == 7 && j == 7) assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 0);
-            else assert(get_edge(*(vec_t **) graph->edges->items[i], graph->vertices->items[j]) == NULL);
+            if (i == 0 && j >= 3) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 1);
+            else if (i >= 3 && j == 0) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 5);
+            else if (i == 3 && j == 4) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 2);
+            else if (i == 10 && j == 3) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 7);
+            else if (i == 5 && j == 8) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == -3);
+            else if (i == 1 && j == 16) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 6);
+            else if (i == 7 && j == 7) assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j])->weight == 0);
+            else assert(get_edge(*(set_t **) graph->edges->items[i], graph->vertices->items[j]) == NULL);
         }
     }
 

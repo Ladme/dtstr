@@ -424,6 +424,47 @@ static int test_set_add_large(void)
     return 0;
 }
 
+static int test_set_get(void)
+{
+    printf("%-40s", "test_set_get ");
+
+    // working with invalid set
+    char item[] = "some item";
+    assert(set_get(NULL, item, strlen(item)) == NULL);
+
+    set_t *set = set_with_capacity(32, equal_string, hash_full);
+
+    // do not change the keys or the base capacity
+    // sun & this clash (1)
+    // linked_list, number3, reasonable clash (9)
+    // beta, hashtag clash (39)
+    // something, alpha clash (43)
+    // array does not clash with anything (38)
+
+    char *items[] = {"sun", "linked_list", "number3", "beta", "something",
+                    "reasonable", "array", "alpha", "hashtag", "this"};
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(set_add(set, items[i], strlen(items[i]) + 1, strlen(items[i])) == 0);
+    }
+
+    for (size_t i = 0; i < 10; ++i) {
+        assert(set_get(set, items[i], strlen(items[i])) != NULL);
+    }
+
+    // check specific items
+    assert(set_get(set, "reasonable", 10) == ((*(set_entry_t **) set->items[9]->head->data)->item));
+    assert(set_get(set, "number3", 7) == ((*(set_entry_t **) set->items[9]->head->next->data)->item));
+    assert(set_get(set, "linked_list", 11) == ((*(set_entry_t **) set->items[9]->head->next->next->data)->item));
+
+    assert(set_get(set, item, strlen(item)) == NULL);
+    
+    set_destroy(set);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_set_contains(void)
 {
     printf("%-40s", "test_set_contains ");
@@ -1040,6 +1081,7 @@ int main(void)
     test_set_add_structures();
     test_set_add_structures_overwrite();
     test_set_add_large();
+    test_set_get();
 
     test_set_contains();
     test_set_collect();

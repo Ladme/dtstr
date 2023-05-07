@@ -358,12 +358,12 @@ size_t graphd_vertex_map_dfs(
 /*                  PRIVATE FUNCTIONS ASSOCIATED WITH GRAPHS_T                 */
 /* *************************************************************************** */
 
-void vec_destroy_for_map(void *wrapped_vec, void *unused)
+void set_destroy_for_map(void *wrapped_set, void *unused)
 {
     UNUSED(unused);
 
-    vec_t *vector = *(vec_t **) wrapped_vec;
-    vec_destroy(vector);
+    set_t *set = *(set_t **) wrapped_set;
+    set_destroy(set);
 }
 
 /** @brief Returns 1 if index points to valid vertex in graph. Else returns 0. */
@@ -375,15 +375,10 @@ static inline int graphs_index_valid(const graphs_t *graph, const size_t index)
 /** @brief Returns a pointer to target edge. Returns NULL if no such edge exists. Raw function. */
 static edges_t *edges_get(const graphs_t *graph, const size_t isrc, const size_t itar)
 {
-    void *itar_p = graph->vertices->items[itar];
+    set_t *adjacency_list = *(set_t **) graph->edges->items[isrc];
+    edges_t edge = { .vertex_tar = graph->vertices->items[itar], .weight = 0 };
 
-    vec_t *adjacency_list = *(vec_t **) graph->edges->items[isrc];
-    for (size_t i = 0; i < adjacency_list->len; ++i) {
-        edges_t *edge = (edges_t *) adjacency_list->items[i];
-        if (edge->vertex_tar == itar_p) return edge;
-    }
-
-    return NULL;
+    return (edges_t *) set_get(adjacency_list, &edge, sizeof(void *));
 }
 
 /** @brief Checks whether an edge connecting isrc with itar exists. Returns 1 if it does, else returns 0. */
@@ -392,10 +387,16 @@ static inline int edges_exists(const graphs_t *graph, const size_t isrc, const s
     return edges_get(graph, isrc, itar) != NULL ?  1 : 0;
 }
 
-/** @brief Check if target of an edge matches expected target. Compatible with vec_find_remove function. */
-static int edges_target_match(const void *edge1, const void *target)
+/** @brief Compares targets of two edges. Used as equal_function for adjacency list. */
+static int edges_match(const void *edge1, const void *edge2)
 {
-    return ((edges_t *) edge1)->vertex_tar  == target;
+    return ((edges_t *) edge1)->vertex_tar  == ((edges_t *) edge2)->vertex_tar;
+}
+
+/** @brief Hash selection for edges. Uses as hashable for adjacency list. */
+static const void *edges_hash(const void *edge)
+{
+    return (void *) &(((edges_t *) edge)->vertex_tar);
 }
 
 static void extract_successors(void *item, void *wrapped_vec)
@@ -441,7 +442,7 @@ void graphs_destroy(graphs_t *graph)
     if (graph == NULL) return;
 
     vec_destroy(graph->vertices);
-    vec_map(graph->edges, vec_destroy_for_map, NULL);
+    vec_map(graph->edges, set_destroy_for_map, NULL);
     vec_destroy(graph->edges);
     free(graph);
 }
@@ -450,11 +451,11 @@ long graphs_vertex_add(graphs_t *graph, const void *vertex, const size_t vertexs
 {
     if (graph == NULL) return -99;
 
-    vec_t *adjacency_list = vec_with_capacity(graph->edges->base_capacity);
+    set_t *adjacency_list = set_new(edges_match, edges_hash);
     if (adjacency_list == NULL) return -1;
 
     vec_push(graph->vertices, vertex, vertexsize);
-    vec_push(graph->edges, &adjacency_list, sizeof(vec_t *));
+    vec_push(graph->edges, &adjacency_list, sizeof(set_t *));
 
     if (graph->vertices->len != graph->edges->len || graph->vertices->capacity != graph->edges->capacity) return -2;
 
@@ -472,21 +473,24 @@ int graphs_vertex_remove(graphs_t *graph, const size_t index)
 {
     if (graph == NULL) return 99;
     if (!graphs_index_valid(graph, index)) return 2;
- 
+
+    // remove all edges from target vertex
+    void *adjacency_list = vec_remove(graph->edges, index);
+    if (adjacency_list == NULL) return 3;
+    set_destroy(*(set_t **) adjacency_list);
+    free(adjacency_list);
+
+    // remove all edges to target vertex
+    for (size_t i = 0; i < graph->edges->len; ++i) {
+        set_t *adjacent = *(set_t **) graph->edges->items[i];
+        edges_t edge = { .vertex_tar = graph->vertices->items[index], .weight = 0 };
+        set_remove(adjacent, &edge, sizeof(void *));
+    }
+
+    // remove target vertex
     void *vertex = vec_remove(graph->vertices, index);
     if (vertex == NULL) return 1;
     free(vertex);
-
-    void *adjacency_list = vec_remove(graph->edges, index);
-    if (adjacency_list == NULL) return 3;
-    vec_destroy(*(vec_t **) adjacency_list);
-    free(adjacency_list);
-
-    for (size_t i = 0; i < graph->edges->len; ++i) {
-        vec_t *adjacent = *(vec_t **) graph->edges->items[i];
-        size_t index_copy = index;
-        free(vec_find_remove(adjacent, edges_target_match, &index_copy));
-    }
 
     return 0;
 }
@@ -497,9 +501,9 @@ int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t ind
 
     if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 1;
 
-    vec_t *adjacency_list = *(vec_t **) graph->edges->items[index_source];
+    set_t *adjacency_list = *(set_t **) graph->edges->items[index_source];
     edges_t edge = { .vertex_tar = graph->vertices->items[index_target], .weight = weight };
-    vec_push(adjacency_list, &edge, sizeof(edges_t));
+    set_add_overwrite(adjacency_list, &edge, sizeof(edges_t), sizeof(void *));
 
     return 0;
 }
@@ -510,7 +514,8 @@ int graphs_edge_remove(graphs_t *graph, const size_t index_source, const size_t 
 
     if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 1;
 
-    free(vec_find_remove(*(vec_t **) graph->edges->items[index_source], edges_target_match, graph->vertices->items[index_target]));
+    edges_t edge_to_remove = { .vertex_tar = graph->vertices->items[index_target], .weight = 0 };
+    set_remove(*(set_t **) graph->edges->items[index_source], &edge_to_remove, sizeof(void *));
 
     return 0;
 }
@@ -540,7 +545,7 @@ vec_t *graphs_vertex_successors(const graphs_t *graph, const size_t index)
     vec_t *successors = vec_new();
     if (successors == NULL) return NULL;
 
-    vec_map(*(vec_t **) graph->edges->items[index], extract_successors, successors);
+    set_map(*(set_t **) graph->edges->items[index], extract_successors, successors);
 
     return successors;
 }

@@ -381,6 +381,19 @@ int set_add_overwrite(set_t *set, const void *item, const size_t itemsize, const
     return set_add_with_option(set, item, itemsize, hashsize, 1);
 }
 
+void *set_get(const set_t *set, const void *item, const size_t hashsize)
+{
+    if (set == NULL) return NULL;
+
+    size_t index = set_index(set, item, hashsize);
+    if (set->items[index] == NULL) return NULL;
+
+    dnode_t *node = set_get_node(set->items[index], item, set->equal_function);
+    if (node == NULL) return NULL;
+
+    return (*(set_entry_t **) node->data)->item;
+}
+
 int set_remove(set_t *set, const void *item, const size_t hashsize)
 {
     if (set == NULL) return 99;

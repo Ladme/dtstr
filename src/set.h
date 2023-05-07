@@ -149,6 +149,19 @@ int set_add(set_t *set, const void *item, const size_t itemsize, const size_t ha
 int set_add_overwrite(set_t *set, const void *item, const size_t itemsize, const size_t hashsize);
 
 
+/**
+ * @brief Gets item in set matching the provided item.
+ * 
+ * @param set       Set to operate on.
+ * @param item      Item to search for.
+ * @param hashsize  Size of the hashable part of the item (in bytes).
+ * 
+ * @note - The returned pointer is only valid while the item is present in the set.
+ * 
+ * @return Void pointer to the item in set. NULL if the set or the item does not exist.
+ */
+void *set_get(const set_t *set, const void *item, const size_t hashsize);
+
 /** 
  * @brief Removes item from a set.
  *  

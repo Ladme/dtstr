@@ -2,7 +2,6 @@
 // Copyright (c) 2023 Ladislav Bartos
 
 // Implementations of graphs. All graphs are oriented and support integer weights for edges.
-// Dense graph (graphd_t) is usually faster than sparse graph (graphs_t) but it uses much more memory.
 
 #ifndef GRAPH_H
 #define GRAPH_H
@@ -272,7 +271,7 @@ typedef struct edge_sparse {
  */
 typedef struct graph_sparse {
     vec_t *vertices;     // vector of vertices in the graph
-    vec_t *edges;        // vector of vectors of edges
+    vec_t *edges;        // vector of sets of edges
 } graphs_t;
 
 /** @brief Default capacity used for vertices and edges (sparse graph). */
@@ -380,7 +379,7 @@ int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t ind
  * @param index_source  Index of the source vertex 
  * @param index_target  Index of the target vertex
  * 
- * @note - Asymptotic Complexity: Linear, O(n)
+ * @note - Asymptotic Complexity: Constant, O(1)
  * 
  * @return 0 if the edge was successfully removed (or was not present), 
  *         1 if the indices are out of range, or 99 if the graph is NULL.
@@ -395,7 +394,7 @@ int graphs_edge_remove(graphs_t *graph, const size_t index_source, const size_t 
  * @param index_target  Index of the target vertex
  * 
  * @note - If the graph is NULL or the indices are out of range, returns 0.
- * @note - Asymptotic Complexity: Linear, O(n)
+ * @note - Asymptotic Complexity: Constant, O(1)
  * 
  * @return 1 if the edge exists, else 0.
  */
