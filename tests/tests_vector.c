@@ -20,6 +20,13 @@ inline static void print_sizet_vec(vec_t *vector)
     printf("\n");
 }
 
+typedef struct test_struct {
+    int x;
+    size_t y;
+    char z;
+} test_struct_t;
+
+
 static int test_vec_destroy_null(void)
 {
     printf("%-40s", "test_vec_destroy (null) ");
@@ -40,6 +47,94 @@ static int test_vec_new(void)
     assert(vector->len == 0);
     assert(vector->capacity == VEC_DEFAULT_CAPACITY);
     assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_with_capacity(void)
+{
+    printf("%-40s", "test_vec_with_capacity ");
+
+    vec_t *vector = vec_with_capacity(100);
+
+    assert(vector);
+    assert(vector->len == 0);
+    assert(vector->capacity == 100);
+    assert(vector->base_capacity == 100);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_fit(void)
+{
+    printf("%-40s", "test_vec_fit ");
+
+    vec_t *vector = vec_fit(100);
+
+    assert(vector);
+    assert(vector->len == 0);
+    assert(vector->capacity == 128);
+    assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_from_arr(void)
+{
+    printf("%-40s", "test_vec_from_arr ");
+
+    test_struct_t *array = calloc(129, sizeof(test_struct_t));
+
+    for (size_t i = 0; i < 129; ++i) {
+        test_struct_t structure = { .x = i, .y = i * 12084, .z = 'x' };
+        array[i] = structure;
+    }
+
+    vec_t *vector = vec_from_arr(array, 129, sizeof(test_struct_t));
+    free(array);
+
+    assert(vector);
+    assert(vector->len == 129);
+    assert(vector->capacity == 256);
+    assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    for (size_t i = 0; i < 129; ++i) {
+        assert(((test_struct_t *) vector->items[i])->x == (int) i);
+        assert(((test_struct_t *) vector->items[i])->y == i * 12084);
+        assert(((test_struct_t *) vector->items[i])->z == 'x');
+    }
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
+static int test_vec_fill(void)
+{
+    printf("%-40s", "test_vec_fill ");
+
+    size_t value = 874;
+
+    vec_t *vector = vec_fill(&value, 100, sizeof(size_t));
+
+    assert(vector);
+    assert(vector->len == 100);
+    assert(vector->capacity == 128);
+    assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    for (size_t i = 0; i < 100; ++i) {
+        assert(*(size_t *) vector->items[i] == value);
+    }
 
     vec_destroy(vector);
 
@@ -113,14 +208,9 @@ static int test_vec_get_invalid(void)
 static int test_vec_insert(void)
 {
     printf("%-40s", "test_vec_insert ");
-
-    vec_t *vector = vec_new();
-
     int data[5] = {1, 2, 3, 4, 5};
 
-    for (size_t i = 0; i < 5; ++i) {
-        vec_push(vector, &data[i], sizeof(int));
-    }
+    vec_t *vector = vec_from_arr(data, 5, sizeof(int));
 
     int inserted[5] = {10, 20, 30, 40, 50};
     
@@ -1434,6 +1524,42 @@ static int test_vec_find(void)
     return 0;
 }
 
+static int test_vec_contains(void)
+{
+    printf("%-40s", "test_vec_contains ");
+
+    size_t search[] = {9, 1, 5, 3, 19};
+
+    // search in non-existent vector
+    assert(!vec_contains(NULL, test_equality_function, &search[0]));
+
+    vec_t *vector = vec_new();
+
+    // search in an empty vector
+    assert(!vec_contains(vector, test_equality_function, &search[0]));
+
+    size_t data[] = {9, 3, 2, 0, 5, 5, 4, 6, 3, 1};
+
+    for (size_t i = 0; i < 10; ++i) {
+        vec_push(vector, &data[i], sizeof(size_t));
+    }
+
+    // find item at the beginning of vector
+    assert(vec_contains(vector, test_equality_function, &search[0]));
+    // find item at the end of vector
+    assert(vec_contains(vector, test_equality_function, &search[1]));
+    // find first of many items
+    assert(vec_contains(vector, test_equality_function, &search[2]));
+    assert(vec_contains(vector, test_equality_function, &search[3]));
+    // search for non-existent item
+    assert(!vec_contains(vector, test_equality_function, &search[4]));
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_vec_find_remove(void)
 {
     printf("%-40s", "test_vec_find_remove ");
@@ -2347,6 +2473,11 @@ int main(void)
 
     test_vec_destroy_null();
     test_vec_new();
+    test_vec_with_capacity();
+    test_vec_fit();
+    test_vec_from_arr();
+    test_vec_fill();
+
     test_vec_push();
     test_vec_push_invalid();
 
@@ -2390,6 +2521,7 @@ int main(void)
     test_vec_filter_complex();
 
     test_vec_find();
+    test_vec_contains();
     test_vec_find_remove();
     test_vec_find_bsearch();
     test_vec_find_min();

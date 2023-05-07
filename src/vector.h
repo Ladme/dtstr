@@ -37,10 +37,55 @@ vec_t *vec_new(void);
  * 
  * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
  * @note - The vector will never shrink below the specified `base_capacity`.
+ * @note - If you want the vector to be able to shrink below the specified `base_capacity`, use `vec_fit`.
  * 
  * @return A pointer to the newly created `vec_t` structure if successful; otherwise, NULL.
  */
 vec_t *vec_with_capacity(const size_t base_capacity);
+
+
+/** 
+ * @brief Creates a new vector that fits `n_items` items while also having the default `base capacity`. 
+ * 
+ * @param items     The number of items that should fit into vector without preallocating.
+ * 
+ * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
+ * @note - If all the items are removed from vector created by this function, 
+ *         the vector's capacity will decrease to `VEC_DEFAULT_CAPACITY`.
+ * 
+ * @return A pointer to the newly created vector, or NULL if memory allocation fails. 
+ */
+vec_t *vec_fit(const size_t n_items);
+
+
+/**
+ * @brief Creates a new vector and populates it with items from an array.
+ *
+ * @param array      The array containing the items to be copied into the vector.
+ * @param n_items    The number of items in the array.
+ * @param itemsize   The size of each item in bytes.
+ *
+ * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
+ * @note - The `base_capacity` of the vector is `VEC_DEFAULT_CAPACITY` items.
+ * 
+ * @return A pointer to the newly created vector, or NULL if memory allocation fails.
+ */
+vec_t *vec_from_arr(const void *array, const size_t n_items, const size_t itemsize);
+
+
+/**
+ * @brief Creates a new vector and fills it with copies of a given value.
+ *
+ * @param value    The value to be copied and stored in each element of the vector.
+ * @param n_items  The number of items to be inserted into the vector.
+ * @param itemsize The size of each item in bytes.
+ * 
+ * @note - To release the memory allocated for `vec_t`, use the `vec_destroy` function.
+ * @note - The `base_capacity` of the vector is `VEC_DEFAULT_CAPACITY` items.
+ * 
+ * @return A pointer to the newly created and filled vector, or NULL if memory allocation fails.
+ */
+vec_t *vec_fill(const void *value, const size_t n_items, const size_t itemsize);
 
 
 /**
@@ -253,12 +298,13 @@ vec_t *vec_cat(const vec_t *vector1, const vec_t *vector2, const size_t itemsize
  */
 size_t vec_len(const vec_t *vector);
 
+
 /**
  * @brief Clears all elements of a vector and resets its length to zero.
  * 
  * @param vector    A pointer to the vector to be cleared.
  * 
- * @note - All pointers in the vector are set to NULL.
+ * @note - All pointers in the vector are set to NULL but the vector keeps its original capacity.
  * @note - If the vector is NULL, does nothing.
  */
 void vec_clear(vec_t *vector);
@@ -277,7 +323,6 @@ void vec_clear(vec_t *vector);
  * If it returns zero, the item is removed from the vector.
  * 
  * @note - This operation modifies the input vector.
- * 
  * @note - The asymptotic complexity of this operation is quadratic, O(n^2). 
  * This operation is expensive. It might be better to use the vec_filter function.
  * 
@@ -300,11 +345,8 @@ size_t vec_filter_mut(vec_t *vector, int (*filter_function)(const void *));
  * If it returns zero, the item is excluded from the output vector.
  * 
  * @note - If 'vector' is NULL, NULL is returned.
- * 
  * @note - This function maintains the order of items from the original vector.
- * 
  * @note - The caller is responsible for properly deallocating memory for the returned `vec_t` structure (use `vec_destroy` function).
- * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
  * @return Pointer to `vec_t` structure with items fulfilling the filtering condition. NULL if unsuccessful.
@@ -312,6 +354,27 @@ size_t vec_filter_mut(vec_t *vector, int (*filter_function)(const void *));
 vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), const size_t itemsize);
 
 
+/** 
+ * @brief Checks whether an item exists in a vector.
+ * 
+ * @param vector            The vector to search in
+ * @param equal_function    The function pointer defining how the items should be compared
+ * @param target            The pointer to the data that is being searched for in the vector
+ * 
+ * @note
+ * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
+ * The first void pointer corresponds to the pointer to the data at a particular index, and the second void 
+ * pointer is the pointer to the data that is being searched for in the vector.
+ * 
+ * The equality function should return a value greater than 0 (true) if the two compared items match each other.
+ * The equality function should return 0 (false) if the two compared items do not match each other.
+ * 
+ * @note - If the input vector is NULL, this function returns 0.
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return One (true) if the item exists, else zero.
+ */
+int vec_contains(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
 
 /** 
  * @brief Searches for an item in the vector and returns pointer to the item.
@@ -334,11 +397,8 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  * The equality function should return 0 (false) if the two compared items do not match each other.
  * 
  * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
- * 
  * @note - The function always returns pointer to the first matching item in the vector (with the lowest index).
- * 
  * @note - The returned pointer is no longer valid once the parent vector is destroyed.
- * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
  * @return Void pointer to the first matching item. NULL if unsuccessful.
@@ -362,11 +422,8 @@ void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const vo
  * The equality function should return 0 (false) if the two compared items do not match each other.
  * 
  * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
- * 
  * @note - The function always removes the first matching item in the vector (with the lowest index).
- * 
  * @note - The caller is responsible for properly deallocating memory for the removed item.
- * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
  * @return Void pointer to the removed item. NULL if no such item found or vector is NULL.
@@ -391,11 +448,8 @@ void *vec_find_remove(vec_t *vector, int (*equal_function)(const void *, const v
  * It should return <0, if the first of the two compared items is smaller.
  * 
  * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns NULL.
- * 
  * @note - The function always returns pointer to the first matching item in the vector (with the lowest index).
- * 
  * @note - The returned pointer is no longer valid once the parent vector is destroyed.
- * 
  * @note - Asymptotic Complexity: Logarithmic, O(log n).
  * 
  * @return Void pointer to the first matching item. NULL if unsuccessful.
@@ -420,7 +474,6 @@ void *vec_find_bsearch(const vec_t *vector, int (*compare_function)(const void *
  * 
  * @note - If there are multiple items with the same value that is the minimum value in the vector, 
  * the function will return pointer to the first occurrence of that value in the vector.
- * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
  * @return Pointer to the minimum item in the vector. NULL if this fails.
@@ -445,7 +498,6 @@ void *vec_find_min(const vec_t *vector, int (*compare_function)(const void *, co
  * 
  * @note - If there are multiple items with the same value that is the maximum value in the vector, 
  * the function will return pointer to the first occurrence of that value in the vector.
- * 
  * @note - Asymptotic Complexity: Linear, O(n).
  * 
  * @return Pointer to the maximum item in the vector. NULL if this fails.

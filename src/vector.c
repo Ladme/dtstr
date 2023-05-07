@@ -60,21 +60,6 @@ static inline void vec_swap(vec_t *vector, const size_t i, const size_t j)
     vector->items[j] = tmp;
 }
 
-/** @brief Creates vector that fits `items` items while also having the default base capacity. 
- * Returns pointer to vector or NULL if memory allocation fails. 
- */
-static vec_t *vec_fit(const size_t items)
-{
-    size_t allocated = VEC_DEFAULT_CAPACITY;
-    while (allocated < items) allocated <<= 1;
-
-    vec_t *vector = vec_with_capacity(allocated);
-    if (vector == NULL) return NULL;
-    vector->base_capacity = VEC_DEFAULT_CAPACITY;
-
-    return vector;
-}
-
 /* *************************************************************************** */
 /*                 PUBLIC FUNCTIONS ASSOCIATED WITH VEC_T                      */
 /* *************************************************************************** */
@@ -98,6 +83,46 @@ vec_t *vec_with_capacity(const size_t base_capacity)
     vector->capacity = base_capacity;
     vector->base_capacity = base_capacity;
 
+    return vector;
+}
+
+vec_t *vec_fit(const size_t n_items)
+{
+    size_t allocated = VEC_DEFAULT_CAPACITY;
+    while (allocated < n_items) allocated <<= 1;
+
+    vec_t *vector = vec_with_capacity(allocated);
+    if (vector == NULL) return NULL;
+    vector->base_capacity = VEC_DEFAULT_CAPACITY;
+
+    return vector;
+}
+
+vec_t *vec_from_arr(const void *array, const size_t n_items, const size_t itemsize)
+{
+    vec_t *vector = vec_fit(n_items);
+
+    char *byte_arr = (char *) array;
+
+    for (size_t i = 0; i < n_items; ++i) {
+        vector->items[i] = malloc(itemsize);
+        memcpy(vector->items[i], byte_arr + (i * itemsize), itemsize);
+    }
+
+    vector->len = n_items;
+    return vector;
+}
+
+vec_t *vec_fill(const void *value, const size_t n_items, const size_t itemsize)
+{
+    vec_t *vector = vec_fit(n_items);
+
+    for (size_t i = 0; i < n_items; ++i) {
+        vector->items[i] = malloc(itemsize);
+        memcpy(vector->items[i], value, itemsize);
+    }
+
+    vector->len = n_items;
     return vector;
 }
 
@@ -359,6 +384,11 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
     }
 
     return filtered;
+}
+
+int vec_contains(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target)
+{
+    return vec_find(vector, equal_function, target) ? 1 : 0;
 }
 
 
