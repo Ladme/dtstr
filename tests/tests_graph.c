@@ -761,6 +761,31 @@ static graphs_t *create_graphs_representative(void)
     return graph;
 }
 
+static graphs_t *create_graphs_representative_weighted(void)
+{
+    graphs_t *graph = graphs_new();
+
+    for (int i = 0; i < 9; ++i) {
+        graphs_vertex_add(graph, &i, sizeof(int));
+    }
+
+    graphs_edge_add(graph, 0, 1, 5);
+    graphs_edge_add(graph, 1, 0, 1);
+    graphs_edge_add(graph, 1, 2, 3);
+    graphs_edge_add(graph, 2, 1, 4);
+    graphs_edge_add(graph, 2, 2, 1);
+    graphs_edge_add(graph, 1, 4, 2);
+    graphs_edge_add(graph, 5, 2, 3);
+    graphs_edge_add(graph, 2, 5, 2);
+    graphs_edge_add(graph, 4, 3, 1);
+    graphs_edge_add(graph, 4, 5, 6);
+    graphs_edge_add(graph, 4, 7, 3);
+    graphs_edge_add(graph, 7, 4, 4);
+    graphs_edge_add(graph, 8, 5, 2);
+
+    return graph;
+}
+
 static int test_graphs_destroy_nonexistent(void)
 {
     printf("%-40s", "test_graphs_destroy (nonexistent) ");
@@ -1443,6 +1468,76 @@ static int test_graphs_vertex_map_dfs(void)
     return 0;
 }
 
+static int test_graphs_bellman_ford(void)
+{
+    printf("%-40s", "test_graphs_bellman_ford ");
+
+    vec_t *path = NULL;
+
+    assert(graphs_bellman_ford(NULL, 0, 1, &path) == INT_MAX);
+
+    graphs_t *graph = create_graphs_representative_weighted();
+
+    // one pathway
+    int distance = graphs_bellman_ford(graph, 0, 7, &path);
+
+    assert(distance == 10);
+    assert(path->len == 4);
+    assert(*((void **) path->items[0]) == graph->vertices->items[0]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[1]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[4]);
+    assert(*((void **) path->items[3]) == graph->vertices->items[7]);
+
+    vec_destroy(path);
+
+    // two pathways
+    distance = graphs_bellman_ford(graph, 1, 5, &path);
+    assert(distance == 5);
+    assert(path->len == 3);
+    assert(*((void **) path->items[0]) == graph->vertices->items[1]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[2]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[5]);
+
+    vec_destroy(path);
+
+    // no pathway (long)
+    distance = graphs_bellman_ford(graph, 0, 8, &path);
+    assert(distance == INT_MAX);
+    assert(path == NULL);
+
+    // no pathway (simple)
+    distance = graphs_bellman_ford(graph, 6, 3, &path);
+    assert(distance == INT_MAX);
+    assert(path == NULL);
+
+    // source == target
+    distance = graphs_bellman_ford(graph, 2, 2, &path);
+    assert(distance == 0);
+    assert(path->len == 1);
+    assert(*((void **) path->items[0]) == graph->vertices->items[2]);
+
+    vec_destroy(path); 
+
+    // 7 to 0
+    distance = graphs_bellman_ford(graph, 7, 0, &path);
+
+    assert(distance == 18);
+    assert(path->len == 6);
+    assert(*((void **) path->items[0]) == graph->vertices->items[7]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[4]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[5]);
+    assert(*((void **) path->items[3]) == graph->vertices->items[2]);
+    assert(*((void **) path->items[4]) == graph->vertices->items[1]);
+    assert(*((void **) path->items[5]) == graph->vertices->items[0]);
+
+    vec_destroy(path);
+
+    graphs_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 int main(void) 
 {
@@ -1489,6 +1584,8 @@ int main(void)
     test_graphs_vertex_map();
     test_graphs_vertex_map_bfs();
     test_graphs_vertex_map_dfs();
+
+    test_graphs_bellman_ford();
 
 
     return 0;

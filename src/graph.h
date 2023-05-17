@@ -309,7 +309,6 @@ typedef struct graph_sparse {
 /** @brief Default capacity used for vertices and edges (sparse graph). */
 #define GRAPHS_DEFAULT_CAPACITY 16UL
 
-
 /** 
  * @brief Creates new `graphs_t` structure and allocates memory for it.
  * 
@@ -520,5 +519,13 @@ size_t graphs_vertex_map_dfs(
         const size_t index, 
         void (*function)(void *, void *), 
         void *pointer);
+
+
+
+int graphs_bellman_ford(
+        const graphs_t *graph, 
+        const size_t vertex_src, 
+        const size_t vertex_tar,
+        vec_t **path);
 
 #endif /* GRAPH_H */

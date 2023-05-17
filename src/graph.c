@@ -393,7 +393,7 @@ static int edges_match(const void *edge1, const void *edge2)
     return ((edges_t *) edge1)->vertex_tar  == ((edges_t *) edge2)->vertex_tar;
 }
 
-/** @brief Hash selection for edges. Uses as hashable for adjacency list. */
+/** @brief Hash selection for edges. Used as hashable for adjacency list. */
 static const void *edges_hash(const void *edge)
 {
     return (void *) &(((edges_t *) edge)->vertex_tar);
@@ -405,6 +405,64 @@ static void extract_successors(void *item, void *wrapped_vec)
     vec_t *successors = (vec_t *) wrapped_vec;
 
     vec_push(successors, &(edge->vertex_tar), sizeof(void *));
+}
+
+/* PRIVATE FUNCTIONS FOR PATH ALGORITHMS */
+
+/** @brief Key-value entry where key is a pointer to vertex and value is the index of the corresponding vertex. */
+typedef struct vertex_index {
+    void *vertex;
+    size_t index;
+} vertex_index_t;
+
+/** @brief `hashable` function for vertex_index. */
+static const void *hash_vertex(const void *item)
+{
+    vertex_index_t *vertex_index = (vertex_index_t *) item;
+
+    return &(vertex_index->vertex);
+}
+
+/** @brief Equality function for vertex_index. */
+static int vertex_equal(const void *item1, const void *item2)
+{
+    vertex_index_t *vertex_index1 = (vertex_index_t *) item1;
+    vertex_index_t *vertex_index2 = (vertex_index_t *) item2;
+
+    return vertex_index1->vertex == vertex_index2->vertex;
+}
+
+/** @brief Performs one relaxation cycle for Bellman-Ford algorithm. Returns 1 if any distance has been updated, else returns 0. */
+static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *vertex_index, int *distances, void **previous)
+{
+    int updated = 0;
+
+    for (size_t index_src = 0; index_src < graph->vertices->len; ++index_src) {
+        vec_t *adjacent = graphs_vertex_successors(graph, index_src);
+        for (size_t j = 0; j < adjacent->len; ++j) {
+
+            void *target = *((void **) adjacent->items[j]);
+
+            // get index of the target vertex
+            vertex_index_t search = { .vertex = target, .index = 0 };
+            vertex_index_t *item = (vertex_index_t *) set_get(vertex_index, &search, sizeof(void *));
+            
+            size_t index_tar = item->index;
+
+            edges_t *edge = edges_get(graph, index_src, index_tar);
+
+            if (distances[index_src] < INT_MAX && distances[index_tar] > distances[index_src] + edge->weight) {
+                distances[index_tar] = distances[index_src] + edge->weight;
+                previous[index_tar] = graph->vertices->items[index_src];
+                updated = 1;
+            }
+
+        }
+
+        vec_destroy(adjacent);
+    }
+
+    return updated;
 }
 
 /* *************************************************************************** */
@@ -633,4 +691,83 @@ size_t graphs_vertex_map_dfs(
     vec_destroy(stack);
 
     return n_visited;
+}
+
+int graphs_bellman_ford(
+        const graphs_t *graph, 
+        const size_t vertex_src, 
+        const size_t vertex_tar,
+        vec_t **path)
+{   
+    if (graph == NULL) return INT_MAX;
+
+    if (vertex_src == vertex_tar) {
+        *path = vec_new();
+        vec_push(*path, &(graph->vertices->items[vertex_tar]), sizeof(void *));
+        return 0;
+    }
+
+    // dictionary for converting between pointers to vertices and their indices
+    set_t *vertex_index = set_with_capacity(graph->vertices->len, vertex_equal, hash_vertex);
+
+    for (size_t i = 0; i < graph->vertices->len; ++i) {
+        vertex_index_t item = { .vertex = graph->vertices->items[i], .index = i };
+        set_add(vertex_index, &item, sizeof(vertex_index_t), sizeof(void *));
+    }
+
+    // array of distances for each vertex
+    int *distances = malloc(graph->vertices->len * sizeof(int));
+    for (size_t i = 0; i < graph->vertices->len; ++i) distances[i] = INT_MAX;
+
+    // previous vertex for each vertex
+    void **previous = calloc(graph->vertices->len, sizeof(void *));
+
+    distances[vertex_src] = 0;
+
+    for (size_t n = 0; n < graph->vertices->len; ++n) {
+        // if no distance has been updated, skip to the end of the function
+        if (!graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) goto skip;
+    }
+
+    // check for negative cycles
+    if (graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) return INT_MAX;
+
+    skip:
+
+
+    if (distances[vertex_tar] == INT_MAX) {
+        *path = NULL;
+        free(distances);
+        free(previous);
+        set_destroy(vertex_index);
+        return INT_MAX;
+    }
+    
+    *path = vec_new();
+
+    vec_push(*path, &(graph->vertices->items[vertex_tar]), sizeof(void *));
+
+    void *curr = previous[vertex_tar];
+    while (curr != NULL) {
+        vec_push(*path, &curr, sizeof(void *));
+
+        // get index of the target vertex
+        vertex_index_t search = { .vertex = curr, .index = 0 };
+        vertex_index_t *item = (vertex_index_t *) set_get(vertex_index, &search, sizeof(void *));
+        
+        size_t index_tar = item->index;
+
+        curr = previous[index_tar];
+    }
+
+    vec_reverse(*path);
+
+    free(previous);
+    set_destroy(vertex_index);
+
+    int fdistance = distances[vertex_tar];
+
+    free(distances);
+
+    return fdistance;
 }
