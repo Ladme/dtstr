@@ -699,7 +699,7 @@ int graphs_bellman_ford(
         const size_t vertex_tar,
         vec_t **path)
 {   
-    if (graph == NULL) return INT_MAX;
+    if (graph == NULL || !graphs_index_valid(graph, vertex_src) || !graphs_index_valid(graph, vertex_tar)) return -1;
 
     if (vertex_src == vertex_tar) {
         *path = vec_new();
@@ -730,17 +730,22 @@ int graphs_bellman_ford(
     }
 
     // check for negative cycles
-    if (graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) return INT_MAX;
+    if (graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) {
+        *path = NULL;
+        free(distances);
+        free(previous);
+        set_destroy(vertex_index);
+        return -1;
+    }
 
     skip:
-
 
     if (distances[vertex_tar] == INT_MAX) {
         *path = NULL;
         free(distances);
         free(previous);
         set_destroy(vertex_index);
-        return INT_MAX;
+        return -1;
     }
     
     *path = vec_new();

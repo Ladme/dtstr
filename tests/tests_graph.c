@@ -1474,9 +1474,14 @@ static int test_graphs_bellman_ford(void)
 
     vec_t *path = NULL;
 
-    assert(graphs_bellman_ford(NULL, 0, 1, &path) == INT_MAX);
+    // vector is NULL
+    assert(graphs_bellman_ford(NULL, 0, 1, &path) == -1);
 
     graphs_t *graph = create_graphs_representative_weighted();
+
+    // index is out of range
+    assert(graphs_bellman_ford(graph, 0, 10, &path) == -1);
+    assert(graphs_bellman_ford(graph, 12, 1, &path) == -1);
 
     // one pathway
     int distance = graphs_bellman_ford(graph, 0, 7, &path);
@@ -1502,12 +1507,12 @@ static int test_graphs_bellman_ford(void)
 
     // no pathway (long)
     distance = graphs_bellman_ford(graph, 0, 8, &path);
-    assert(distance == INT_MAX);
+    assert(distance == -1);
     assert(path == NULL);
 
     // no pathway (simple)
     distance = graphs_bellman_ford(graph, 6, 3, &path);
-    assert(distance == INT_MAX);
+    assert(distance == -1);
     assert(path == NULL);
 
     // source == target
@@ -1531,6 +1536,14 @@ static int test_graphs_bellman_ford(void)
     assert(*((void **) path->items[5]) == graph->vertices->items[0]);
 
     vec_destroy(path);
+
+
+    // introduce a negative loop
+    graphs_edge_add(graph, 3, 0, -92);
+    
+    distance = graphs_bellman_ford(graph, 0, 7, &path);
+    assert(distance == -1);
+    assert(path == NULL);
 
     graphs_destroy(graph);
 

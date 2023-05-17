@@ -521,7 +521,30 @@ size_t graphs_vertex_map_dfs(
         void *pointer);
 
 
-
+/**
+ * @brief Finds path between two vertices in a graph and allocates and sets `path` vector.
+ *
+ * @param graph         The graph to perform the search on.
+ * @param vertex_src    Index of the vertex to start on.
+ * @param vertex_tar    Index of the vertex to reach.
+ * @param path          Pointer to which the path between vertex_src and vertex_tar should be stored.
+ * 
+ * @return The distance between `vertex_src` and `vertex_tar`.
+ * 
+ * @note - If the graph is NULL or the indices are invalid, returns -1 and sets `path` to NULL.
+ * @note - If the path between the vertices does not exists, returns -1 and sets `path` to NULL.
+ * @note - If negative loop is detected, returns -1 and sets `path` to NULL.
+ * 
+ * @note - If path is successfully found, memory is allocated for a `path` vector.
+ *         This vector then contains pointers to the vertices in the graph that must be visited
+ *         to reach `vertex_tar` from `vertex_src`.
+ * @note - The path starts with `vertex_src` and ends with `vertex_tar`. The `path` vector is only
+ *         valid while the graph exists as it contains void pointers to void pointers in the graph.
+ * @note - The caller is responsible for deallocating memory for the `path` vector by calling `vec_destroy`.
+ * 
+ * @note - The total distance between any of the vertices must be lower than INT_MAX. INT_MAX is treated
+ *         as infinity.
+ */
 int graphs_bellman_ford(
         const graphs_t *graph, 
         const size_t vertex_src, 
