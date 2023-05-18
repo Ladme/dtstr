@@ -1,5 +1,5 @@
-structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o src/matrix.o src/set.o src/graph.o
-	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o src/matrix.o src/set.o src/graph.o
+structures: src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o src/matrix.o src/set.o src/graph.o src/converter.o
+	ar -rcs libdtstr.a src/vector.o src/vector_sort.o src/linked_list.o src/dlinked_list.o src/clinked_list.o src/dictionary.o src/alist.o src/cbuffer.o src/queue.o src/avl_tree.o src/heap.o src/str.o src/matrix.o src/set.o src/graph.o src/converter.o
 	
 vector: src/vector.c src/vector.h
 	gcc -c src/vector.c -std=c99 -pedantic -Wall -Wextra -O2 -o src/vector.o
@@ -47,7 +47,10 @@ set: src/set.c src/set.h
 graph: src/graph.c src/graph.h
 	gcc -c src/graph.c -std=c99 -pedantic -Wall -Wextra -O2 -o src/graph.o
 
-tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c tests/tests_alist.c tests/tests_heap.c tests/tests_str.c tests/tests_matrix.c tests/tests_set.c tests/tests_graph.c libdtstr.a
+converter: src/converter.c src/converter.h
+	gcc -c src/converter.c -std=c99 -pedantic -Wall -Wextra -O2 src/converter.o
+
+tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c tests/tests_clinked_list.c tests/tests_dictionary.c tests/tests_cbuffer.c tests/tests_queue.c tests/tests_avl_tree.c tests/tests_alist.c tests/tests_heap.c tests/tests_str.c tests/tests_matrix.c tests/tests_set.c tests/tests_graph.c tests/tests_converter.c libdtstr.a
 	make tests_vector
 	make tests_linked_list
 	make tests_dlinked_list
@@ -62,6 +65,7 @@ tests: tests/tests_vector.c tests/tests_linked_list.c tests/tests_dlinked_list.c
 	make tests_matrix
 	make tests_set
 	make tests_graph
+	make tests_converter
 
 tests_vector: tests/tests_vector.c src/vector.o
 	gcc tests/tests_vector.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_vector
@@ -104,6 +108,9 @@ tests_set: tests/tests_set.c src/set.o
 
 tests_graph: tests/tests_graph.c src/graph.o
 	gcc tests/tests_graph.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_graph
+
+tests_converter: tests/tests_converter.c src/converter.o
+	gcc tests/tests_converter.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_converter
 
 benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c benchmarks/benchmarks_set.c libdtstr.a
 	make benchmarks_vector
