@@ -52,6 +52,23 @@ matrix_t *matrix_new(void);
 matrix_t *matrix_with_capacity(const size_t capacity_rows, const size_t capacity_cols);
 
 
+/** 
+ * @brief Creates a new `matrix_t` structure that fits `n_rows` rows and `n_cols` columns while also having the default base capacity. 
+ * 
+ * @param n_rows        The number of rows that can be filled without reallocating.
+ * @param n_cols        Number of columns in each row that can be filled without reallocating.
+ * 
+ * @note - To release the memory allocated for `matrix_t`, use the `matrix_destroy` function.
+ * @note - If all the items are removed from matrix created by this function, 
+ *         the matrix's capacity will decrease to the default capacity. 
+ * 
+ * @warning MATRIX SHRINKING IS CURRENTLY NOT IMPLEMENTED < TODO
+ * 
+ * @return A pointer to the newly created matrix, or NULL if memory allocation fails. 
+ */
+matrix_t *matrix_fit(const size_t n_rows, const size_t n_cols);
+
+
 /**
  * @brief Properly deallocates memory for the given `matrix` and destroys the `matrix_t` structure.
  *

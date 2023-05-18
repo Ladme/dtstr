@@ -116,6 +116,21 @@ matrix_t *matrix_with_capacity(const size_t capacity_rows, const size_t capacity
     return matrix;
 }
 
+matrix_t *matrix_fit(const size_t n_rows, const size_t n_cols)
+{
+    size_t allocated_rows = MATRIX_DEFAULT_CAPACITY_ROWS;
+    while (allocated_rows < n_rows) allocated_rows <<= 1;
+
+    size_t allocated_cols = MATRIX_DEFAULT_CAPACITY_COLS;
+    while (allocated_cols < n_cols) allocated_cols <<= 1;
+
+    matrix_t *matrix = matrix_with_capacity(allocated_rows, allocated_cols);
+    matrix->base_capacity_rows = MATRIX_DEFAULT_CAPACITY_ROWS;
+    matrix->base_capacity_cols = MATRIX_DEFAULT_CAPACITY_COLS;
+
+    return matrix;   
+}
+
 void matrix_destroy(matrix_t *matrix)
 {
     if (matrix == NULL) return;

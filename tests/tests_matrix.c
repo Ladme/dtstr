@@ -105,6 +105,31 @@ static int test_matrix_with_capacity(void)
     return 0;
 }
 
+static int test_matrix_fit(void)
+{
+    printf("%-40s", "test_matrix_fit ");
+
+    matrix_t *matrix = matrix_fit(60, 18);
+
+    assert(matrix);
+    assert(matrix->len == 0);
+    assert(matrix->n_rows == 0);
+    for (size_t i = 0; i < 64; ++i) {
+        assert(matrix->n_cols[i] == 0);
+    }
+
+    assert(matrix->base_capacity_cols == 8);
+    assert(matrix->base_capacity_rows == 8);
+    assert(matrix->capacity_cols == 32);
+    assert(matrix->capacity_rows == 64);
+
+    matrix_destroy(matrix);
+
+    printf("OK\n");
+    return 0;
+
+}
+
 static int test_matrix_push_small(void) 
 {
     printf("%-40s", "test_matrix_push (small) ");
@@ -541,6 +566,7 @@ int main(void)
     test_matrix_destroy_null();
     test_matrix_new();
     test_matrix_with_capacity();
+    test_matrix_fit();
 
     test_matrix_push_small();
     test_matrix_push_addcols();

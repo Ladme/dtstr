@@ -18,7 +18,7 @@ static int test_str2matrix_integers(void)
     printf("%-40s", "test_str2matrix (integer) ");
 
     char string_matrix[] = "1,2,3,4,5\n6,7\n8\n9,10,11,12,13,14,15,16,17,18,19,20,21,22\nx\n23,24,25";
-    matrix_t *matrix = str2matrix(string_matrix, "\n", ",", str2matrix_convert_int);
+    matrix_t *matrix = str2matrix(string_matrix, "\n", ",", str_convert_int);
 
     assert(matrix);
     assert(matrix->len == 25);
@@ -63,12 +63,27 @@ static int test_str2matrix_integers(void)
     return 0;    
 }
 
+static int test_str2matrix_integers_empty(void)
+{
+    printf("%-40s", "test_str2matrix (integer, empty) ");
+
+    char string_matrix[] = "";
+    matrix_t *matrix = str2matrix(string_matrix, "\n", ",", str_convert_int);
+
+    assert(matrix);
+    assert(matrix->len == 0);
+
+    matrix_destroy(matrix);
+    printf("OK\n");
+    return 0;    
+}
+
 static int test_str2matrix_floats(void)
 {
     printf("%-40s", "test_str2matrix (float) ");
 
     char string_matrix[] = "1.0 2.2 3.5 4.3 5.1\n6.9 7.8\n8.3\n9.01 10.02 11.03 12.04 13.05 14.06 15.07 16.08 17.09 18.1 19.11 20.12 21.13 22.14\nx\n23.5 24.5 25.0";
-    matrix_t *matrix = str2matrix(string_matrix, "\n", " ", str2matrix_convert_float);
+    matrix_t *matrix = str2matrix(string_matrix, "\n", " ", str_convert_float);
     
     assert(matrix);
     assert(matrix->len == 25);
@@ -118,7 +133,7 @@ static int test_str2matrix_sizet(void)
     printf("%-40s", "test_str2matrix (size_t) ");
 
     char string_matrix[] = "1 2 3 4 5|6 7|8|9 10 11 12 13 14 15 16 17 18 19 20 21 22|x|23 24 25";
-    matrix_t *matrix = str2matrix(string_matrix, "|", " ", str2matrix_convert_sizet);
+    matrix_t *matrix = str2matrix(string_matrix, "|", " ", str_convert_sizet);
 
     assert(matrix);
     assert(matrix->len == 25);
@@ -168,7 +183,7 @@ static int test_str2matrix_strings(void)
     printf("%-40s", "test_str2matrix (string) ");
 
     char string_matrix[] = "r1c1 r1c2 r1c3, r2c1,r3c1 r3c2";
-    matrix_t *matrix = str2matrix(string_matrix, ",", " ", str2matrix_convert_string);
+    matrix_t *matrix = str2matrix(string_matrix, ",", " ", str_convert_string);
 
     assert(matrix);
     assert(matrix->len == 6);
@@ -251,7 +266,7 @@ static int test_str2matrix_chars(void)
     printf("%-40s", "test_str2matrix (char) ");
 
     char string_matrix[] = "abcdef|ghi|jk|lmnopqrstuvw|xyz";
-    matrix_t *matrix = str2matrix(string_matrix, "|", "", str2matrix_convert_char);
+    matrix_t *matrix = str2matrix(string_matrix, "|", "", str_convert_char);
 
     test_str2matrix_chars_check(matrix);
 
@@ -265,7 +280,7 @@ static int test_str2matrix_chars_spaces(void)
     printf("%-40s", "test_str2matrix (char, spaces) ");
 
     char string_matrix[] = "a b c d e f| g h i |j k |l m n o p q r s t u v w| x y z";
-    matrix_t *matrix = str2matrix(string_matrix, "|", " ", str2matrix_convert_char);
+    matrix_t *matrix = str2matrix(string_matrix, "|", " ", str_convert_char);
 
     test_str2matrix_chars_check(matrix);
 
@@ -281,7 +296,7 @@ typedef struct person {
     float height;
 } person_t;
 
-static void *str2matrix_convert_person(const char *string) 
+static void *str_convert_person(const char *string) 
 { 
     vec_t *split = str_split(string, ":");
     if (!split || split->len != 4) {
@@ -338,7 +353,7 @@ static int test_str2matrix_structures(void)
 
     // person with name "Incorrect" will not be loaded because of incorrect format
     char string_matrix[] = "Mary:87252:65:163.4 Elizabeth:63252:36:171.5 Chris:65673:31:184.7\nJonathan:11432:22:179.5 Incorrect:x:22:179.5\nPatrick:65889:19:188.0 Julia:65552:21:153.2";
-    matrix_t *matrix = str2matrix(string_matrix, "\n", " ", str2matrix_convert_person);
+    matrix_t *matrix = str2matrix(string_matrix, "\n", " ", str_convert_person);
 
 
     assert(matrix);
@@ -393,15 +408,193 @@ static int test_str2matrix_structures(void)
     return 0;    
 }
 
+
+static int test_str2vec_integers(void)
+{
+    printf("%-40s", "test_str2vec (integer) ");
+
+    char string_vector[] = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25";
+    vec_t *vector = str2vec(string_vector, ",", str_convert_int);
+
+    assert(vector);
+    assert(vector->len == 25);
+
+    for (int i = 0; i < 25; ++i) {
+        assert(*(int *) vec_get(vector, i) == i + 1);
+    }
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_integers_empty(void)
+{
+    printf("%-40s", "test_str2vec (integer, empty) ");
+
+    char string_vector[] = "";
+    vec_t *vector = str2vec(string_vector, ",", str_convert_int);
+
+    assert(vector);
+    assert(vector->len == 0);
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_integers_fail(void)
+{
+    printf("%-40s", "test_str2vec (integer, fail) ");
+
+    char string_vector[] = "1,2,3,4,5,6,7,8,9,x,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25";
+    vec_t *vector = str2vec(string_vector, ",", str_convert_int);
+
+    assert(!vector);
+
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_floats(void)
+{
+    printf("%-40s", "test_str2vec (float) ");
+
+    char string_vector[] = "1.01:2.02:3.03:4.04:5.05:6.06:7.07:8.08:9.09:10.10:11.11:12.12:13.13:14.14:15.15:16.16:17.17:18.18:19.19:20.20:21.21:22.22:23.23:24.24:25.25";
+    vec_t *vector = str2vec(string_vector, ":", str_convert_float);
+
+    assert(vector);
+    assert(vector->len == 25);
+
+    for (int i = 0; i < 25; ++i) {
+        assert(closef(*(float *) vec_get(vector, i), (float) (i + 1) + ((float) (i + 1) / 100), 0.0001));
+    }
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_sizet(void)
+{
+    printf("%-40s", "test_str2vec (size_t) ");
+
+    char string_vector[] = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25";
+    vec_t *vector = str2vec(string_vector, "\n", str_convert_sizet);
+
+    assert(vector);
+    assert(vector->len == 25);
+
+    for (size_t i = 0; i < 25; ++i) {
+        assert(*(size_t *) vec_get(vector, i) == i + 1);
+    }
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_strings(void)
+{
+    printf("%-40s", "test_str2vec (string) ");
+
+    char string_vector[] = "string1 string2 string3 string4 string5 string6 string7 string8 string9";
+    vec_t *vector = str2vec(string_vector, " ", str_convert_string);
+
+    assert(vector);
+    assert(vector->len == 9);
+
+    for (size_t i = 0; i < 9; ++i) {
+        char expected[20] = "";
+        sprintf(expected, "string%lu", i + 1);
+
+        assert(strcmp(vec_get(vector, i), expected) == 0);
+    }
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_chars(void)
+{
+    printf("%-40s", "test_str2vec (char) ");
+
+    char string_vector[] = "abcdefghijklmnopqrstuvwxyz";
+    vec_t *vector = str2vec(string_vector, "", str_convert_char);
+
+    assert(vector);
+    assert(vector->len == 26);
+
+    vec_t *fragmented = str_fragmentize(string_vector);
+
+    for (size_t i = 0; i < 26; ++i) {
+        assert(*(char *) vec_get(vector, i) == *(char *) vec_get(fragmented, i));
+    }
+
+    vec_destroy(vector);
+    vec_destroy(fragmented);
+    printf("OK\n");
+    return 0;    
+}
+
+static int test_str2vec_structures(void)
+{
+    printf("%-40s", "test_str2vec (structure) ");
+
+    char string_vector[] = "Mary:87252:65:163.4 Elizabeth:63252:36:171.5 Chris:65673:31:184.7";
+    vec_t *vector = str2vec(string_vector, " ", str_convert_person);
+
+    assert(vector);
+    assert(vector->len == 3);
+
+    person_t *p1 = (person_t *) vec_get(vector, 0);
+    person_t *p2 = (person_t *) vec_get(vector, 1);
+    person_t *p3 = (person_t *) vec_get(vector, 2);
+
+    assert(strcmp(p1->name, "Mary") == 0);
+    assert(strcmp(p2->name, "Elizabeth") == 0);
+    assert(strcmp(p3->name, "Chris") == 0);
+
+    assert(p1->id == 87252);
+    assert(p2->id == 63252);
+    assert(p3->id == 65673);
+
+    assert(p1->age == 65);
+    assert(p2->age == 36);
+    assert(p3->age == 31);
+
+    assert(closef(p1->height, 163.4, 0.0001));
+    assert(closef(p2->height, 171.5, 0.0001));
+    assert(closef(p3->height, 184.7, 0.0001));
+
+    vec_map(vector, person_destroy_map, NULL);
+
+    vec_destroy(vector);
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void)
 {
     test_str2matrix_integers();
+    test_str2matrix_integers_empty();
     test_str2matrix_floats();
     test_str2matrix_sizet();
     test_str2matrix_strings();
     test_str2matrix_chars();
     test_str2matrix_chars_spaces();
     test_str2matrix_structures();
+
+    test_str2vec_integers();
+    test_str2vec_integers_empty();
+    test_str2vec_integers_fail();
+    test_str2vec_floats();
+    test_str2vec_sizet();
+    test_str2vec_strings();
+    test_str2vec_chars();
+    test_str2vec_structures();
 
     return 0;
 }
