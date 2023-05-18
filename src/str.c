@@ -14,7 +14,8 @@ vec_t *str_split(const char *string, const char *delim)
 
     if (string[0] == '\0') return vector;
 
-    char *parse = strdup(string);
+    char *parse = malloc(strlen(string) + 1);
+    strcpy(parse, string);
 
     // initialize strtok
     char *substring = NULL;
