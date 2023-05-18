@@ -376,6 +376,32 @@ vec_t *vec_filter(const vec_t *vector, int (*filter_function)(const void *), con
  */
 int vec_contains(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
 
+
+/**
+ * @brief Searches for an item in the vector and returns index of the item in the vector.
+ * 
+ * @param vector            The vector to search in
+ * @param equal_function    The function pointer defining how the items should be compared
+ * @param target            The pointer to the data that is being searched for in the vector
+ * 
+ * @note
+ * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
+ * The first void pointer corresponds to the pointer to the data at a particular index, and the second void 
+ * pointer is the pointer to the data that is being searched for in the vector.
+ * 
+ * The equality function should return a value greater than 0 (true) if the two compared items match each other.
+ * The equality function should return 0 (false) if the two compared items do not match each other.
+ * 
+ * @note - If the item is not found or vector is NULL, returns negative value.
+ * @note - The function always returns index of the first matching item in the vector (with the lowest index).
+ * @note - The index is no longer valid if the position of items in the vector changes.
+ * @note - Asymptotic Complexity: Linear, O(n).
+ * 
+ * @return Index to the first matching item in the vector. -1 if item was not found. -99 if the vector is NULL.
+ */
+long vec_find_index(const vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
+
+
 /** 
  * @brief Searches for an item in the vector and returns pointer to the item.
  * 
@@ -429,6 +455,32 @@ void *vec_find(const vec_t *vector, int (*equal_function)(const void *, const vo
  * @return Void pointer to the removed item. NULL if no such item found or vector is NULL.
  */
 void *vec_find_remove(vec_t *vector, int (*equal_function)(const void *, const void *), const void *target);
+
+
+/** 
+ * @brief Searches for an item in vector that is SORTED in ASCENDING order and returns index of this item. Uses binary search.
+ * 
+ * @param vector            Vector to search in
+ * @param compare_function  Function pointer defining how the items should be compared
+ * @param target            Pointer to data that is searched in the vector
+ * 
+ * @note
+ * - `compare_function` is a pointer to function that returns integer and accepts two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * 
+ * The comparison function should have the following behavior:
+ * It should return >0, if the first of the two compared items is larger.
+ * It should return 0, if the compared items have the same value.
+ * It should return <0, if the first of the two compared items is smaller.
+ * 
+ * @note - If the input vector is NULL or corresponding item is not found in the vector, the function returns a negative value.
+ * @note - The function always returns index of the first matching item in the vector (with the lowest index).
+ * @note - The index is no longer valid if the position of items in the vector changes.
+ * @note - Asymptotic Complexity: Logarithmic, O(log n).
+ * 
+ * @return Index to the first matching item in the vector. -1 if item was not found. -99 if the vector is NULL.
+ */
+long vec_find_index_bsearch(const vec_t *vector, int (*compare_function)(const void *, const void *), const void *target);
 
 
 /** 
