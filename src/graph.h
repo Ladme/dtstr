@@ -1,7 +1,7 @@
 // Released under MIT License.
 // Copyright (c) 2023 Ladislav Bartos
 
-// Implementations of graphs. All graphs are oriented and support integer weights for edges.
+// Implementations of graphs. All graphs are oriented and support float weights for edges.
 
 /* SOME NOTES ON PERFORMANCE:
  * (Tested on graphs with betwen 500 and 10,000 vertices.)
@@ -38,7 +38,9 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -53,7 +55,7 @@
 /** @brief Edge in a dense graph. */
 typedef struct edge_dense {
     int exists;
-    int weight;
+    float weight;
 } edged_t;
 
 /** 
@@ -163,7 +165,7 @@ void *graphd_vertex_get(const graphd_t *graph, const size_t index);
  * 
  * @return 0 if the edge was successfully added (or already exists), 1 if the indices are out of range.
  */
-int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const int weight);
+int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const float weight);
 
 /** 
  * @brief Removes an edge connecting vertex with index `index_source` to vertex with index `index_target`. 
@@ -201,10 +203,10 @@ int graphd_edge_exists(const graphd_t *graph, const size_t index_source, const s
  * @param index_source  Index of the source vertex
  * @param index_target  Index of the target vertex
  *
- * @return The weight of the edge between the vertices at the specified indices. Returns INT_MIN if the graph is NULL,
+ * @return The weight of the edge between the vertices at the specified indices. Returns NAN if the graph is NULL,
  * the specified indices are invalid, or there is no edge between the vertices.
  */
-int graphd_edge_weight(const graphd_t *graph, const size_t index_source, const size_t index_target);
+float graphd_edge_weight(const graphd_t *graph, const size_t index_source, const size_t index_target);
 
 
 /** 
@@ -292,7 +294,7 @@ size_t graphd_vertex_map_dfs(
 /** @brief Edge in a sparse graph. */
 typedef struct edge_sparse {
     void *vertex_tar;   // pointer to target vertex
-    int weight;
+    float weight;
 } edges_t;
 
 
@@ -401,7 +403,7 @@ void *graphs_vertex_get(const graphs_t *graph, const size_t index);
  * 
  * @return 0 if successful, 1 if index is out of range, 99 if graph is NULL.
  */
-int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t index_target, const int weight);
+int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t index_target, const float weight);
 
 /** 
  * @brief Removes an edge connecting vertex with index `index_source` to vertex with index `index_target`. 
@@ -438,10 +440,10 @@ int graphs_edge_exists(const graphs_t *graph, const size_t index_source, const s
  * @param index_source  Index of the source vertex
  * @param index_target  Index of the target vertex
  *
- * @return The weight of the edge between the vertices at the specified indices. Returns INT_MIN if the graph is NULL,
+ * @return The weight of the edge between the vertices at the specified indices. Returns NAN if the graph is NULL,
  * the specified indices are invalid, or there is no edge between the vertices.
  */
-int graphs_edge_weight(const graphs_t *graph, const size_t index_source, const size_t index_target);
+float graphs_edge_weight(const graphs_t *graph, const size_t index_source, const size_t index_target);
 
 
 /** 
@@ -529,11 +531,12 @@ size_t graphs_vertex_map_dfs(
  * @param vertex_tar    Index of the vertex to reach.
  * @param path          Pointer to which the path between vertex_src and vertex_tar should be stored.
  * 
- * @return The distance between `vertex_src` and `vertex_tar`.
+ * @return The distance between `vertex_src` and `vertex_tar`. 
+ *         INFINITY if no path was found. NAN in case of an error or if negative loop is present.
  * 
- * @note - If the graph is NULL or the indices are invalid, returns -1 and sets `path` to NULL.
- * @note - If the path between the vertices does not exists, returns -1 and sets `path` to NULL.
- * @note - If negative loop is detected, returns -1 and sets `path` to NULL.
+ * @note - If the path between the vertices does not exists, returns INFINITY and sets `path` to NULL.
+ * @note - If the graph is NULL or the indices are invalid, returns NAN and sets `path` to NULL.
+ * @note - If negative loop is detected, returns INFINITY and sets `path` to NULL.
  * 
  * @note - If path is successfully found, memory is allocated for a `path` vector.
  *         This vector then contains pointers to the vertices in the graph that must be visited
@@ -542,10 +545,8 @@ size_t graphs_vertex_map_dfs(
  *         valid while the graph exists as it contains void pointers to void pointers in the graph.
  * @note - The caller is responsible for deallocating memory for the `path` vector by calling `vec_destroy`.
  * 
- * @note - The total distance between any of the vertices must be lower than INT_MAX. INT_MAX is treated
- *         as infinity.
  */
-int graphs_bellman_ford(
+float graphs_bellman_ford(
         const graphs_t *graph, 
         const size_t vertex_src, 
         const size_t vertex_tar,

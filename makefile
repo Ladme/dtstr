@@ -103,7 +103,7 @@ tests_set: tests/tests_set.c src/set.o
 	gcc tests/tests_set.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_set
 
 tests_graph: tests/tests_graph.c src/graph.o
-	gcc tests/tests_graph.c libdtstr.a -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_graph
+	gcc tests/tests_graph.c libdtstr.a -lm -std=c99 -pedantic -Wall -Wextra -O2 -g -o tests/tests_graph
 
 benchmarks: benchmarks/benchmarks_vector.c benchmarks/benchmarks_linked_list.c benchmarks/benchmarks_dlinked_list.c benchmarks/benchmarks_dictionary.c benchmarks/benchmarks_queue_cbuffer.c benchmarks/benchmarks_avl_tree.c benchmarks/benchmarks_heap.c benchmarks/benchmarks_set.c libdtstr.a
 	make benchmarks_vector

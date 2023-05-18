@@ -206,7 +206,7 @@ void *graphd_vertex_get(const graphd_t *graph, const size_t index)
     return graph->vertices->items[index];
 }
 
-int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const int weight)
+int graphd_edge_add(graphd_t *graph, const size_t index_source, const size_t index_target, const float weight)
 {
     if (graph == NULL) return 99;
 
@@ -239,11 +239,11 @@ int graphd_edge_exists(const graphd_t *graph, const size_t index_source, const s
     return edged_exists(graph, index_source, index_target);
 }
 
-int graphd_edge_weight(const graphd_t *graph, const size_t index_source, const size_t index_target)
+float graphd_edge_weight(const graphd_t *graph, const size_t index_source, const size_t index_target)
 {
-    if (graph == NULL) return INT_MIN;
-    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return INT_MIN;
-    if (!edged_exists(graph, index_source, index_target)) return INT_MIN;
+    if (graph == NULL) return NAN;
+    if (!graphd_index_valid(graph, index_source) || !graphd_index_valid(graph, index_target)) return NAN;
+    if (!edged_exists(graph, index_source, index_target)) return NAN;
 
     return graph->amatrix[index_source][index_target].weight;
 }
@@ -433,7 +433,7 @@ static int vertex_equal(const void *item1, const void *item2)
 }
 
 /** @brief Performs one relaxation cycle for Bellman-Ford algorithm. Returns 1 if any distance has been updated, else returns 0. */
-static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *vertex_index, int *distances, void **previous)
+static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *vertex_index, float *distances, void **previous)
 {
     int updated = 0;
 
@@ -451,7 +451,7 @@ static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *vertex_
 
             edges_t *edge = edges_get(graph, index_src, index_tar);
 
-            if (distances[index_src] < INT_MAX && distances[index_tar] > distances[index_src] + edge->weight) {
+            if (distances[index_src] < FLT_MAX && distances[index_tar] > distances[index_src] + edge->weight) {
                 distances[index_tar] = distances[index_src] + edge->weight;
                 previous[index_tar] = graph->vertices->items[index_src];
                 updated = 1;
@@ -541,7 +541,7 @@ int graphs_vertex_remove(graphs_t *graph, const size_t index)
     // remove all edges to target vertex
     for (size_t i = 0; i < graph->edges->len; ++i) {
         set_t *adjacent = *(set_t **) graph->edges->items[i];
-        edges_t edge = { .vertex_tar = graph->vertices->items[index], .weight = 0 };
+        edges_t edge = { .vertex_tar = graph->vertices->items[index], .weight = 0.0 };
         set_remove(adjacent, &edge, sizeof(void *));
     }
 
@@ -553,7 +553,7 @@ int graphs_vertex_remove(graphs_t *graph, const size_t index)
     return 0;
 }
 
-int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t index_target, const int weight)
+int graphs_edge_add(graphs_t *graph, const size_t index_source, const size_t index_target, const float weight)
 {
     if (graph == NULL) return 99;
 
@@ -572,7 +572,7 @@ int graphs_edge_remove(graphs_t *graph, const size_t index_source, const size_t 
 
     if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return 1;
 
-    edges_t edge_to_remove = { .vertex_tar = graph->vertices->items[index_target], .weight = 0 };
+    edges_t edge_to_remove = { .vertex_tar = graph->vertices->items[index_target], .weight = 0.0 };
     set_remove(*(set_t **) graph->edges->items[index_source], &edge_to_remove, sizeof(void *));
 
     return 0;
@@ -587,11 +587,11 @@ int graphs_edge_exists(const graphs_t *graph, const size_t index_source, const s
     return edges_exists(graph, index_source, index_target);
 }
 
-int graphs_edge_weight(const graphs_t *graph, const size_t index_source, const size_t index_target)
+float graphs_edge_weight(const graphs_t *graph, const size_t index_source, const size_t index_target)
 {
-    if (graph == NULL) return INT_MIN;
-    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return INT_MIN;
-    if (!edges_exists(graph, index_source, index_target)) return INT_MIN;
+    if (graph == NULL) return NAN;
+    if (!graphs_index_valid(graph, index_source) || !graphs_index_valid(graph, index_target)) return NAN;
+    if (!edges_exists(graph, index_source, index_target)) return NAN;
 
     return edges_get(graph, index_source, index_target)->weight;
 }
@@ -693,18 +693,18 @@ size_t graphs_vertex_map_dfs(
     return n_visited;
 }
 
-int graphs_bellman_ford(
+float graphs_bellman_ford(
         const graphs_t *graph, 
         const size_t vertex_src, 
         const size_t vertex_tar,
         vec_t **path)
 {   
-    if (graph == NULL || !graphs_index_valid(graph, vertex_src) || !graphs_index_valid(graph, vertex_tar)) return -1;
+    if (graph == NULL || !graphs_index_valid(graph, vertex_src) || !graphs_index_valid(graph, vertex_tar)) return NAN;
 
     if (vertex_src == vertex_tar) {
         *path = vec_new();
         vec_push(*path, &(graph->vertices->items[vertex_tar]), sizeof(void *));
-        return 0;
+        return 0.0;
     }
 
     // dictionary for converting between pointers to vertices and their indices
@@ -716,8 +716,8 @@ int graphs_bellman_ford(
     }
 
     // array of distances for each vertex
-    int *distances = malloc(graph->vertices->len * sizeof(int));
-    for (size_t i = 0; i < graph->vertices->len; ++i) distances[i] = INT_MAX;
+    float *distances = malloc(graph->vertices->len * sizeof(float));
+    for (size_t i = 0; i < graph->vertices->len; ++i) distances[i] = INFINITY;
 
     // previous vertex for each vertex
     void **previous = calloc(graph->vertices->len, sizeof(void *));
@@ -735,17 +735,17 @@ int graphs_bellman_ford(
         free(distances);
         free(previous);
         set_destroy(vertex_index);
-        return -1;
+        return NAN;
     }
 
     skip:
 
-    if (distances[vertex_tar] == INT_MAX) {
+    if (distances[vertex_tar] == INFINITY) {
         *path = NULL;
         free(distances);
         free(previous);
         set_destroy(vertex_index);
-        return -1;
+        return INFINITY;
     }
     
     *path = vec_new();
@@ -770,7 +770,7 @@ int graphs_bellman_ford(
     free(previous);
     set_destroy(vertex_index);
 
-    int fdistance = distances[vertex_tar];
+    float fdistance = distances[vertex_tar];
 
     free(distances);
 
