@@ -24,7 +24,7 @@ static set_t *set_fill(const int items)
     return set;
 }
 
-static vec_t *vec_fill(const int items)
+static vec_t *vec_fill_sequence(const int items)
 {
     vec_t *vector = vec_new();
 
@@ -64,7 +64,7 @@ static void benchmark_set_add_vs_vec_push(const size_t items)
         set_destroy(set);
 
         // vector
-        vec_t *vector = vec_fill(prefilled);
+        vec_t *vector = vec_fill_sequence(prefilled);
 
         initial = vector->len;
 

@@ -18,7 +18,7 @@ inline static void vec_swap(vec_t *vector, const size_t i, const size_t j)
 /** Insertion sort applied only to a part of the vector. */
 static void sort_insertion_part(vec_t *vector, const size_t first, const size_t last, int (*compare_function)(const void *, const void *))
 {
-    for (size_t i = first; i < last + 1; ++i) {
+    for (size_t i = first + 1; i < last + 1; ++i) {
         size_t j = i;
         void* current = vector->items[j];
 
@@ -90,7 +90,7 @@ int vec_sort_selection(vec_t *vector, int (*compare_function)(const void *, cons
             }
         }
 
-        vec_swap(vector, i, min_index);
+        if (i != min_index) vec_swap(vector, i, min_index);
     }
 
     return 0;

@@ -407,6 +407,30 @@ static void benchmark_vec_sort_selection(void)
     printf("\n");
 }
 
+static void benchmark_vec_sort_selection_sorted(void)
+{
+    printf("%s\n", "benchmark_vec_sort_selection (sorted data)");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 5000;
+        vec_t *vector = vec_fill_sorted(prefilled);
+
+        clock_t start = clock();
+
+        vec_sort_selection(vector, compare_function);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
 static void benchmark_vec_sort_bubble(void)
 {
     printf("%s\n", "benchmark_vec_sort_bubble");
@@ -463,6 +487,30 @@ static void benchmark_vec_sort_insertion(void)
 
         size_t prefilled = i * 5000;
         vec_t *vector = vec_fill_rand(prefilled);
+
+        clock_t start = clock();
+
+        vec_sort_insertion(vector, compare_function);
+
+        clock_t end = clock();
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> prefilled with %12lu items %f s\n", prefilled, time_elapsed);
+
+        vec_destroy(vector);
+    }
+
+    printf("\n");
+}
+
+static void benchmark_vec_sort_insertion_sorted(void)
+{
+    printf("%s\n", "benchmark_vec_sort_insertion (sorted data)");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t prefilled = i * 100000;
+        vec_t *vector = vec_fill_sorted(prefilled);
 
         clock_t start = clock();
 
@@ -625,11 +673,12 @@ int main(void)
     benchmark_vec_slicecpy(100000, 500000);
     benchmarks_vec_push_preallocated();
 
-
     benchmark_vec_sort_selection();
+    benchmark_vec_sort_selection_sorted();
     benchmark_vec_sort_bubble();
     benchmark_vec_sort_bubble_sorted();
     benchmark_vec_sort_insertion();
+    benchmark_vec_sort_insertion_sorted();
     benchmark_vec_sort_quicknaive();
     benchmark_vec_sort_quicknaive_sorted();
     benchmark_vec_sort_quick();

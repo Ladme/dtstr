@@ -553,6 +553,8 @@ void vec_reverse(vec_t *vector);
  * It should returns <0, if the first of the two compared items is smaller.
  * 
  * @note - If 'vector' is NULL, 99 is returned.
+ * @note - Selection sort is not stable and is data insensitive with worst and best time complexity of O(n^2).
+ * @note - Average time complexity is O(n^2).
  * 
  * @return 0 if successfully sorted. Else non-zero.
  */
@@ -575,6 +577,8 @@ int vec_sort_selection(vec_t *vector, int (*compare_function)(const void *, cons
  * It should returns <0, if the first of the two compared items is smaller.
  * 
  * @note - If 'vector' is NULL, 99 is returned.
+ * @note - Bubble sort is stable and is data sensitive with worst time complexity of O(n^2) and best time complexity of O(n).
+ * @note - Average time complexity is O(n^2).
  * 
  * @return 0 if successfully sorted. Else non-zero.
  */
@@ -597,6 +601,8 @@ int vec_sort_bubble(vec_t *vector, int (*compare_function)(const void *, const v
  * It should returns <0, if the first of the two compared items is smaller.
  * 
  * @note - If 'vector' is NULL, 99 is returned.
+ * @note - Insertion sort is stable and is data sensitive with worst time complexity of O(n^2) and best time complexity of O(n).
+ * @note - Average time complexity is O(n^2).
  * 
  * @return 0 if successfully sorted. Else non-zero.
  */
@@ -619,6 +625,8 @@ int vec_sort_insertion(vec_t *vector, int (*compare_function)(const void *, cons
  * It should returns <0, if the first of the two compared items is smaller.
  * 
  * @note - If 'vector' is NULL, 99 is returned.
+ * @note - Quicksort is not stable and is data sensitive with worst time complexity of O(n^2) and best time complexity of O(nlogn).
+ * @note - Average time complexity is O(nlogn).
  * @note - When the length of the sorted partition decreases to <= 8 items, 
  *         this function switches to insertion sort leading to increased performance.
  * 
@@ -658,6 +666,9 @@ int vec_sort_quicknaive(vec_t *vector, int (*compare_function)(const void *, con
  *   As `vec_t` already contains an array of void pointers, when it is used with `qsort`, `qsort` passes `void**` pointers to the `compare function`. 
  *   Therefore, in the `compare function`, to access the data from the void pointer, double dereferencing is required. 
  *   For example, **((int **) pointer) would be used to dereference an integer pointer.
+ * 
+ * @note - Quicksort is not stable and is data sensitive with worst time complexity of O(n^2) and best time complexity of O(nlogn).
+ * @note - Average time complexity is O(nlogn).
  * 
  * @return 0 if the vector is successfully sorted; otherwise, a non-zero value is returned.
  */

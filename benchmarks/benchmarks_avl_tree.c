@@ -188,7 +188,7 @@ static void benchmark_avl_map(const size_t repeats)
 }
 
 
-static vec_t *vec_fill(const int items)
+static vec_t *vec_fill_shuffle(const int items)
 {
     vec_t *vector = vec_with_capacity(items);
 
@@ -226,7 +226,7 @@ static void benchmarks_search_vec_vs_avl(const size_t fill_factor, const size_t 
    for (size_t i = 1; i <= 10; ++i) {
 
         size_t prefilled = i * fill_factor;
-        vec_t *input = vec_fill(prefilled);
+        vec_t *input = vec_fill_shuffle(prefilled);
 
         // AVL TREE
         
