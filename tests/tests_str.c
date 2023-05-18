@@ -306,6 +306,28 @@ static int test_str_splitwhite(void)
     return 0;
 }
 
+static int test_str_fragmentize(void)
+{
+    printf("%-40s", "test_str_fragmentize ");
+
+    char string1[] = "Example string number 1";
+    vec_t *fragments = str_fragmentize(string1);
+    assert(fragments->len == strlen(string1));
+    for (size_t i = 0; i < fragments->len; ++i) {
+        assert(*(char *) fragments->items[i] == string1[i]);
+    }
+
+    vec_destroy(fragments);
+
+    char empty[] = "";
+    fragments = str_fragmentize(empty);
+    assert(fragments->len == 0);
+    vec_destroy(fragments);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_str_strip(void)
 {
     printf("%-40s", "test_str_strip ");
@@ -576,6 +598,8 @@ int main(void)
     test_str_split();
     test_str_splitlines();
     test_str_splitwhite();
+
+    test_str_fragmentize();
 
     test_str_strip();
     test_str_remwhite();

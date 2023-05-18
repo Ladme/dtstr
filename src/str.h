@@ -39,7 +39,7 @@ typedef struct { int valid; float value; } float_option_t;
  * @note - If the string is empty, returns an empty vector.
  * @note - If delimiter is an empty string, returns a vector containing only the entire input string (no splitting).
  * 
- * @return Pointer to vector containing the substrings. NULL if parsing fails.
+ * @return Pointer to vector containing the substrings. NULL in case of an error.
  */
 vec_t *str_split(const char *string, const char *delim);
 
@@ -51,7 +51,7 @@ vec_t *str_split(const char *string, const char *delim);
  * @note - The original string is unchanged.
  * @note - The caller is responsible for deallocating the returned vector by calling `vec_destroy`.
  * 
- * @return Pointer to vector containing the substrings. NULL if parsing fails.
+ * @return Pointer to vector containing the substrings. NULL in case of an error.
  */
 vec_t *str_splitlines(const char *string);
 
@@ -63,9 +63,21 @@ vec_t *str_splitlines(const char *string);
  * @note - The original string is unchanged.
  * @note - The caller is responsible for deallocating the returned vector by calling `vec_destroy`.
  * 
- * @return Pointer to vector containing the substrings. NULL if parsing fails.
+ * @return Pointer to vector containing the substrings. NULL in case of an error.
  */
 vec_t *str_splitwhite(const char *string);
+
+
+/** @brief Splits string into individual characters and saves them into a vector.
+ * 
+ * @param string    String to fragmentize
+ * 
+ * @note - The original string is unchanged.
+ * @note - The caller is responsible for deallocating the returned vector by calling `vec_destroy`.
+ * 
+ * @return Pointer to vector containing the characters. NULL if memory allocation fails.
+ */
+vec_t *str_fragmentize(const char *string);
 
 
 /** @brief Strips leading and trailing whitespaces from string.

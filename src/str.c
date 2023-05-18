@@ -44,6 +44,20 @@ vec_t *str_splitwhite(const char *string)
     return str_split(string, " \t\n\v\f\r");
 }
 
+vec_t *str_fragmentize(const char *string)
+{
+    size_t len = strlen(string);
+
+    vec_t *vector = vec_fit(len);
+    if (vector == NULL) return NULL;
+
+    for (size_t i = 0; string[i]; ++i) {
+        if (vec_push(vector, &(string[i]), 1) != 0) return NULL;
+    }
+
+    return vector;
+}
+
 void str_strip(char *string)
 {
     char *p = string;

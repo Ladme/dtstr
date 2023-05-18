@@ -88,6 +88,23 @@ static int test_vec_fit(void)
     return 0;
 }
 
+static int test_vec_fit_zero(void)
+{
+    printf("%-40s", "test_vec_fit (zero) ");
+
+    vec_t *vector = vec_fit(0);
+
+    assert(vector);
+    assert(vector->len == 0);
+    assert(vector->capacity == VEC_DEFAULT_CAPACITY);
+    assert(vector->base_capacity == VEC_DEFAULT_CAPACITY);
+
+    vec_destroy(vector);
+
+    printf("OK\n");
+    return 0;
+}
+
 static int test_vec_from_arr(void)
 {
     printf("%-40s", "test_vec_from_arr ");
@@ -2547,6 +2564,7 @@ int main(void)
     test_vec_new();
     test_vec_with_capacity();
     test_vec_fit();
+    test_vec_fit_zero();
     test_vec_from_arr();
     test_vec_fill();
 
