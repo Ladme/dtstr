@@ -203,7 +203,7 @@ static int set_contains_set(const set_t *set1, const set_t *set2)
 
 
 /** @brief Same as set_map_entries but guarantees that the set will not be changed by the function. */
-void set_map_entries_const(const set_t *set, void (*function)(const void *, void *), void *pointer)
+static void set_map_entries_const(const set_t *set, void (*function)(const void *, void *), void *pointer)
 {
     if (set == NULL) return;
 

@@ -4,8 +4,9 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
-#include "str.h"
 #include "matrix.h"
+#include "str.h"
+#include "vector.h"
 
 /** @brief Conversion function to be used with `str2*` functions. Converts string to... string. Returns NULL if parsing fails. */
 void *str_convert_string(const char *string);

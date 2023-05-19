@@ -1,7 +1,7 @@
 // Released under MIT License.
 // Copyright (c) 2023 Ladislav Bartos
 
-// Implementations of graphs. All graphs are oriented and support float weights for edges.
+// Implementations of graphs. All graphs are directed and support float weights for edges.
 
 /* SOME NOTES ON PERFORMANCE:
  * (Tested on graphs with betwen 500 and 10,000 vertices.)

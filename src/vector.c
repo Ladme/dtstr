@@ -193,6 +193,18 @@ int vec_set(vec_t *vector, const void *item, const size_t itemsize, const size_t
     return 0;
 }
 
+int vec_equal(const vec_t *vector1, const vec_t *vector2, int (*equal_function)(const void *, const void *))
+{
+    if (vector1 == NULL || vector2 == NULL) return 0;
+    if (vector1->len != vector2->len) return 0;
+
+    for (size_t i = 0; i < vector1->len; ++i) {
+        if (!equal_function(vector1->items[i], vector2->items[i])) return 0;
+    }
+
+    return 1;
+}
+
 vec_t *vec_slicecpy(const vec_t *vector, const size_t start, const size_t end, const size_t itemsize)
 {
     if (vector == NULL) return NULL;

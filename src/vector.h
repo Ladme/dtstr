@@ -165,6 +165,27 @@ int vec_insert(vec_t *vector, const void *item, const size_t itemsize, const siz
 int vec_set(vec_t *vector, const void *item, const size_t itemsize, const size_t index);
 
 
+/**
+ * @brief Compares items in two vectors. The vectors are equal if they contain the same items in the same order.
+ *
+ * @param vector1          A pointer to the first vector to compare.
+ * @param vector2          A pointer to the second vector to compare.
+ * @param equal_function   The function pointer defining how the items should be compared
+ * 
+ * @note
+ * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
+ * The first void pointer corresponds to the pointer to the data at a particuler index in vector 1,
+ * while the second void pointer corresponds to the pointer to the data at the same index in vector 2.
+ * 
+ * The equality function should return a value greater than 0 (true) if the two compared items match each other.
+ * The equality function should return 0 (false) if the two compared items do not match each other.
+ * 
+ * @note - If either of the compared vectors is NULL, the function returns 0.
+ * 
+ * @return 1 if the vectors contain the same items in the same order. Else 0.
+ */
+int vec_equal(const vec_t *vector1, const vec_t *vector2, int (*equal_function)(const void *, const void *));
+
 /** 
  * @brief Removes the last item from the vector and returns it.
  * 

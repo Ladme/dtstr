@@ -129,6 +129,7 @@ vec_t *str2vec(const char *string, const char *delimiters, void* (*conversion_fu
     vec_t *split = NULL;
     if (delimiters[0] == '\0') split = str_fragmentize(string);
     else split = str_split(string, delimiters);
+    
     if (!split) return NULL;
 
     vec_t *vector = vec_fit(split->len);

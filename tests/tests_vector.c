@@ -420,6 +420,50 @@ static int test_vec_set(void)
     return 0;
 }
 
+static int test_equality_function(const void *data, const void *target)
+{
+    return *((size_t *) data) == *((size_t *) target);
+}
+
+static int test_vec_equal(void)
+{
+    printf("%-40s", "test_vec_equal ");
+
+    assert(!vec_equal(NULL, NULL, test_equality_function));
+
+    vec_t *vector1 = vec_new();
+    vec_t *vector2 = vec_new();
+
+    assert(!vec_equal(vector1, NULL, test_equality_function));
+    assert(!vec_equal(NULL, vector2, test_equality_function));
+
+    for (size_t i = 0; i < 100; ++i) {
+        assert(vec_push(vector1, &i, sizeof(size_t)) == 0);
+        assert(vec_push(vector2, &i, sizeof(size_t)) == 0);
+    }
+
+    // checking equal vectors
+    assert(vec_equal(vector1, vector2, test_equality_function));
+
+    // checking vectors of the same length but one mismatch
+    size_t val = 123;
+    assert(vec_set(vector2, &val, sizeof(size_t), 5) == 0);
+    assert(!vec_equal(vector1, vector2, test_equality_function));
+
+    val = 5;
+    assert(vec_set(vector2, &val, sizeof(size_t), 5) == 0);
+    assert(vec_equal(vector1, vector2, test_equality_function));
+    assert(vec_push(vector2, &val, sizeof(size_t)) == 0);
+    // checking vectors of different lengths
+    assert(!vec_equal(vector1, vector2, test_equality_function));
+
+    vec_destroy(vector1);
+    vec_destroy(vector2);
+
+    printf("OK\n");
+    return 0;
+}
+
 
 static int test_vec_pop(void)
 {
@@ -1499,12 +1543,6 @@ static int test_vec_filter_complex(void)
     return 0;
 }
 
-
-static int test_equality_function(const void *data, const void *target)
-{
-    return *((size_t *) data) == *((size_t *) target);
-}
-
 static int test_vec_find_index(void)
 {
     printf("%-40s", "test_vec_find_index ");
@@ -2580,6 +2618,7 @@ int main(void)
     test_vec_insert_invalid();
 
     test_vec_set();
+    test_vec_equal();
 
     test_vec_push_insert_deallocated();
 

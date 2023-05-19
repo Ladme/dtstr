@@ -128,7 +128,7 @@ matrix_t *matrix_fit(const size_t n_rows, const size_t n_cols)
     matrix->base_capacity_rows = MATRIX_DEFAULT_CAPACITY_ROWS;
     matrix->base_capacity_cols = MATRIX_DEFAULT_CAPACITY_COLS;
 
-    return matrix;   
+    return matrix;
 }
 
 void matrix_destroy(matrix_t *matrix)
