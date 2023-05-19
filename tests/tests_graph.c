@@ -1161,6 +1161,70 @@ static int test_graphs_vertex_successors_advanced(void)
     return 0;
 }
 
+static int test_graphs_vertex_edges(void)
+{
+    printf("%-40s", "test_graphs_vertex_edges ");
+
+    assert(graphs_vertex_edges(NULL, 0) == NULL);
+
+    graphs_t *graph = graphs_new();
+
+    for (int i = 0; i < 17; ++i) {
+        assert(graphs_vertex_add(graph, &i, sizeof(int)) >= 0);
+    }
+
+    for (int i = 3; i < 17; ++i) {
+        assert(graphs_edge_add(graph, 0, i, 1.0) == 0);
+        assert(graphs_edge_add(graph, i, 0, 5.0) == 0);
+    }
+
+    assert(graphs_edge_add(graph, 3, 4, 2.0) == 0);
+    assert(graphs_edge_add(graph, 10, 3, -2.0) == 0);
+    assert(graphs_edge_add(graph, 10, 3, 5.0) == 0);
+    assert(graphs_edge_add(graph, 10, 3, 7.2) == 0);
+    assert(graphs_edge_add(graph, 5, 8, -3.5) == 0);
+    assert(graphs_edge_add(graph, 1, 16, 6.0) == 0);
+    assert(graphs_edge_add(graph, 7, 7, 0.0) == 0);
+
+    for (size_t i = 0; i < 17; ++i) {
+        vec_t *edges = graphs_vertex_edges(graph, i);
+
+        switch (i) {
+        case 0: 
+            assert(vec_len(edges) == 14); 
+            for (size_t j = 0; j < 14; ++j) {
+                assert(closef((*(edges_t **) vec_get(edges, j))->weight, 1.0, 0.0001));
+            }
+            break;
+        case 1: assert(vec_len(edges) == 1); break;
+        case 2: assert(vec_len(edges) == 0); break;
+        case 3: assert(vec_len(edges) == 2); break;
+        case 4: assert(vec_len(edges) == 1); break;
+        case 5: assert(vec_len(edges) == 2); break;
+        case 6: assert(vec_len(edges) == 1); break;
+        case 7: assert(vec_len(edges) == 2); break;
+        case 8: 
+        case 9: assert(vec_len(edges) == 1); break;
+        case 10: assert(vec_len(edges) == 2); break;
+        case 11: 
+        case 12:
+        case 13:
+        case 14:
+        case 15: 
+        case 16: assert(vec_len(edges) == 1); break;
+        }
+
+        vec_destroy(edges);
+    }
+
+    assert(graphs_vertex_edges(graph, 17) == NULL);
+
+    graphs_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
 inline static edges_t *get_edge(const set_t *adl, void *tar)
 {
     edges_t target = { .vertex_tar = tar , .weight = 0.0 };
@@ -1654,6 +1718,87 @@ static int test_graphs_bellman_ford(void)
 }
 
 
+static int test_graphs_dijkstra(void)
+{
+    printf("%-40s", "test_graphs_dijkstra ");
+
+    vec_t *path = NULL;
+
+    // vector is NULL
+    assert(isnan(graphs_dijkstra(NULL, 0, 1, &path)));
+
+    graphs_t *graph = create_graphs_representative_weighted();
+
+    // index is out of range
+    assert(isnan(graphs_dijkstra(graph, 0, 10, &path)));
+    assert(isnan(graphs_dijkstra(graph, 12, 1, &path)));
+
+    // one pathway
+    float distance = graphs_dijkstra(graph, 0, 7, &path);
+
+    //printf("%f\n", distance);
+    assert(closef(distance, 10.6, 0.0001));
+    assert(path->len == 4);
+    assert(*((void **) path->items[0]) == graph->vertices->items[0]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[1]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[4]);
+    assert(*((void **) path->items[3]) == graph->vertices->items[7]);
+
+    vec_destroy(path);
+
+    // two pathways
+    distance = graphs_dijkstra(graph, 1, 5, &path);
+    //printf("%f\n", distance);
+    assert(closef(distance, 5.4, 0.0001));
+    assert(path->len == 3);
+    assert(*((void **) path->items[0]) == graph->vertices->items[1]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[2]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[5]);
+
+    vec_destroy(path);
+
+    // no pathway (long)
+    distance = graphs_dijkstra(graph, 0, 8, &path);
+    //printf("%f\n", distance);
+    assert(isinf(distance));
+    assert(path == NULL);
+
+    // no pathway (simple)
+    distance = graphs_dijkstra(graph, 6, 3, &path);
+    //printf("%f\n", distance);
+    assert(isinf(distance));
+    assert(path == NULL);
+
+    // source == target
+    distance = graphs_dijkstra(graph, 2, 2, &path);
+    //printf("%f\n", distance);
+    assert(distance == 0.0);
+    assert(path->len == 1);
+    assert(*((void **) path->items[0]) == graph->vertices->items[2]);
+
+    vec_destroy(path); 
+
+    // 7 to 0
+    distance = graphs_dijkstra(graph, 7, 0, &path);
+    //printf("%f\n", distance);
+    assert(closef(distance, 20.0, 0.0001));
+    assert(path->len == 6);
+    assert(*((void **) path->items[0]) == graph->vertices->items[7]); 
+    assert(*((void **) path->items[1]) == graph->vertices->items[4]);
+    assert(*((void **) path->items[2]) == graph->vertices->items[5]);
+    assert(*((void **) path->items[3]) == graph->vertices->items[2]);
+    assert(*((void **) path->items[4]) == graph->vertices->items[1]);
+    assert(*((void **) path->items[5]) == graph->vertices->items[0]);
+
+    vec_destroy(path);
+
+    graphs_destroy(graph);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 int main(void) 
 {
     test_graphd_destroy_nonexistent();
@@ -1697,12 +1842,14 @@ int main(void)
 
     test_graphs_vertex_successors();
     test_graphs_vertex_successors_advanced();
+    test_graphs_vertex_edges();
 
     test_graphs_vertex_map();
     test_graphs_vertex_map_bfs();
     test_graphs_vertex_map_dfs();
 
     test_graphs_bellman_ford();
+    test_graphs_dijkstra();
 
 
     return 0;

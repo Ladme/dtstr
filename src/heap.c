@@ -73,27 +73,6 @@ inline static int hpcmp(const heap_t *heap, const size_t index1, const size_t in
     return heap->compare_function(heap->items[index1], heap->items[index2]);
 }
 
-/** @brief Restores the balance of a heap starting at the given node. */
-static void heap_heapify(heap_t *heap, const size_t node)
-{
-    size_t target = node;
-    size_t left = heap_index_left(node);
-    size_t right = heap_index_right(node);
-
-    if (left < heap->len && hpcmp(heap, left, target) < 0) {
-        target = left;
-    }
-
-    if (right < heap->len && hpcmp(heap, right, target) < 0) {
-        target = right;
-    }
-
-    if (target != node) {
-        heap_swap(heap, node, target);
-        heap_heapify(heap, target);
-    }
-}
-
 /* *************************************************************************** */
 /*                  PUBLIC FUNCTIONS ASSOCIATED WITH HEAP_T                    */
 /* *************************************************************************** */
@@ -182,7 +161,7 @@ void *heap_pop(heap_t *heap)
     heap->items[0] = heap->items[heap->len - 1];
     --(heap->len);
 
-    heap_heapify(heap, 0);
+    heap_downheapify(heap, 0);
 
     if (heap_check_shrink(heap)) {
         heap_shrink(heap); // ignore if this fails
@@ -191,6 +170,16 @@ void *heap_pop(heap_t *heap)
     return root;
 }
 
+void heap_restore(heap_t *heap)
+{
+    if (heap == NULL || heap->len == 0) return;
+
+    for (int i = (heap->len / 2) - 1; i >= 0; --i) {
+        heap_downheapify(heap, i);
+    }
+}
+
+
 
 void heap_map(heap_t *heap, void (*function)(void *, void *), void *pointer)
 {
@@ -198,5 +187,41 @@ void heap_map(heap_t *heap, void (*function)(void *, void *), void *pointer)
 
     for (size_t i = 0; i < heap->len; ++i) {
         function(heap->items[i], pointer);
+    }
+}
+
+
+
+void heap_downheapify(heap_t *heap, const size_t node)
+{
+    size_t target = node;
+    size_t left = heap_index_left(node);
+    size_t right = heap_index_right(node);
+
+    if (left < heap->len && hpcmp(heap, left, target) < 0) {
+        target = left;
+    }
+
+    if (right < heap->len && hpcmp(heap, right, target) < 0) {
+        target = right;
+    }
+
+    if (target != node) {
+        heap_swap(heap, node, target);
+        heap_downheapify(heap, target);
+    }
+}
+
+
+void heap_upheapify(heap_t *heap, const size_t node)
+{
+    size_t current = node;
+    size_t parent = heap_index_parent(current);
+
+    while (current > 0 && hpcmp(heap, current, parent) < 0) {
+        heap_swap(heap, current, parent);
+
+        current = parent;
+        parent = heap_index_parent(current);
     }
 }

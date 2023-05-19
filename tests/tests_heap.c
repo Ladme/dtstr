@@ -616,6 +616,41 @@ static int test_heap_map(void)
     return 0;
 }
 
+
+static int test_heap_restore(void)
+{
+    printf("%-40s", "test_heap_restore ");
+
+    srand(2864521);
+
+    heap_restore(NULL);
+
+    heap_t *heap = heap_new(sizeof(int), min_heap_compare_ints);
+    
+    for (size_t i = 0; i < 1000; ++i) {
+        int r_int = rand() % 1000; 
+        
+        heap_insert(heap, &r_int);
+    }
+
+    assert_heap_balance(heap);
+
+    for (size_t i = 400; i < 500; ++i) {
+        int r_int = rand() % 1000;
+
+        *(int *) heap->items[i] = r_int;
+    }
+
+    heap_restore(heap);
+    assert_heap_balance(heap);
+
+    heap_destroy(heap);
+
+    printf("OK\n");
+    return 0;
+}
+
+
 //TODO: preallocated tests
 
 int main(void) 
@@ -635,6 +670,8 @@ int main(void)
     test_heap_pop_max();
     test_heap_pop_min_large();
     test_heap_pop_max_large();
+
+    test_heap_restore();
 
 
     test_heap_map();

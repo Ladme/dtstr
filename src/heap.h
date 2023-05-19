@@ -58,7 +58,17 @@ heap_t *heap_new(const size_t datasize, int (*compare_function)(const void *, co
  * 
  * @note - To release the memory allocated for `heap_t`, use the `heap_destroy` function.
  * @note - The heap will never shrink below the specified `base_capacity`.
- * @note - See documentation of `heap_new` for the expected behavior of the `compare_function`.
+ * 
+ * @note - `compare_function` is a pointer to function that returns integer and accepts two void pointers.
+ * The void pointers point to two particular pieces of data that are compared.
+ * @note - If you want to build a MIN heap, the compare function should have the following behavior:
+ * If the first item is greater than the second, the function should return a positive integer.
+ * If the first item is smaller, it should return a negative integer.
+ * If the two items are equal, it should return 0.
+ * @note - If you want to build a MAX heap, the compare function should have the following behavior:
+ * If the first item is greater than the second, the function should return a negative integer.
+ * If the first item is smaller, it should return a positive integer.
+ * If the two items are equal, it should return 0.
  * 
  * @return A pointer to the newly created `heap_t` structure if successful; otherwise, NULL.
  */
@@ -126,6 +136,15 @@ void *heap_peek(const heap_t *heap);
 void *heap_pop(heap_t *heap);
 
 
+/**
+ * @brief Restores balance of an unbalanced heap.
+ * 
+ * @param heap      Heap to restore
+ * 
+ */
+void heap_restore(heap_t *heap);
+
+
 /** 
  * @brief Loops through all nodes in heap and applies 'function' to each node.
  * 
@@ -137,5 +156,28 @@ void *heap_pop(heap_t *heap);
  * @note - Note that modifying the values stored in a heap using the function can disrupt the balance of the heap.
  */
 void heap_map(heap_t *heap, void (*function)(void *, void *), void *pointer);
+
+
+
+
+/* *************************************************************************** */
+/*    SERVICE FUNCTIONS (UNTESTED, NOT TO BE USED OUTSIDE OF DTSTR LIBRARY)    */
+/* *************************************************************************** */
+
+/** 
+ * @brief Restores the balance of a heap starting at the given node and continuing towards its children.
+ * 
+ * @warning - This function is not independently tested. 
+ * @warning - This function does not ensure the balance of the heap in all situations.
+ */
+void heap_downheapify(heap_t *heap, const size_t node);
+
+/** 
+ * @brief Restores the balance of a heap starting at the given node and continuing towards the root. 
+ * 
+ * @warning - This function is not independently tested. 
+ * @warning - This function does not ensure the balance of the heap in all situations.
+ */
+void heap_upheapify(heap_t *heap, const size_t node);
 
 #endif /* HEAP_H */

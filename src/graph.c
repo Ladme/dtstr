@@ -407,62 +407,12 @@ static void extract_successors(void *item, void *wrapped_vec)
     vec_push(successors, &(edge->vertex_tar), sizeof(void *));
 }
 
-/* PRIVATE FUNCTIONS FOR PATH ALGORITHMS */
-
-/** @brief Key-value entry where key is a pointer to vertex and value is the index of the corresponding vertex. */
-typedef struct vertex_index {
-    void *vertex;
-    size_t index;
-} vertex_index_t;
-
-/** @brief `hashable` function for vertex_index. */
-static const void *hash_vertex(const void *item)
+static void extract_edges(void *item, void *wrapped_vec)
 {
-    vertex_index_t *vertex_index = (vertex_index_t *) item;
+    edges_t *edge = (edges_t *) item;
+    vec_t *edges = (vec_t *) wrapped_vec;
 
-    return &(vertex_index->vertex);
-}
-
-/** @brief Equality function for vertex_index. */
-static int vertex_equal(const void *item1, const void *item2)
-{
-    vertex_index_t *vertex_index1 = (vertex_index_t *) item1;
-    vertex_index_t *vertex_index2 = (vertex_index_t *) item2;
-
-    return vertex_index1->vertex == vertex_index2->vertex;
-}
-
-/** @brief Performs one relaxation cycle for Bellman-Ford algorithm. Returns 1 if any distance has been updated, else returns 0. */
-static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *vertex_index, float *distances, void **previous)
-{
-    int updated = 0;
-
-    for (size_t index_src = 0; index_src < graph->vertices->len; ++index_src) {
-        vec_t *adjacent = graphs_vertex_successors(graph, index_src);
-        for (size_t j = 0; j < adjacent->len; ++j) {
-
-            void *target = *((void **) adjacent->items[j]);
-
-            // get index of the target vertex
-            vertex_index_t search = { .vertex = target, .index = 0 };
-            vertex_index_t *item = (vertex_index_t *) set_get(vertex_index, &search, sizeof(void *));
-            
-            size_t index_tar = item->index;
-
-            edges_t *edge = edges_get(graph, index_src, index_tar);
-
-            if (distances[index_src] < FLT_MAX && distances[index_tar] > distances[index_src] + edge->weight) {
-                distances[index_tar] = distances[index_src] + edge->weight;
-                previous[index_tar] = graph->vertices->items[index_src];
-                updated = 1;
-            }
-
-        }
-
-        vec_destroy(adjacent);
-    }
-
-    return updated;
+    vec_push(edges, &(edge), sizeof(void *));
 }
 
 /* *************************************************************************** */
@@ -608,6 +558,18 @@ vec_t *graphs_vertex_successors(const graphs_t *graph, const size_t index)
     return successors;
 }
 
+vec_t *graphs_vertex_edges(const graphs_t *graph, const size_t index)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index)) return NULL;
+    
+    vec_t *edges = vec_new();
+    if (edges == NULL) return NULL;
+
+    set_map(*(set_t **) graph->edges->items[index], extract_edges, edges);
+
+    return edges;
+}
+
 void graphs_vertex_map(graphs_t *graph, void (*function)(void *, void *), void *pointer)
 {
     if (graph == NULL) return;
@@ -693,86 +655,255 @@ size_t graphs_vertex_map_dfs(
     return n_visited;
 }
 
+/* *************************************************************************** */
+/*                   PRIVATE FUNCTIONS FOR GRAPH ALGORITHMS                    */
+/* *************************************************************************** */
+
+/** @brief Set entry for vertex and its associated values used in path algorithms. */
+typedef struct {
+    void *vertex;       // pointer to the vertex in the graph structure
+    size_t index;       // index of the vertex in the graph structure
+    float distance;     // distance to the vertex from source
+    void *previous;     // pointer to previous vertex in path
+} path_vertex_t;
+
+/** @brief `hashable` function for set of path_vertices. */
+static const void *hash_path_vertex(const void *item)
+{
+    path_vertex_t *vertex = (path_vertex_t *) item;
+
+    return &(vertex->vertex);
+}
+
+/** @brief Equality function for `path_vertex_t`. */
+static int path_vertex_equal(const void *item1, const void *item2)
+{
+    path_vertex_t *vertex1 = (path_vertex_t *) item1;
+    path_vertex_t *vertex2 = (path_vertex_t *) item2;
+
+    return vertex1->vertex == vertex2->vertex;
+}
+
+/** @brief Returns pointer to `path_vertex_t` in `path_set` for given vertex pointer. */
+static path_vertex_t *get_path_vertex(const set_t *path_set, void *vertex)
+{
+    path_vertex_t search = { .vertex = vertex, .index = 0, .distance = 0.0, .previous = NULL };
+
+    return (path_vertex_t *) set_get(path_set, &search, sizeof(void *));
+}
+
+/** @brief Initializes `path_set` structure for path algorithms. */
+static set_t *path_init(const graphs_t *graph, const size_t vertex_src)
+{
+    set_t *path_set = set_with_capacity(graph->vertices->len, path_vertex_equal, hash_path_vertex);
+
+    for (size_t i = 0; i < graph->vertices->len; ++i) {
+        path_vertex_t item = { .vertex = graph->vertices->items[i], .index = i, .distance = INFINITY, .previous = NULL };
+        if (i == vertex_src) item.distance = 0.0;
+
+        set_add(path_set, &item, sizeof(path_vertex_t), sizeof(void *));
+    }
+
+    return path_set;
+}
+
+/** @brief Reconstructs path to take between `vertex_src` and `vertex_tar`. */
+static vec_t *path_reconstruct(const set_t *path_set, void *vertex_src, void *vertex_tar)
+{
+    vec_t *path = vec_new();
+
+    vec_push(path, &vertex_tar, sizeof(void *));
+    void *curr = get_path_vertex(path_set, vertex_tar)->previous;
+    while (curr != NULL) {
+        vec_push(path, &curr, sizeof(void *));
+
+        curr = get_path_vertex(path_set, curr)->previous;
+    }
+
+    vec_reverse(path);
+
+    return path;
+}
+
+/** @brief Performs one relaxation cycle for Bellman-Ford algorithm. Returns 1 if any distance has been updated, else returns 0. */
+static int graphs_bellman_ford_relax(const graphs_t *graph, const set_t *path_set)
+{
+    int updated = 0;
+
+    for (size_t index_src = 0; index_src < graph->vertices->len; ++index_src) {
+        // get source vertex in the `path_set`
+        path_vertex_t *vertex_src = get_path_vertex(path_set, graph->vertices->items[index_src]);
+
+        // get outgoing edges for source vertex
+        vec_t *edges = graphs_vertex_edges(graph, index_src);
+
+        // loop through outgoing edges
+        for (size_t j = 0; j < edges->len; ++j) {
+
+            // get target edge
+            edges_t *edge = *((void **) edges->items[j]);
+
+            // get target vertex in the `path_set`
+            path_vertex_t *vertex_tar = get_path_vertex(path_set, edge->vertex_tar);
+
+            if (vertex_tar->distance > vertex_src->distance + edge->weight) {
+                vertex_tar->distance = vertex_src->distance + edge->weight;
+                vertex_tar->previous = vertex_src->vertex;
+                updated = 1;
+            }
+        }
+
+        vec_destroy(edges);
+    }
+
+    return updated;
+}
+
+/** @brief Function for comparing distances in a heap. */
+static int path_vertex_cmp_heap(const void *item1, const void *item2)
+{
+    path_vertex_t *vertex1 = *(path_vertex_t **) item1;
+    path_vertex_t *vertex2 = *(path_vertex_t **) item2;
+
+    if (vertex1->distance >= vertex2->distance) return 1;
+    return -1;
+}
+
+/** @brief Performs one iteration of dijkstra algorithm. Returns 1 if `index_tar` hasn't been processed, else returns 0. */
+static int graphs_dijkstra_iteration(const graphs_t *graph, set_t *path_set, heap_t *path_heap, const size_t index_tar)
+{
+    // get vertex with minimal distance
+    path_vertex_t **pvertex1 = heap_pop(path_heap);
+    path_vertex_t *vertex1 = *(path_vertex_t **) pvertex1;
+    free(pvertex1);
+
+    // algorithm ends once we process vertex at `index_tar`
+    if (vertex1->index == index_tar) return 0;
+
+    // get outgoing edges from this vertex
+    vec_t *edges = graphs_vertex_edges(graph, vertex1->index);
+
+    // loop through outgoing edges
+    for (size_t i = 0; i < edges->len; ++i) {
+
+        // get target edge
+        edges_t *edge = *((void **) edges->items[i]);
+
+        // get target vertex in the `path_set`
+        path_vertex_t *vertex2 = get_path_vertex(path_set, edge->vertex_tar);
+
+        if (vertex2->distance > vertex1->distance + edge->weight) {
+            vertex2->distance = vertex1->distance + edge->weight;
+            vertex2->previous = vertex1->vertex;
+
+            // the distance must decrease
+            // thus we only have to check predecessors of the target node to ensure the balance of the heap
+            for (size_t i = 0; i < path_heap->len; ++i) {
+                if (*(void **) path_heap->items[i] == vertex2) {
+                    heap_upheapify(path_heap, i);
+                    break;
+                }
+            }
+        }
+    }
+
+    vec_destroy(edges);
+
+    return 1;
+}
+
+/* *************************************************************************** */
+/*                   PUBLIC FUNCTIONS FOR GRAPH ALGORITHMS                     */
+/* *************************************************************************** */
+
 float graphs_bellman_ford(
         const graphs_t *graph, 
-        const size_t vertex_src, 
-        const size_t vertex_tar,
+        const size_t index_src, 
+        const size_t index_tar,
         vec_t **path)
 {   
-    if (graph == NULL || !graphs_index_valid(graph, vertex_src) || !graphs_index_valid(graph, vertex_tar)) return NAN;
+    if (graph == NULL || !graphs_index_valid(graph, index_src) || !graphs_index_valid(graph, index_tar)) return NAN;
 
-    if (vertex_src == vertex_tar) {
+    // path from vertex i to vertex i
+    if (index_src == index_tar) {
         *path = vec_new();
-        vec_push(*path, &(graph->vertices->items[vertex_tar]), sizeof(void *));
+        vec_push(*path, &(graph->vertices->items[index_tar]), sizeof(void *));
         return 0.0;
     }
 
-    // dictionary for converting between pointers to vertices and their indices
-    set_t *vertex_index = set_with_capacity(graph->vertices->len, vertex_equal, hash_vertex);
+    set_t *path_set = path_init(graph, index_src);
 
-    for (size_t i = 0; i < graph->vertices->len; ++i) {
-        vertex_index_t item = { .vertex = graph->vertices->items[i], .index = i };
-        set_add(vertex_index, &item, sizeof(vertex_index_t), sizeof(void *));
-    }
-
-    // array of distances for each vertex
-    float *distances = malloc(graph->vertices->len * sizeof(float));
-    for (size_t i = 0; i < graph->vertices->len; ++i) distances[i] = INFINITY;
-
-    // previous vertex for each vertex
-    void **previous = calloc(graph->vertices->len, sizeof(void *));
-
-    distances[vertex_src] = 0;
-
-    for (size_t n = 0; n < graph->vertices->len; ++n) {
+    // relax the edges V-1 times
+    for (size_t n = 0; n < graph->vertices->len - 1; ++n) {
         // if no distance has been updated, skip to the end of the function
-        if (!graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) goto skip;
+        if (!graphs_bellman_ford_relax(graph, path_set)) goto skip;
     }
 
     // check for negative cycles
-    if (graphs_bellman_ford_relax(graph, vertex_index, distances, previous)) {
+    if (graphs_bellman_ford_relax(graph, path_set)) {
         *path = NULL;
-        free(distances);
-        free(previous);
-        set_destroy(vertex_index);
+        set_destroy(path_set);
         return NAN;
     }
 
-    skip:
+    skip:;
+    float total_distance = get_path_vertex(path_set, graph->vertices->items[index_tar])->distance;
 
-    if (distances[vertex_tar] == INFINITY) {
+    if (total_distance == INFINITY) {
         *path = NULL;
-        free(distances);
-        free(previous);
-        set_destroy(vertex_index);
+        set_destroy(path_set);
         return INFINITY;
     }
-    
-    *path = vec_new();
 
-    vec_push(*path, &(graph->vertices->items[vertex_tar]), sizeof(void *));
+    *path = path_reconstruct(path_set, graph->vertices->items[index_src], graph->vertices->items[index_tar]);
 
-    void *curr = previous[vertex_tar];
-    while (curr != NULL) {
-        vec_push(*path, &curr, sizeof(void *));
+    set_destroy(path_set);
 
-        // get index of the target vertex
-        vertex_index_t search = { .vertex = curr, .index = 0 };
-        vertex_index_t *item = (vertex_index_t *) set_get(vertex_index, &search, sizeof(void *));
-        
-        size_t index_tar = item->index;
+    return total_distance;
+}
 
-        curr = previous[index_tar];
+float graphs_dijkstra(
+        const graphs_t *graph, 
+        const size_t index_src, 
+        const size_t index_tar,
+        vec_t **path)
+{
+    if (graph == NULL || !graphs_index_valid(graph, index_src) || !graphs_index_valid(graph, index_tar)) return NAN;
+
+    // path from vertex i to vertex i
+    if (index_src == index_tar) {
+        *path = vec_new();
+        vec_push(*path, &(graph->vertices->items[index_tar]), sizeof(void *));
+        return 0.0;
     }
 
-    vec_reverse(*path);
+    set_t *path_set = path_init(graph, index_src);
+    
+    // initialize heap
+    heap_t *path_heap = heap_with_capacity(graph->vertices->len, sizeof(void *), path_vertex_cmp_heap);
+    for (size_t i = 0; i < graph->vertices->len; ++i) {
+        path_vertex_t *path_vertex = get_path_vertex(path_set, graph->vertices->items[i]);
+        heap_insert(path_heap, &path_vertex);
+    }
 
-    free(previous);
-    set_destroy(vertex_index);
+    // iterate through the algorithm
+    while (path_heap->len != 0) {
+        if (!graphs_dijkstra_iteration(graph, path_set, path_heap, index_tar)) break;
+    }
 
-    float fdistance = distances[vertex_tar];
+    float total_distance = get_path_vertex(path_set, graph->vertices->items[index_tar])->distance;
 
-    free(distances);
+    if (total_distance == INFINITY) {
+        *path = NULL;
+        set_destroy(path_set);
+        heap_destroy(path_heap);
+        return INFINITY;
+    }
 
-    return fdistance;
+    *path = path_reconstruct(path_set, graph->vertices->items[index_src], graph->vertices->items[index_tar]);
+
+    set_destroy(path_set);
+    heap_destroy(path_heap);
+
+    return total_distance;
 }

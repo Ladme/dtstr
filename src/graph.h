@@ -45,6 +45,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "cbuffer.h"
+#include "heap.h"
 #include "set.h"
 #include "vector.h"
 
@@ -466,6 +467,25 @@ vec_t *graphs_vertex_successors(const graphs_t *graph, const size_t index);
 
 
 /** 
+ * @brief Returns a vector of outgoing edges for vertex at target index.
+ *
+ * @param graph         The graph to operate on
+ * @param index         Index of the source vector
+ * 
+ * @note - The output vector contains pointers to the edges stored in the parent graph.
+ *         Therefore, the pointers in the output vector are only valid while the parent graph exists.
+ * @note - The caller is responsible for deallocating memory for the output vector.
+ * 
+ * @note - If the graph is NULL or the index is out of range, returns NULL.
+ * @note - If memory allocation fails, returns NULL.
+ * @note - Asymptotic Complexity: Linear, O(n)
+ * 
+ * @return Pointer to a vector of outgoing edges, if successful. Else returns NULL.
+ */
+vec_t *graphs_vertex_edges(const graphs_t *graph, const size_t index);
+
+
+/** 
  * @brief Loops through all vertices in graph and applies `function` to each vertex.
  * 
  * @param graph     Graph to operate on
@@ -527,11 +547,11 @@ size_t graphs_vertex_map_dfs(
  * @brief Finds path between two vertices in a graph and allocates and sets `path` vector.
  *
  * @param graph         The graph to perform the search on.
- * @param vertex_src    Index of the vertex to start on.
- * @param vertex_tar    Index of the vertex to reach.
+ * @param index_src     Index of the vertex to start on.
+ * @param index_tar     Index of the vertex to reach.
  * @param path          Pointer to which the path between vertex_src and vertex_tar should be stored.
  * 
- * @return The distance between `vertex_src` and `vertex_tar`. 
+ * @return The distance between `index_src` and `index_tar`. 
  *         INFINITY if no path was found. NAN in case of an error or if negative loop is present.
  * 
  * @note - If the path between the vertices does not exists, returns INFINITY and sets `path` to NULL.
@@ -540,16 +560,24 @@ size_t graphs_vertex_map_dfs(
  * 
  * @note - If path is successfully found, memory is allocated for a `path` vector.
  *         This vector then contains pointers to the vertices in the graph that must be visited
- *         to reach `vertex_tar` from `vertex_src`.
- * @note - The path starts with `vertex_src` and ends with `vertex_tar`. The `path` vector is only
+ *         to reach `index_tar` from `index_src`.
+ * @note - The path starts with `index_src` and ends with `index_tar`. The `path` vector is only
  *         valid while the graph exists as it contains void pointers to void pointers in the graph.
  * @note - The caller is responsible for deallocating memory for the `path` vector by calling `vec_destroy`.
  * 
  */
 float graphs_bellman_ford(
         const graphs_t *graph, 
-        const size_t vertex_src, 
-        const size_t vertex_tar,
+        const size_t index_src, 
+        const size_t index_tar,
+        vec_t **path);
+
+
+
+float graphs_dijkstra(
+        const graphs_t *graph, 
+        const size_t index_src, 
+        const size_t index_tar,
         vec_t **path);
 
 #endif /* GRAPH_H */

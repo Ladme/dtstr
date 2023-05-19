@@ -59,6 +59,40 @@ static graphs_t *create_random_graphs(const size_t n_vertices, const size_t n_ed
     return graph;
 }
 
+/** 
+ * @brief Creates a sparse graph for benchmarking path algorithms. 
+ * The graph is constructed in such a way that `src_index` is connected to `tar_index`.
+ */
+static graphs_t *create_graphs_for_path(const size_t n_vertices, const size_t n_edges, const size_t src_index, size_t *tar_index)
+{
+    assert(n_edges <= n_vertices * n_vertices);
+
+    graphs_t *graph = graphs_new();
+
+    for (size_t i = 0; i < n_vertices; ++i) {
+        int value = rand() % 10000;
+        graphs_vertex_add(graph, &value, sizeof(int));
+    }
+
+    vec_t *connected = vec_new();
+    vec_push(connected, &src_index, sizeof(size_t));
+
+    for (size_t i = 0; i < n_edges; ++i) {
+        size_t src = *(size_t *) vec_get(connected, rand() % connected->len);
+        size_t tar = rand() % n_vertices;
+        int weight = rand() % 1000;
+
+        graphs_edge_add(graph, src, tar, weight);
+        vec_push(connected, &tar, sizeof(size_t));
+    }
+
+    *tar_index = *(size_t *) connected->items[connected->len - 1];
+
+    vec_destroy(connected);
+
+    return graph;
+}
+
 static void vertex_add(const size_t items_to_add, const size_t vertex_factor, const size_t edge_factor)
 {
     for (size_t i = 0; i <= 10; ++i) {
@@ -424,9 +458,69 @@ static void benchmark_edge_remove_dense(const size_t items)
     printf("\n\n");
 }
 
+
+static void benchmark_graphs_path_comparison(const size_t vertex_factor, const size_t edge_factor)
+{
+    printf("\n\n<><><><> PATH ALGORITHMS <><><><>\n\n");
+
+    for (size_t i = 1; i <= 10; ++i) {
+
+        size_t src = 0;
+        size_t tar = 0;
+        graphs_t *graph = create_graphs_for_path(vertex_factor * i, edge_factor * i, src, &tar);
+
+        printf("\nPreallocated vertices: %lu\n", vertex_factor * i);
+        printf("Preallocated edges: %lu\n", edge_factor * i);
+
+        printf("src: %lu, tar: %lu\n\n", src, tar);
+
+        vec_t *path = NULL;
+        float distance = 0.0;
+
+        /* BELLMAN_FORD */
+        
+        clock_t start = clock();
+        
+        distance = graphs_bellman_ford(graph, src, tar, &path);
+
+        clock_t end = clock();
+
+        double time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> BELLMAN-FORD: %f s\n", time_elapsed);
+        printf(">>> distance:   %f\n", distance);
+        printf(">>> path len:   %lu\n", path->len);
+
+        vec_destroy(path);
+
+
+        /* DIJKSTRA */
+
+        start = clock();
+
+        distance = graphs_dijkstra(graph, src, tar, &path);
+
+        end = clock();
+
+        time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+        printf("> DIJKSTRA:     %f s\n", time_elapsed);
+        printf(">>> distance:   %f\n", distance);
+        printf(">>> path len:   %lu\n", path->len);
+
+        vec_destroy(path);
+
+        graphs_destroy(graph);
+
+        printf("\n****\n");
+    }
+}
+
 int main(void)
 {
     srand(time(NULL));
+
+    benchmark_graphs_path_comparison(20000, 1000);
     
     benchmark_vertex_add_sparse(1000);
     benchmark_vertex_add_intermediate(1000);
