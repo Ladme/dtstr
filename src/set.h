@@ -41,17 +41,19 @@ typedef struct set {
  * 
  * @note
  * - `equal_function` is a pointer to a function that returns an integer and accepts two void pointers.
- * The void pointers correspond to two items in a list.
+ * The void pointers correspond to two items in the set.
  * 
  * The equality function should return a value greater than 0 (true) if the two compared items match each other.
  * The equality function should return 0 (false) if the two compared items do not match each other.
+ * 
+ * @note - If you want to use the entire item for hashing, you can use `hash_full` function as hashable.
  * 
  * @note - Destroy `set_t` structure using set_destroy function.
  * @note - Allocates space for at least `SET_DEFAULT_CAPACITY` items.
  *         This space is dynamically expanded when needed but expanding the set is a very costly operation.
  *         You may want to preallocate memory for a specific number of items using `set_with_capacity` function.
  * 
- * @return Pointer to the created set_t, if successful. NULL if not successful.
+ * @return Pointer to the created `set_t`, if successful. NULL if not successful.
  */
 set_t *set_new(int (*equal_function)(const void *, const void *), const void* (*hashable)(const void *));
 
@@ -106,7 +108,6 @@ const void *hash_full(const void *item);
  * @param hashsize  Size of the hashable part of the item (in bytes).
  * 
  * @note - If the item is already present in the set, this function does nothing and returns 0.
- * @note - If you want to use the entire item for hashing, you can use `hash_full` function as hashable.
  * 
  * @note
  * - This function may return the following error codes:
@@ -133,8 +134,7 @@ int set_add(set_t *set, const void *item, const size_t itemsize, const size_t ha
  * @note - The order of the items in the linked lists is not maintained.
  * @note - This function is useful if the equal_function does not compare the items in their entirety.
  * @note - If you want to use the entire item for hashing, you can use `hash_full` function as hashable.
-
- * 
+ *
  * @note
  * - This function may return the following error codes:
  * @note 1, if memory could not be allocated for new set entry.
@@ -258,6 +258,7 @@ int set_equal(const set_t *set1, const set_t *set2);
  */
 int set_subset(const set_t *set1, const set_t *set2);
 
+
 /**
  * @brief Returns a new set containing the union of `set1` and `set2`.
  * 
@@ -332,5 +333,18 @@ void set_map(set_t *set, void (*function)(void *, void *), void *pointer);
  * @note - Modifying the hashable parts of items in the set using this function leads to undefined behavior.
  */
 void set_map_entries(set_t *set, void (*function)(void *, void *), void *pointer);
+
+
+/** 
+ * @brief Loops through all entries in a set and applies 'function' to each entry. 
+ *        Guarantees that the set will not be changed by the function.
+ * 
+ * @param set       Set to apply the function to
+ * @param function  Function to apply
+ * @param pointer   Pointer to value that the function can operate on
+ * 
+ * @note - The order in which the entires are traversed is not defined.
+ */
+void set_map_entries_const(const set_t *set, void (*function)(const void *, void *), void *pointer);
 
 #endif /* SET_H */

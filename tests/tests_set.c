@@ -110,6 +110,7 @@ static int test_set_new(void)
     assert(set->available == SET_DEFAULT_CAPACITY);
     assert(set->base_capacity == SET_DEFAULT_CAPACITY * 2);
     assert(set->equal_function == equal_string);
+    assert(set->hashable == hash_full);
     assert(set->len == 0);
 
     set_destroy(set);
@@ -129,6 +130,7 @@ static int test_set_with_capacity(void)
     assert(set->available == 32);
     assert(set->base_capacity == 64);
     assert(set->equal_function == equal_string);
+    assert(set->hashable == hash_full);
     assert(set->len == 0);
 
     set_destroy(set);
@@ -458,6 +460,9 @@ static int test_set_get(void)
     assert(set_get(set, "linked_list", 11) == ((*(set_entry_t **) set->items[9]->head->next->next->data)->item));
 
     assert(set_get(set, item, strlen(item)) == NULL);
+
+    // fetching NULL item
+    assert(set_get(set, NULL, 10) == NULL);
     
     set_destroy(set);
 

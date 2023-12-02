@@ -28,7 +28,7 @@ void *str_convert_sizet(const char *string);
 
 
 /**
- * @brief Converts a string representation of a matrix to a matrix object.
+ * @brief Converts a string representation of a matrix to a matrix structure.
  *
  * @param string                The string representation of the matrix.
  * @param row_delimiters        Characters used to separate rows in the string.
@@ -65,7 +65,7 @@ matrix_t *str2matrix(
 
 
 /**
- * @brief Converts a string representation of a vector to a vector object.
+ * @brief Converts a string representation of a vector to a vector structure.
  *
  * @param string                The string representation of the vector.
  * @param delimiters            Characters used to separate the items in the string.

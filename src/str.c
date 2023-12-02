@@ -106,7 +106,7 @@ char *read_line(FILE *stream)
         if (c == '\n') break;
 
         // reallocate buffer
-        if (index >= size) {
+        if (index >= size - 1) {
             size *= 2;
             char *new_buffer = realloc(buffer, size);
             if (new_buffer == NULL) {

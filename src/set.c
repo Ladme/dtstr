@@ -201,24 +201,6 @@ static int set_contains_set(const set_t *set1, const set_t *set2)
     return 1;
 }
 
-
-/** @brief Same as set_map_entries but guarantees that the set will not be changed by the function. */
-static void set_map_entries_const(const set_t *set, void (*function)(const void *, void *), void *pointer)
-{
-    if (set == NULL) return;
-
-    for (size_t i = 0; i < set->allocated; ++i) {
-        if (set->items[i] == NULL) continue;
-
-        dnode_t *node = set->items[i]->head;
-        while (node != NULL) {
-
-            if (node->data != NULL) function(node->data, pointer);
-            node = node->next;
-        }
-    }
-}
-
 /** @brief Function for collecting items using `set_map_entries_const`. */
 static void set_collect_map(const void *wrapped_entry, void *wrapped_vec)
 {
@@ -383,7 +365,7 @@ int set_add_overwrite(set_t *set, const void *item, const size_t itemsize, const
 
 void *set_get(const set_t *set, const void *item, const size_t hashsize)
 {
-    if (set == NULL) return NULL;
+    if (set == NULL || item == NULL) return NULL;
 
     size_t index = set_index(set, item, hashsize);
     if (set->items[index] == NULL) return NULL;
@@ -599,5 +581,22 @@ void set_map_entries(set_t *set, void (*function)(void *, void *), void *pointer
 
     for (size_t i = 0; i < set->allocated; ++i) {
         dllist_map(set->items[i], function, pointer);
+    }
+}
+
+
+void set_map_entries_const(const set_t *set, void (*function)(const void *, void *), void *pointer)
+{
+    if (set == NULL) return;
+
+    for (size_t i = 0; i < set->allocated; ++i) {
+        if (set->items[i] == NULL) continue;
+
+        dnode_t *node = set->items[i]->head;
+        while (node != NULL) {
+
+            if (node->data != NULL) function(node->data, pointer);
+            node = node->next;
+        }
     }
 }

@@ -544,7 +544,7 @@ size_t graphs_vertex_map_dfs(
 
 
 /**
- * @brief Finds path between two vertices in a graph and allocates and sets `path` vector.
+ * @brief Finds path between two vertices in a graph using Bellman-Ford algorithm and allocates and sets `path` vector.
  *
  * @param graph         The graph to perform the search on.
  * @param index_src     Index of the vertex to start on.
@@ -561,8 +561,8 @@ size_t graphs_vertex_map_dfs(
  * @note - If path is successfully found, memory is allocated for a `path` vector.
  *         This vector then contains pointers to the vertices in the graph that must be visited
  *         to reach `index_tar` from `index_src`.
- * @note - The path starts with `index_src` and ends with `index_tar`. The `path` vector is only
- *         valid while the graph exists as it contains void pointers to void pointers in the graph.
+ * @note - The path starts with pointer to the starting vertex and ends with the pointer to the end vertex. 
+ *         The `path` vector is only valid while the graph exists as it contains void pointers to void pointers in the graph.
  * @note - The caller is responsible for deallocating memory for the `path` vector by calling `vec_destroy`.
  * 
  */
@@ -573,7 +573,29 @@ float graphs_bellman_ford(
         vec_t **path);
 
 
-
+/**
+ * @brief Finds path between two vertices in a graph using Dijkstra algorithm and allocates and sets `path` vector.
+ *
+ * @param graph         The graph to perform the search on.
+ * @param index_src     Index of the vertex to start on.
+ * @param index_tar     Index of the vertex to reach.
+ * @param path          Pointer to which the path between vertex_src and vertex_tar should be stored.
+ * 
+ * @return The distance between `index_src` and `index_tar`. 
+ *         INFINITY if no path was found. NAN in case of an error or if negative loop is present.
+ * 
+ * @note - If the path between the vertices does not exists, returns INFINITY and sets `path` to NULL.
+ * @note - If the graph is NULL or the indices are invalid, returns NAN and sets `path` to NULL.
+ * 
+ * @note - If path is successfully found, memory is allocated for a `path` vector.
+ *         This vector then contains pointers to the vertices in the graph that must be visited
+ *         to reach `index_tar` from `index_src`.
+ * @note - The path starts with pointer to the starting vertex and ends with the pointer to the end vertex. 
+ *         The `path` vector is only valid while the graph exists as it contains void pointers to void pointers in the graph.
+ * @note - The caller is responsible for deallocating memory for the `path` vector by calling `vec_destroy`.
+ * 
+ * @warning - If a negative edge is present in the graph, the behavior of this function is UNDEFINED.
+ */
 float graphs_dijkstra(
         const graphs_t *graph, 
         const size_t index_src, 
